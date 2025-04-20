@@ -39,7 +39,7 @@ jobs:
       # Step 3: 克隆 MySQL 源码
       - name: Clone MySQL Source
         run: |
-          git clone https://github.com/mysql/mysql-server.git
+          git clone --filter=blob:none --depth 1 -b 8.0  https://github.com/mysql/mysql-server.git
           cd mysql-server
           git checkout 8.0 # 可根据需要选择版本
           cd ..
@@ -47,9 +47,8 @@ jobs:
       # Step 4: 克隆 RocksDB 源码
       - name: Clone RocksDB Source
         run: |
-          git clone https://github.com/facebook/rocksdb.git
+          git clone --filter=blob:none --depth 1 -b main https://github.com/facebook/rocksdb.git
           cd rocksdb
-          git checkout main
           cd ..
 
       # Step 5: 将 RocksDB 添加到 MySQL 存储引擎目录
