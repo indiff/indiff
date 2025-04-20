@@ -1,0 +1,105 @@
+name: Build MySQL with RocksDB Engine
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build-mysql-rocksdb:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: 检出代码
+      - name: Checkout MySQL and RocksDB
+        uses: actions/checkout@v3
+
+      # Step 2: 安装依赖
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            cmake \
+            libaio-dev \
+            libncurses-dev \
+            bison \
+            zlib1g-dev \
+            libssl-dev \
+            libgflags-dev \
+            libzstd-dev \
+            libsnappy-dev \
+            liblz4-dev \
+            libnuma-dev
+
+      # Step 3: 克隆 MySQL 源码
+      - name: Clone MySQL Source
+        run: |
+          git clone https://github.com/mysql/mysql-server.git
+          cd mysql-server
+          git checkout 8.0 # 可根据需要选择版本
+          cd ..
+
+      # Step 4: 克隆 RocksDB 源码
+      - name: Clone RocksDB Source
+        run: |
+          git clone https://github.com/facebook/rocksdb.git
+          cd rocksdb
+          git checkout main
+          cd ..
+
+      # Step 5: 将 RocksDB 添加到 MySQL 存储引擎目录
+      - name: Integrate RocksDB into MySQL
+        run: |
+          cp -r rocksdb mysql-server/storage/rocksdb
+
+      # Step 6: 配置 MySQL 构建
+      - name: Configure MySQL Build
+        run: |
+          mkdir -p mysql-server/build
+          cd mysql-server/build
+          cmake .. \
+            -DWITH_BOOST=boost \
+            -DWITH_ROCKSDB=ON \
+            -DWITH_SSL=system \
+            -DWITH_ZLIB=system \
+            -DDOWNLOAD_BOOST=1 \
+            -DWITH_UNIT_TESTS=OFF \
+            -DCMAKE_BUILD_TYPE=Release
+
+      # Step 7: 编译 MySQL 和 RocksDB
+      - name: Build MySQL with RocksDB
+        run: |
+          cd mysql-server/build
+          make -j$(nproc)
+
+      # Step 8: 安装 MySQL
+      - name: Install MySQL
+        run: |
+          cd mysql-server/build
+          sudo make install
+
+      # Step 9: 配置 MySQL 并启用 RocksDB 存储引擎
+      - name: Configure MySQL with RocksDB
+        run: |
+          sudo mkdir -p /etc/mysql
+          echo "[mysqld]" | sudo tee /etc/mysql/my.cnf
+          echo "default-storage-engine=rocksdb" | sudo tee -a /etc/mysql/my.cnf
+          echo "rocksdb" | sudo tee -a /etc/mysql/my.cnf
+          echo "plugin_load_add=ha_rocksdb.so" | sudo tee -a /etc/mysql/my.cnf
+
+      # Step 10: 启动 MySQL 服务
+      - name: Start MySQL Server
+        run: |
+          sudo mysqld --initialize-insecure --user=mysql --datadir=/var/lib/mysql
+          sudo mysqld_safe --user=mysql --datadir=/var/lib/mysql &
+
+      # Step 11: 测试 MySQL 是否正常启动并启用 RocksDB 引擎
+      - name: Test MySQL with RocksDB
+        run: |
+          sleep 10 # 等待 MySQL 服务启动
+          mysql -u root -e "SHOW ENGINES;" | grep -i rocksdb
