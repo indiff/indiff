@@ -34,7 +34,7 @@ jobs:
             libzstd-dev \
             libsnappy-dev \
             liblz4-dev \
-            libnuma-dev
+            libnuma-dev libtirpc-dev
 
       # Step 3: 克隆 MySQL 源码
       - name: Clone MySQL Source
