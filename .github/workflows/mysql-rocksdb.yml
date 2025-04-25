@@ -76,8 +76,8 @@ jobs:
         run: |
           mkdir -p mysql-server/build
           cd mysql-server/build
-          cmake .. -LH
-          echo "*********************************************"
+          # cmake .. -LH
+          # echo "*********************************************"
           cmake .. \
             -DWITH_BOOST=boost \
             -DWITH_ROCKSDB=ON \
