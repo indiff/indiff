@@ -22,6 +22,22 @@ jobs:
       - name: Install Dependencies
         run: |
           sudo apt-get update
+          sudo apt-get install -y systemd language-pack-zh-hans language-pack-zh-hans-base locales tree
+          sudo locale-gen zh_CN.UTF-8; /usr/bin/localectl set-locale LANG=zh_CN.UTF-8 || true ; 
+          /usr/bin/timedatectl set-timezone Asia/Shanghai || true; 
+          /usr/bin/timedatectl set-ntp true || true;
+          sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+          sudo apt update
+          sudo apt upgrade
+          # 安装GCC 14
+          sudo apt install gcc-14
+          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-14 14
+          gcc --version
+          g++ --version
+          make --version
+            
+            
+          sudo apt-get update
           sudo apt-get install -y \
             build-essential \
             cmake \
@@ -39,10 +55,9 @@ jobs:
       # Step 3: 克隆 MySQL 源码
       - name: Clone MySQL Source
         run: |
-          git clone --filter=blob:none --depth 1 -b 8.0  https://github.com/mysql/mysql-server.git
-          cd mysql-server
-          git checkout 8.0 # 可根据需要选择版本
-          cd ..
+          # git clone --filter=blob:none --depth 1 -b 8.0  https://github.com/mysql/mysql-server.git
+          git clone --filter=blob:none --depth 1 https://github.com/mysql/mysql-server.git
+          
 
       # Step 4: 克隆 RocksDB 源码
       - name: Clone RocksDB Source
@@ -61,14 +76,38 @@ jobs:
         run: |
           mkdir -p mysql-server/build
           cd mysql-server/build
+          cmake .. -LH
+          echo "*********************************************"
           cmake .. \
             -DWITH_BOOST=boost \
             -DWITH_ROCKSDB=ON \
             -DWITH_SSL=system \
-            -DWITH_ZLIB=system \
             -DDOWNLOAD_BOOST=1 \
             -DWITH_UNIT_TESTS=OFF \
+            -DWITH_EDITLINE=bundled \
+            -DWITH_FIDO=bundled \
+            -DWITH_ICU=bundled \
+            -DWITH_LIBEVENT=bundled \
+            -DWITH_LZ4=bundled \
+            -DWITH_PROTOBUF=bundled \
+            -DWITH_RAPIDJSON=bundled \
+            -DWITH_ZLIB=bundled \
+            -DWITH_ZSTD=bundled \
+            -DWITH_GFLAGS=OFF \
+            -DWITH_TOOLS=OFF \
+            -DWITH_BENCHMARK_TOOLS=OFF \
+            -DWITH_CORE_TOOLS=OFF  \
+            -DWITH_UNIT_TESTS=OFF \
+            -DWITH_ARCHIVE_STORAGE_ENGINE=OFF \
+            -DWITH_BLACKHOLE_STORAGE_ENGINE=OFF \
+            -DWITH_FEDERATED_STORAGE_ENGINE=OFF \
+            -DWITH_ROUTER=OFF \
+            -DWITH_EXAMPLE_STORAGE_ENGINE=ON \
+            -DWITHOUT_PERFSCHEMA_STORAGE_ENGINE=ON \
+            -DWITH_INNODB_MEMCACHED=ON \
+            -DBUILD_CONFIG=mysql_release \
             -DCMAKE_BUILD_TYPE=Release
+            
 
       # Step 7: 编译 MySQL 和 RocksDB
       - name: Build MySQL with RocksDB
