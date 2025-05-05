@@ -231,9 +231,21 @@ jobs:
               fi
           fi
 
+          git clone https://github.com/Microsoft/vcpkg.git --depth 1
+          cd vcpkg
+          export VCPKG_ROOT=$(pwd)
+          export PATH=$VCPKG_ROOT:$PATH
+          ./bootstrap-vcpkg.sh
+          ./vcpkg integrate install
+          ./vcpkg install curl[openssl]
+          cd ..
+
           tar -axvf git-$GIT_VERSION.tar.xz ;
           cd git-$GIT_VERSION;
-          ./configure --prefix=$SETUP_INSTALL_PREFIX/git/$GIT_VERSION --with-curl --with-expat --with-openssl --with-libpcre2 --with-editor=vim ;
+          ./configure --prefix=$SETUP_INSTALL_PREFIX/git/$GIT_VERSION \
+            CFLAGS="-I${VCPKG_ROOT}/installed/x64-linux/include/curl" \
+            LDFLAGS="-L${VCPKG_ROOT}/installed/x64-linux/include/lib"  \
+            --with-curl=${VCPKG_ROOT}/installed/x64-linux --with-expat --with-openssl --with-libpcre2 --with-editor=vim ;
           make -j$(nproc) all doc || make all doc;
           make install install-doc install-html;
           cd contrib/subtree;
