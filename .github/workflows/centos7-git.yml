@@ -274,6 +274,8 @@ jobs:
           cd git-lfs-v$GIT_LFS_VERSION ; 
           tar -axvf ../git-lfs-linux-amd64-v$GIT_LFS_VERSION.tar.gz ;
           ls -lh
+          chmod +x ./git-lfs-$GIT_LFS_VERSION/install.sh
+          mkdir -p $SETUP_INSTALL_PREFIX/git-lfs/v$GIT_LFS_VERSION
           env PREFIX=$SETUP_INSTALL_PREFIX/git-lfs/v$GIT_LFS_VERSION ./git-lfs-$GIT_LFS_VERSION/install.sh ;
 
           if [[ -e "$SETUP_INSTALL_PREFIX/git-lfs/v$GIT_LFS_VERSION/bin" ]]; then
