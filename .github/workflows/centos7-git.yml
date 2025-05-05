@@ -246,10 +246,8 @@ jobs:
             CFLAGS="-I${VCPKG_ROOT}/installed/x64-linux/include/curl" \
             LDFLAGS="-L${VCPKG_ROOT}/installed/x64-linux/include/lib"  \
             --with-curl=${VCPKG_ROOT}/installed/x64-linux --with-expat --with-openssl --with-libpcre2 --with-editor=vim ;
-          make -j$(nproc) all doc || make all doc;
-          make install install-doc install-html;
-          cd contrib/subtree;
-          make install install-doc install-html;
+          make -j$(nproc) all  || make all ;
+          make install 
 
           if [[ -e "$SETUP_INSTALL_PREFIX/git/$GIT_VERSION/bin" ]]; then
               for UPDATE_LNK in $SETUP_INSTALL_PREFIX/git/$GIT_VERSION/bin/*; do
