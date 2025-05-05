@@ -1,9 +1,11 @@
-name: test git
+name: CentOS7 git
 
 on:
   push:
     branches:
       - main
+    paths:
+      - '**/centos7-git.yml'
   pull_request:
     branches:
       - main
@@ -204,7 +206,7 @@ jobs:
           tar -axvf re2c-$RE2C_VERSION.tar.xz ;
           cd re2c-$RE2C_VERSION ;
           ./configure --prefix=$SETUP_INSTALL_PREFIX/re2c/$RE2C_VERSION --with-pic=yes;
-          make -j || make;
+          make -j$(nproc) || make;
           make install;
 
           if [[ -e "$SETUP_INSTALL_PREFIX/re2c/$RE2C_VERSION/bin" ]]; then
@@ -229,7 +231,7 @@ jobs:
           tar -axvf git-$GIT_VERSION.tar.xz ;
           cd git-$GIT_VERSION;
           ./configure --prefix=$SETUP_INSTALL_PREFIX/git/$GIT_VERSION --with-curl --with-expat --with-openssl --with-libpcre2 --with-editor=vim ;
-          make -j all doc || make all doc;
+          make -j$(nproc) all doc || make all doc;
           make install install-doc install-html;
           cd contrib/subtree;
           make install install-doc install-html;
@@ -301,7 +303,7 @@ jobs:
           export size_kb=$(du -k *.zip | head -n 1 | cut -f1)
           tree /opt
 
-      - name: Upload GCC package
+      - name: Upload prebuild git package
         uses: actions/upload-artifact@v4
         with:
           name: git-centos7
