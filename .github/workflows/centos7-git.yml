@@ -245,8 +245,11 @@ jobs:
           ./configure --prefix=$SETUP_INSTALL_PREFIX/git/$GIT_VERSION \
             CFLAGS="-I${VCPKG_ROOT}/installed/x64-linux/include/curl" \
             LDFLAGS="-L${VCPKG_ROOT}/installed/x64-linux/include/lib"  \
-            --with-curl=${VCPKG_ROOT}/installed/x64-linux --with-expat --with-openssl --with-libpcre2 --with-editor=vim ;
-          make -j$(nproc) all  || make all ;
+            --with-curl=${VCPKG_ROOT}/installed/x64-linux --with-expat --with-openssl --with-libpcre2 --with-editor=vim  ;
+          make NO_TCLTK=1 NO_GETTEXT=1 NO_PERL=1 \
+            NO_SVN_TESTS=1 NO_IPV6=1 NO_GITWEB=1 \
+            NO_PYTHON=1 \
+            -j$(nproc) all ;
           make install 
 
           if [[ -e "$SETUP_INSTALL_PREFIX/git/$GIT_VERSION/bin" ]]; then
@@ -295,6 +298,8 @@ jobs:
           zip -r -q -9 $zname.zip .
           mv $zname.zip $zname.xz
           ls -lh *.xz
+
+          tree .
           
           # free memory
           free -h
