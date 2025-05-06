@@ -11,6 +11,8 @@ on:
       - main
   workflow_dispatch:
 
+env:
+  gcc_indiff_centos7_url: "https://github.com/indiff/gcc-build/releases/download/20250506_0932_16.0.0/gcc-indiff-centos7-16.0.0-x86_64-20250506_0930.xz"    
 jobs:
   build-in-centos7:
     runs-on: ubuntu-latest
@@ -242,10 +244,18 @@ jobs:
 
           tar -axvf git-$GIT_VERSION.tar.xz ;
           cd git-$GIT_VERSION;
+
+          # update my gcc
+          curl -sLo /opt/indiff-gcc.zip ${{ env.gcc_indiff_centos7_url }}
+          unzip /opt/indiff-gcc.zip -d /opt/indiff-gcc
+          export CC=/opt/indiff-gcc/bin/gcc
+
           ./configure --prefix=$SETUP_INSTALL_PREFIX/git/$GIT_VERSION \
-            CFLAGS="-I${VCPKG_ROOT}/installed/x64-linux/include/curl" \
+            CC=/opt/indiff-gcc/bin/gcc \
+            CFLAGS="-Os -s -m64 -flto -flto-compression-level=9 -ffunction-sections -fdata-sections -pipe -w -fPIC -I${VCPKG_ROOT}/installed/x64-linux/include/curl" \
             LDFLAGS="-L${VCPKG_ROOT}/installed/x64-linux/include/lib"  \
             --with-curl=${VCPKG_ROOT}/installed/x64-linux --with-expat --with-openssl --with-libpcre2 --with-editor=vim  ;
+          
           make NO_TCLTK=1 NO_GETTEXT=1 NO_PERL=1 \
             NO_SVN_TESTS=1 NO_IPV6=1 NO_GITWEB=1 \
             NO_PYTHON=1 \
