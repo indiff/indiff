@@ -248,6 +248,7 @@ jobs:
           # update my gcc
           curl -sLo /opt/gcc-indiff.zip ${{ env.gcc_indiff_centos7_url }}
           unzip /opt/gcc-indiff.zip -d /opt/gcc-indiff
+          yum install -y zstd zstd-devel
 
           ./configure --prefix=$SETUP_INSTALL_PREFIX/git/$GIT_VERSION \
             CFLAGS="-Os -s -m64 -flto -flto-compression-level=9 -ffunction-sections -fdata-sections -pipe -w -fPIC -I${VCPKG_ROOT}/installed/x64-linux/include/curl" \
