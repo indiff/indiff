@@ -246,17 +246,15 @@ jobs:
           cd git-$GIT_VERSION;
 
           # update my gcc
-          curl -sLo /opt/indiff-gcc.zip ${{ env.gcc_indiff_centos7_url }}
-          unzip /opt/indiff-gcc.zip -d /opt/indiff-gcc
-          export CC=/opt/indiff-gcc/bin/gcc
+          curl -sLo /opt/gcc-indiff.zip ${{ env.gcc_indiff_centos7_url }}
+          unzip /opt/gcc-indiff.zip -d /opt/gcc-indiff
 
           ./configure --prefix=$SETUP_INSTALL_PREFIX/git/$GIT_VERSION \
-            CC=/opt/indiff-gcc/bin/gcc \
             CFLAGS="-Os -s -m64 -flto -flto-compression-level=9 -ffunction-sections -fdata-sections -pipe -w -fPIC -I${VCPKG_ROOT}/installed/x64-linux/include/curl" \
             LDFLAGS="-L${VCPKG_ROOT}/installed/x64-linux/include/lib"  \
-            --with-curl=${VCPKG_ROOT}/installed/x64-linux --with-expat --with-openssl --with-libpcre2 --with-editor=vim  ;
+            --with-curl=${VCPKG_ROOT}/installed/x64-linux --with-expat --with-openssl --with-libpcre2 --with-editor=vim  || cat config.log ;
           
-          make NO_TCLTK=1 NO_GETTEXT=1 NO_PERL=1 \
+          make CC=/opt/gcc-indiff/bin/gcc NO_TCLTK=1 NO_GETTEXT=1 NO_PERL=1 \
             NO_SVN_TESTS=1 NO_IPV6=1 NO_GITWEB=1 \
             NO_PYTHON=1 \
             -j$(nproc) all ;
