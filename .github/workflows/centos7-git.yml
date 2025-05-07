@@ -309,7 +309,7 @@ jobs:
           mv $zname.zip $zname.xz
           ls -lh *.xz
 
-          tree .
+          tree $SETUP_INSTALL_PREFIX
           
           # free memory
           free -h
@@ -340,3 +340,60 @@ jobs:
           name: git-centos7
           path: |
             ${{ github.workspace }}/*.xz
+  
+  publish-release:
+    #  build-in-centos6 can not buildss
+    needs: [build-in-centos7] # build-arm64-tc,build-x86-tc,build-in-centos6
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Restoring artifacts
+        uses: actions/download-artifact@main
+        with:
+          path: ${{ github.workspace }}
+          pattern: git-*
+          merge-multiple: false
+        
+      - name: Release Tag
+        id: release_tag
+        run: |
+          # sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+          # sudo apt update
+          # sudo add-apt-repository ppa:ubuntu-toolchain-r/ppa
+          # sudo apt upgrade
+          sudo apt install -y chrony
+          sudo systemctl enable chrony
+          sudo systemctl start chrony
+          sudo timedatectl set-timezone Asia/Shanghai
+          timedatectl status
+          
+          echo "TAG_NAME=$(date +'%Y%m%d_%H%M')_${{ needs.before_build.outputs.GCC_BUILD_VERSION }}" >> $GITHUB_ENV
+
+      - name: Create Release
+        run: |
+          set -xe
+          # 使用 GitHub API 获取最后一次提交信息
+          commit_info=$(curl -s -H "Authorization: Bearer $GITHUB_TOKEN" \
+          -H "Accept: application/vnd.github.v3+json" \
+          https://api.github.com/repos/git/git/commits \
+          | jq -r '.[0] | "\(.commit.author.name) \(.commit.message) \(.commit.author.date)"')
+          # 输出变量
+          echo "Commit Info: $commit_info"
+          echo -e "## 你好$(date) gcc ${{ needs.before_build.outputs.GCC_BUILD_VERSION }}\n > $commit_info\n" > hello.md
+          bname=$(basename */*centos7*.xz)
+          cat <<'EOF' >> hello.md
+          Proxy download:
+          ```bash         
+          curl -#Lo git-indiff.zip "https://ghproxy.cfd/https://github.com/indiff/indiff/releases/download/${{ env.TAG_NAME }}/shitshit"
+          ```
+          
+          Direct download:
+          ```bash         
+          curl -#Lo git-indiff.zip "https://github.com/indiff/indiff/releases/download/${{ env.TAG_NAME }}/shitshit"
+          ```
+          EOF
+          sed -i "s/shitshit/${bname}/g" hello.md
+          gh release create ${{ env.TAG_NAME }} -F hello.md */*.xz
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
