@@ -12,7 +12,7 @@ on:
   workflow_dispatch:
 
 env:
-  gcc_indiff_centos7_url: "https://github.com/indiff/gcc-build/releases/download/20250506_0932_16.0.0/gcc-indiff-centos7-16.0.0-x86_64-20250506_0930.xz"    
+  gcc_indiff_centos7_url: "https://github.com/indiff/gcc-build/releases/download/20250507_1537_16.0.0/gcc-indiff-centos7-16.0.0-x86_64-20250507_1534.xz"    
 jobs:
   build-in-centos7:
     runs-on: ubuntu-latest
