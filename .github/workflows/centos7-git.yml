@@ -12,6 +12,10 @@ on:
   workflow_dispatch:
 
 env:
+  RE2C_VERSION: "4.2" # https://github.com/skvadrik/re2c/releases
+  GIT_LFS_VERSION: "3.6.1" # https://mirrors.edge.kernel.org/pub/software/scm/git/ https://github.com/git/git/releases
+  GIT_VERSION: "2.49.0" # https://github.com/git-lfs/git-lfs/releases
+  # https://github.com/indiff/gcc-build/releases
   gcc_indiff_centos7_url: "https://github.com/indiff/gcc-build/releases/download/20250507_1537_16.0.0/gcc-indiff-centos7-16.0.0-x86_64-20250507_1534.xz"    
 jobs:
   build-in-centos7:
@@ -202,20 +206,20 @@ jobs:
           GIT_LFS_VERSION=3.6.1 ; # https://github.com/git-lfs/git-lfs/releases
 
           export PATH="$SETUP_INSTALL_PREFIX/bin:$PATH"
-          if [[ ! -e "re2c-$RE2C_VERSION.tar.xz" ]]; then
-              wget https://github.com/skvadrik/re2c/releases/download/$RE2C_VERSION/re2c-$RE2C_VERSION.tar.xz;
+          if [[ ! -e "re2c-${{ env.RE2C_VERSION }}.tar.xz" ]]; then
+              wget https://github.com/skvadrik/re2c/releases/download/${{ env.RE2C_VERSION }}/re2c-${{ env.RE2C_VERSION }}.tar.xz;
               if [[ $? -ne 0 ]]; then
-                  rm -f re2c-$RE2C_VERSION.tar.xz;
+                  rm -f re2c-${{ env.RE2C_VERSION }}.tar.xz;
               fi
           fi
-          tar -axvf re2c-$RE2C_VERSION.tar.xz ;
-          cd re2c-$RE2C_VERSION ;
-          ./configure --prefix=$SETUP_INSTALL_PREFIX/re2c/$RE2C_VERSION --with-pic=yes;
+          tar -axvf re2c-${{ env.RE2C_VERSION }}.tar.xz ;
+          cd re2c-${{ env.RE2C_VERSION }} ;
+          ./configure --prefix=$SETUP_INSTALL_PREFIX/re2c/${{ env.RE2C_VERSION }} --with-pic=yes;
           make -j$(nproc) || make;
           make install;
 
-          if [[ -e "$SETUP_INSTALL_PREFIX/re2c/$RE2C_VERSION/bin" ]]; then
-              for UPDATE_LNK in $SETUP_INSTALL_PREFIX/re2c/$RE2C_VERSION/bin/*; do
+          if [[ -e "$SETUP_INSTALL_PREFIX/re2c/${{ env.RE2C_VERSION }}/bin" ]]; then
+              for UPDATE_LNK in $SETUP_INSTALL_PREFIX/re2c/${{ env.RE2C_VERSION }}/bin/*; do
                   UNDATE_LNK_BASENAME="$(basename "$UPDATE_LNK")";
                   if [ -e "$SETUP_INSTALL_PREFIX/bin/$UNDATE_LNK_BASENAME" ]; then
                       rm -rf "$SETUP_INSTALL_PREFIX/bin/$UNDATE_LNK_BASENAME";
@@ -226,10 +230,10 @@ jobs:
 
           cd ..;
 
-          if [[ ! -e "git-$GIT_VERSION.tar.xz" ]]; then
-              wget https://mirrors.edge.kernel.org/pub/software/scm/git/git-$GIT_VERSION.tar.xz ;
+          if [[ ! -e "git-${{ env.GIT_VERSION }}.tar.xz" ]]; then
+              wget https://mirrors.edge.kernel.org/pub/software/scm/git/git-${{ env.GIT_VERSION }}.tar.xz ;
               if [[ $? -ne 0 ]]; then
-                  rm -f git-$GIT_VERSION.tar.xz;
+                  rm -f git-${{ env.GIT_VERSION }}.tar.xz;
               fi
           fi
 
@@ -242,8 +246,8 @@ jobs:
           ./vcpkg install curl[openssl]
           cd ..
 
-          tar -axvf git-$GIT_VERSION.tar.xz ;
-          cd git-$GIT_VERSION;
+          tar -axvf git-${{ env.GIT_VERSION }}.tar.xz ;
+          cd git-${{ env.GIT_VERSION }};
 
           # update my gcc
           curl -sLo /opt/gcc-indiff.zip ${{ env.gcc_indiff_centos7_url }}
@@ -251,7 +255,7 @@ jobs:
           yum install -y zstd zstd-devel
           export LD_LIBRARY_PATH=$(find /usr -name libzstd.so.1):$LD_LIBRARY_PATH
 
-          ./configure --prefix=$SETUP_INSTALL_PREFIX/git/$GIT_VERSION \
+          ./configure --prefix=$SETUP_INSTALL_PREFIX/git/${{ env.GIT_VERSION }} \
             CFLAGS="-Os -s -m64 -flto -flto-compression-level=9 -ffunction-sections -fdata-sections -pipe -w -fPIC -I${VCPKG_ROOT}/installed/x64-linux/include/curl" \
             LDFLAGS="-L${VCPKG_ROOT}/installed/x64-linux/include/lib"  \
             --with-curl=${VCPKG_ROOT}/installed/x64-linux --with-expat --with-openssl --with-libpcre2 --with-editor=vim  || cat config.log ;
@@ -262,8 +266,8 @@ jobs:
             -j$(nproc) all ;
           make install 
 
-          if [[ -e "$SETUP_INSTALL_PREFIX/git/$GIT_VERSION/bin" ]]; then
-              for UPDATE_LNK in $SETUP_INSTALL_PREFIX/git/$GIT_VERSION/bin/*; do
+          if [[ -e "$SETUP_INSTALL_PREFIX/git/${{ env.GIT_VERSION }}/bin" ]]; then
+              for UPDATE_LNK in $SETUP_INSTALL_PREFIX/git/${{ env.GIT_VERSION }}/bin/*; do
                   UNDATE_LNK_BASENAME="$(basename "$UPDATE_LNK")";
                   if [ -e "$SETUP_INSTALL_PREFIX/bin/$UNDATE_LNK_BASENAME" ]; then
                       rm -rf "$SETUP_INSTALL_PREFIX/bin/$UNDATE_LNK_BASENAME";
@@ -276,23 +280,23 @@ jobs:
           cd git-lfs;
 
           # git lfs
-          if [[ ! -e "git-lfs-linux-amd64-v$GIT_LFS_VERSION.tar.gz" ]]; then
-              wget https://github.com/git-lfs/git-lfs/releases/download/v$GIT_LFS_VERSION/git-lfs-linux-amd64-v$GIT_LFS_VERSION.tar.gz ;
+          if [[ ! -e "git-lfs-linux-amd64-v${{ env.GIT_LFS_VERSION }}.tar.gz" ]]; then
+              wget https://github.com/git-lfs/git-lfs/releases/download/v${{ env.GIT_LFS_VERSION }}/git-lfs-linux-amd64-v${{ env.GIT_LFS_VERSION }}.tar.gz ;
               if [[ $? -ne 0 ]]; then
-                  rm -f git-lfs-linux-amd64-v$GIT_LFS_VERSION.tar.gz;
+                  rm -f git-lfs-linux-amd64-v${{ env.GIT_LFS_VERSION }}.tar.gz;
               fi
           fi
 
-          mkdir git-lfs-v$GIT_LFS_VERSION;
-          cd git-lfs-v$GIT_LFS_VERSION ; 
-          tar -axvf ../git-lfs-linux-amd64-v$GIT_LFS_VERSION.tar.gz ;
+          mkdir git-lfs-v${{ env.GIT_LFS_VERSION }};
+          cd git-lfs-v${{ env.GIT_LFS_VERSION }} ; 
+          tar -axvf ../git-lfs-linux-amd64-v${{ env.GIT_LFS_VERSION }}.tar.gz ;
           ls -lh
-          chmod +x ./git-lfs-$GIT_LFS_VERSION/install.sh
-          mkdir -p $SETUP_INSTALL_PREFIX/git-lfs/v$GIT_LFS_VERSION
-          env PREFIX=$SETUP_INSTALL_PREFIX/git-lfs/v$GIT_LFS_VERSION ./git-lfs-$GIT_LFS_VERSION/install.sh ;
+          chmod +x ./git-lfs-${{ env.GIT_LFS_VERSION }}/install.sh
+          mkdir -p $SETUP_INSTALL_PREFIX/git-lfs/v${{ env.GIT_LFS_VERSION }}
+          env PREFIX=$SETUP_INSTALL_PREFIX/git-lfs/v${{ env.GIT_LFS_VERSION }} ./git-lfs-${{ env.GIT_LFS_VERSION }}/install.sh ;
 
-          if [[ -e "$SETUP_INSTALL_PREFIX/git-lfs/v$GIT_LFS_VERSION/bin" ]]; then
-              for UPDATE_LNK in $SETUP_INSTALL_PREFIX/git-lfs/v$GIT_LFS_VERSION/bin/*; do
+          if [[ -e "$SETUP_INSTALL_PREFIX/git-lfs/v${{ env.GIT_LFS_VERSION }}/bin" ]]; then
+              for UPDATE_LNK in $SETUP_INSTALL_PREFIX/git-lfs/v${{ env.GIT_LFS_VERSION }}/bin/*; do
                   UNDATE_LNK_BASENAME="$(basename "$UPDATE_LNK")";
                   if [ -e "$SETUP_INSTALL_PREFIX/bin/$UNDATE_LNK_BASENAME" ]; then
                       rm -rf "$SETUP_INSTALL_PREFIX/bin/$UNDATE_LNK_BASENAME";
@@ -374,7 +378,7 @@ jobs:
           sudo timedatectl set-timezone Asia/Shanghai
           timedatectl status
           
-          echo "TAG_NAME=$(date +'%Y%m%d_%H%M')_${{ needs.before_build.outputs.GCC_BUILD_VERSION }}" >> $GITHUB_ENV
+          echo "TAG_NAME=$(date +'%Y%m%d_%H%M')_${{ env.GIT_VERSION }}" >> $GITHUB_ENV
 
       - name: Create Release
         run: |
@@ -386,9 +390,16 @@ jobs:
           | jq -r '.[0] | "\(.commit.author.name) \(.commit.message) \(.commit.author.date)"')
           # 输出变量
           echo "Commit Info: $commit_info"
-          echo -e "## 你好$(date) gcc ${{ needs.before_build.outputs.GCC_BUILD_VERSION }}\n > $commit_info\n" > hello.md
+          echo -e "## 你好$(date) git ${{ env.GIT_VERSION }}\n > $commit_info\n" > hello.md
           bname=$(basename */*centos7*.xz)
           cat <<'EOF' >> hello.md
+
+          |prefix|/opt/git|
+          |:--:|:--:|
+          | GIT_VERSION | ${{ env.GIT_VERSION }} |
+          | RE2C_VERSION | ${{ env.RE2C_VERSION }} |
+          | GIT_LFS_VERSION |  ${{ env.GIT_LFS_VERSION }} |
+
           Proxy download:
           ```bash         
           curl -#Lo git-indiff.zip "https://ghproxy.cfd/https://github.com/indiff/indiff/releases/download/${{ env.TAG_NAME }}/shitshit"
