@@ -181,6 +181,13 @@ jobs:
           export OPT_FLAGS="-flto-compression-level=10 -O2 -pipe -ffunction-sections -fdata-sections"
           export OPT_FLAGS=""
           rm -rf "$WORK_DIR"/{binutils,build-binutils,build-gcc,gcc}
+
+          # update my gcc
+          curl -sLo /opt/gcc-indiff.zip ${{ env.gcc_indiff_centos7_url }}
+          unzip /opt/gcc-indiff.zip -d /opt/gcc-indiff
+          yum install -y zstd zstd-devel
+          export LD_LIBRARY_PATH=$(find /usr -name libzstd.so.1):$LD_LIBRARY_PATH
+
           
           # update git
           yum -y remove git
@@ -201,10 +208,6 @@ jobs:
           mkdir -p $SETUP_INSTALL_PREFIX/git ;
           cd $SETUP_INSTALL_PREFIX ;
 
-          RE2C_VERSION=4.2 ; # https://github.com/skvadrik/re2c/releases
-          GIT_VERSION=2.49.0   ; # https://mirrors.edge.kernel.org/pub/software/scm/git/ https://github.com/git/git/releases
-          GIT_LFS_VERSION=3.6.1 ; # https://github.com/git-lfs/git-lfs/releases
-
           export PATH="$SETUP_INSTALL_PREFIX/bin:$PATH"
           if [[ ! -e "re2c-${{ env.RE2C_VERSION }}.tar.xz" ]]; then
               wget https://github.com/skvadrik/re2c/releases/download/${{ env.RE2C_VERSION }}/re2c-${{ env.RE2C_VERSION }}.tar.xz;
@@ -215,7 +218,7 @@ jobs:
           tar -axvf re2c-${{ env.RE2C_VERSION }}.tar.xz ;
           cd re2c-${{ env.RE2C_VERSION }} ;
           ./configure --prefix=$SETUP_INSTALL_PREFIX/re2c/${{ env.RE2C_VERSION }} --with-pic=yes;
-          make -j$(nproc) || make;
+          make CC=/opt/gcc-indiff/bin/gcc -j$(nproc) ;
           make install;
 
           if [[ -e "$SETUP_INSTALL_PREFIX/re2c/${{ env.RE2C_VERSION }}/bin" ]]; then
@@ -249,20 +252,15 @@ jobs:
           tar -axvf git-${{ env.GIT_VERSION }}.tar.xz ;
           cd git-${{ env.GIT_VERSION }};
 
-          # update my gcc
-          curl -sLo /opt/gcc-indiff.zip ${{ env.gcc_indiff_centos7_url }}
-          unzip /opt/gcc-indiff.zip -d /opt/gcc-indiff
-          yum install -y zstd zstd-devel
-          export LD_LIBRARY_PATH=$(find /usr -name libzstd.so.1):$LD_LIBRARY_PATH
 
           ./configure --prefix=$SETUP_INSTALL_PREFIX/git/${{ env.GIT_VERSION }} \
-            CFLAGS="-Os -s -m64 -flto -flto-compression-level=9 -ffunction-sections -fdata-sections -pipe -w -fPIC -I${VCPKG_ROOT}/installed/x64-linux/include/curl" \
-            LDFLAGS="-L${VCPKG_ROOT}/installed/x64-linux/include/lib"  \
+            CFLAGS="-Os -s -m64 -flto -flto-compression-level=12 -ffunction-sections -fdata-sections -pipe -w -fPIC -I${VCPKG_ROOT}/installed/x64-linux/include/curl" \
+            LDFLAGS="-flto -flto-compression-level=12 -Wl,--gc-sections -Wl,-O2 -Wl,--compress-debug-sections=zlib -L${VCPKG_ROOT}/installed/x64-linux/include/lib"  \
             --with-curl=${VCPKG_ROOT}/installed/x64-linux --with-expat --with-openssl --with-libpcre2 --with-editor=vim  || cat config.log ;
           
           make CC=/opt/gcc-indiff/bin/gcc NO_TCLTK=1 NO_GETTEXT=1 NO_PERL=1 \
             NO_SVN_TESTS=1 NO_IPV6=1 NO_GITWEB=1 \
-            NO_PYTHON=1 \
+            NO_PYTHON=1 NO_TEST=1 \
             -j$(nproc) all ;
           make install 
 
@@ -293,7 +291,7 @@ jobs:
           ls -lh
           chmod +x ./git-lfs-${{ env.GIT_LFS_VERSION }}/install.sh
           mkdir -p $SETUP_INSTALL_PREFIX/git-lfs/v${{ env.GIT_LFS_VERSION }}
-          env PREFIX=$SETUP_INSTALL_PREFIX/git-lfs/v${{ env.GIT_LFS_VERSION }} ./git-lfs-${{ env.GIT_LFS_VERSION }}/install.sh ;
+          env CC=/opt/gcc-indiff/bin/gcc PREFIX=$SETUP_INSTALL_PREFIX/git-lfs/v${{ env.GIT_LFS_VERSION }} ./git-lfs-${{ env.GIT_LFS_VERSION }}/install.sh ;
 
           if [[ -e "$SETUP_INSTALL_PREFIX/git-lfs/v${{ env.GIT_LFS_VERSION }}/bin" ]]; then
               for UPDATE_LNK in $SETUP_INSTALL_PREFIX/git-lfs/v${{ env.GIT_LFS_VERSION }}/bin/*; do
