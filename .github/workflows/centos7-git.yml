@@ -252,13 +252,13 @@ jobs:
           tar -axvf git-${{ env.GIT_VERSION }}.tar.xz ;
           cd git-${{ env.GIT_VERSION }};
 
-
-          ./configure --prefix=$SETUP_INSTALL_PREFIX/git/${{ env.GIT_VERSION }} \
-            CFLAGS="-Os -s -m64 -flto -flto-compression-level=12 -ffunction-sections -fdata-sections -pipe -w -fPIC -I${VCPKG_ROOT}/installed/x64-linux/include/curl" \
-            LDFLAGS="-flto -flto-compression-level=12 -Wl,--gc-sections -Wl,-O2 -Wl,--compress-debug-sections=zlib -L${VCPKG_ROOT}/installed/x64-linux/include/lib"  \
-            --with-curl=${VCPKG_ROOT}/installed/x64-linux --with-expat --with-openssl --with-libpcre2 --with-editor=vim  || cat config.log ;
           
-          make CC=/opt/gcc-indiff/bin/gcc NO_TCLTK=1 NO_GETTEXT=1 NO_PERL=1 \
+          ./configure --prefix=$SETUP_INSTALL_PREFIX/git/${{ env.GIT_VERSION }} \
+            CFLAGS="-Os -s -m64 -flto -flto-compression-level=9 -ffunction-sections -fdata-sections -pipe -w -fPIC -I${VCPKG_ROOT}/installed/x64-linux/include/curl" \
+            LDFLAGS="-flto -flto-compression-level=9 -Wl,--gc-sections -Wl,-O2 -Wl,--compress-debug-sections=zlib -L${VCPKG_ROOT}/installed/x64-linux/include/lib"  \
+            --with-curl=${VCPKG_ROOT}/installed/x64-linux --with-expat --with-openssl --with-libpcre2 --with-editor=vim  || cat config.log ;
+          # NO_GETTEXT=1  Set NO_GETTEXT to disable localization support and make Git only
+          make CC=/opt/gcc-indiff/bin/gcc NO_TCLTK=1 NO_PERL=1 \
             NO_SVN_TESTS=1 NO_IPV6=1 NO_GITWEB=1 \
             NO_PYTHON=1 NO_TEST=1 \
             -j$(nproc) all ;
