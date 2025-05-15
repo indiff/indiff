@@ -13,10 +13,10 @@ on:
 
 env:
   RE2C_VERSION: "4.2" # https://github.com/skvadrik/re2c/releases
-  GIT_LFS_VERSION: "3.6.1" # https://mirrors.edge.kernel.org/pub/software/scm/git/ https://github.com/git/git/releases
-  GIT_VERSION: "2.49.0" # https://github.com/git-lfs/git-lfs/releases
+  GIT_LFS_VERSION: "3.6.1" # https://github.com/git-lfs/git-lfs/releases
+  GIT_VERSION: "2.49.0" # https://mirrors.edge.kernel.org/pub/software/scm/git/ https://github.com/git/git/releases
   # https://github.com/indiff/gcc-build/releases
-  gcc_indiff_centos7_url: "https://github.com/indiff/gcc-build/releases/download/20250507_1537_16.0.0/gcc-indiff-centos7-16.0.0-x86_64-20250507_1534.xz"    
+  gcc_indiff_centos7_url: "https://github.com/indiff/gcc-build/releases/download/20250514_0934_16.0.0/gcc-indiff-centos7-16.0.0-x86_64-20250514_0932.xz"    
 jobs:
   build-in-centos7:
     runs-on: ubuntu-latest
@@ -186,7 +186,7 @@ jobs:
           curl -sLo /opt/gcc-indiff.zip ${{ env.gcc_indiff_centos7_url }}
           unzip /opt/gcc-indiff.zip -d /opt/gcc-indiff
           yum install -y zstd zstd-devel
-          export LD_LIBRARY_PATH=$(find /usr -name libzstd.so.1):$LD_LIBRARY_PATH
+          # export LD_LIBRARY_PATH=$(find /usr -name libzstd.so.1):$LD_LIBRARY_PATH
 
           
           # update git
@@ -258,11 +258,12 @@ jobs:
             LDFLAGS="-flto -flto-compression-level=9 -Wl,--gc-sections -Wl,-O2 -Wl,--compress-debug-sections=zlib -L${VCPKG_ROOT}/installed/x64-linux/include/lib"  \
             --with-curl=${VCPKG_ROOT}/installed/x64-linux --with-expat --with-openssl --with-libpcre2 --with-editor=vim  || cat config.log ;
           # NO_GETTEXT=1  Set NO_GETTEXT to disable localization support and make Git only
+          # NO_GITWEB=1 
           make CC=/opt/gcc-indiff/bin/gcc NO_TCLTK=1 NO_PERL=1 \
-            NO_SVN_TESTS=1 NO_IPV6=1 NO_GITWEB=1 \
+            NO_SVN_TESTS=1 NO_IPV6=1 \
             NO_PYTHON=1 NO_TEST=1 \
             -j$(nproc) all ;
-          make install 
+          make install
 
           if [[ -e "$SETUP_INSTALL_PREFIX/git/${{ env.GIT_VERSION }}/bin" ]]; then
               for UPDATE_LNK in $SETUP_INSTALL_PREFIX/git/${{ env.GIT_VERSION }}/bin/*; do
