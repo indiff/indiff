@@ -246,17 +246,25 @@ jobs:
           export PATH=$VCPKG_ROOT:$PATH
           ./bootstrap-vcpkg.sh
           ./vcpkg integrate install
-          ./vcpkg install curl[openssl]
+          ./vcpkg install curl[openssl] openssl zlib expat --triplet x64-linux-dynamic
           cd ..
 
           tar -axvf git-${{ env.GIT_VERSION }}.tar.xz ;
           cd git-${{ env.GIT_VERSION }};
-
+          # -L${VCPKG_ROOT}/installed/x64-linux/include/lib
+          GIT_INSTALL_DIR=$SETUP_INSTALL_PREFIX/git/${{ env.GIT_VERSION }}
+          mkdir -p $GIT_INSTALL_DIR/lib
+          mkdir -p $GIT_INSTALL_DIR/lib64
+          mkdir -p $GIT_INSTALL_DIR/include
+          cp -v $VCPKG_ROOT/installed/x64-linux-dynamic/lib/*.so* $GIT_INSTALL_DIR/lib/ || true
+          cp -v $VCPKG_ROOT/installed/x64-linux-dynamic/lib/*.so* $GIT_INSTALL_DIR/lib64/ || true
+          cp -rv $VCPKG_ROOT/installed/x64-linux-dynamic/include/* $GIT_INSTALL_DIR/include/ || true
           
-          ./configure --prefix=$SETUP_INSTALL_PREFIX/git/${{ env.GIT_VERSION }} \
-            CFLAGS="-Os -s -m64 -flto -flto-compression-level=9 -ffunction-sections -fdata-sections -pipe -w -fPIC -I${VCPKG_ROOT}/installed/x64-linux/include/curl" \
-            LDFLAGS="-flto -flto-compression-level=9 -Wl,--gc-sections -Wl,-O2 -Wl,--compress-debug-sections=zlib -L${VCPKG_ROOT}/installed/x64-linux/include/lib"  \
-            --with-curl=${VCPKG_ROOT}/installed/x64-linux --with-expat --with-openssl --with-libpcre2 --with-editor=vim  || cat config.log ;
+          ./configure --prefix=$GIT_INSTALL_DIR \
+            CFLAGS="-Os -s -m64 -flto -flto-compression-level=9 -ffunction-sections -fdata-sections -pipe -w -fPIC" \
+            LDFLAGS="-flto -flto-compression-level=9 -Wl,--gc-sections -Wl,-O2 -Wl,--compress-debug-sections=zlib -Wl,-rpath=\$\$ORIGIN/../../lib64:\$\$ORIGIN/../../lib" \
+            --with-curl=$GIT_INSTALL_DIR --with-openssl=$GIT_INSTALL_DIR --with-libpcre2 \
+            --with-zlib=$GIT_INSTALL_DIR --with-expat=$GIT_INSTALL_DIR --with-editor=vim  || cat config.log ;
           # NO_GETTEXT=1  Set NO_GETTEXT to disable localization support and make Git only
           # NO_GITWEB=1 
           make CC=/opt/gcc-indiff/bin/gcc NO_TCLTK=1 NO_PERL=1 \
