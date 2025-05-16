@@ -240,15 +240,15 @@ jobs:
               fi
           fi
 
-          git clone https://github.com/Microsoft/vcpkg.git --depth 1
-          cd vcpkg
+          git clone https://github.com/Microsoft/vcpkg.git --depth 1 /opt/vcpkg
+          cd /opt/vcpkg
           export VCPKG_ROOT=$(pwd)
           export PATH=$VCPKG_ROOT:$PATH
           ./bootstrap-vcpkg.sh
           ./vcpkg integrate install
-          ./vcpkg install curl[openssl] openssl zlib expat --triplet x64-linux-dynamic
-          cd ..
+          ./vcpkg install curl[openssl] openssl zlib expat libpcre2 --triplet x64-linux-dynamic
 
+          cd $SETUP_INSTALL_PREFIX
           tar -axvf git-${{ env.GIT_VERSION }}.tar.xz ;
           cd git-${{ env.GIT_VERSION }};
           # -L${VCPKG_ROOT}/installed/x64-linux/include/lib
@@ -258,12 +258,14 @@ jobs:
           mkdir -p $GIT_INSTALL_DIR/include
           cp -v $VCPKG_ROOT/installed/x64-linux-dynamic/lib/*.so* $GIT_INSTALL_DIR/lib/ || true
           cp -v $VCPKG_ROOT/installed/x64-linux-dynamic/lib/*.so* $GIT_INSTALL_DIR/lib64/ || true
+          cp -v $VCPKG_ROOT/installed/x64-linux-dynamic/lib/*.a* $GIT_INSTALL_DIR/lib/ || true
+          cp -v $VCPKG_ROOT/installed/x64-linux-dynamic/lib/*.a* $GIT_INSTALL_DIR/lib64/ || true
           cp -rv $VCPKG_ROOT/installed/x64-linux-dynamic/include/* $GIT_INSTALL_DIR/include/ || true
           
           ./configure --prefix=$GIT_INSTALL_DIR \
             CFLAGS="-Os -s -m64 -flto -flto-compression-level=9 -ffunction-sections -fdata-sections -pipe -w -fPIC" \
             LDFLAGS="-flto -flto-compression-level=9 -Wl,--gc-sections -Wl,-O2 -Wl,--compress-debug-sections=zlib -Wl,-rpath=\$\$ORIGIN/../../lib64:\$\$ORIGIN/../../lib" \
-            --with-curl=$GIT_INSTALL_DIR --with-openssl=$GIT_INSTALL_DIR --with-libpcre2 \
+            --with-curl=$GIT_INSTALL_DIR --with-openssl=$GIT_INSTALL_DIR --with-libpcre2=$GIT_INSTALL_DIR \
             --with-zlib=$GIT_INSTALL_DIR --with-expat=$GIT_INSTALL_DIR --with-editor=vim  || cat config.log ;
           # NO_GETTEXT=1  Set NO_GETTEXT to disable localization support and make Git only
           # NO_GITWEB=1 
