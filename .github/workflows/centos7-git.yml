@@ -246,7 +246,7 @@ jobs:
           export PATH=$VCPKG_ROOT:$PATH
           ./bootstrap-vcpkg.sh
           ./vcpkg integrate install
-          ./vcpkg install curl[openssl] openssl zlib expat libpcre2 --triplet x64-linux-dynamic
+          ./vcpkg install curl[openssl] openssl zlib expat pcre2 --triplet x64-linux-dynamic
 
           cd $SETUP_INSTALL_PREFIX
           tar -axvf git-${{ env.GIT_VERSION }}.tar.xz ;
@@ -321,8 +321,33 @@ jobs:
           rm -rf vcpkg
           rm -rf re2c-*
           rm -rf git-*
-          /opt/gcc-indiff/bin/gcc -v > gcc.txt
+          /opt/gcc-indiff/bin/gcc -v > gcc.txt 2>&1
+          echo '#/bin/bash
+          GIT_INDIFF_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+          PROFILE="$HOME/.bash_profile"
+          KEYWORD="git-indiff-core"
+          LINE="export PATH=\"/usr/local/git-indiff-core:\$PATH\" "
 
+          rm -f /usr/bin/git
+          rm -rf /usr/local/git-indiff-core
+          ln -sf "$GIT_INDIFF_DIR/bin/git" /usr/bin/git
+          ln -sf "$GIT_INDIFF_DIR/git/2.49.0/libexec/git-core" /usr/local/git-indiff-core
+
+          # 如果包含关键字则删除
+          if grep -q "$KEYWORD" "$PROFILE"; then
+              sed -i "/$KEYWORD/d" "$PROFILE"
+              echo "已删除 $KEYWORD 相关行。"
+            echo "$LINE" >> "$PROFILE"
+          else
+              echo "$LINE" >> "$PROFILE"
+              echo "已追加 $KEYWORD 到 $PROFILE。"
+          fi
+
+
+          source ~/.bash_profile
+          echo "执行成功, 请执行 source ~/.bash_profile! 测试  git clone https://gitee.com/qwop/test_git.git" 
+          ' > load_git.sh
+          
           zname=/workspace/git-indiff-centos7-${GIT_VERSION}-x86_64-$(date +'%Y%m%d_%H%M')
           zip -r -q -9 $zname.zip .
           mv $zname.zip $zname.xz
