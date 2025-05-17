@@ -324,7 +324,7 @@ jobs:
           /opt/gcc-indiff/bin/gcc -v > gcc.txt 2>&1
           echo '#/bin/bash
           GIT_INDIFF_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-          PROFILE="$HOME/.bash_profile"
+          PROFILE="$HOME/.bashrc"
           KEYWORD="git-indiff-core"
           LINE="export PATH=\"/usr/local/git-indiff-core:\$PATH\" "
 
