@@ -14,10 +14,10 @@ on:
       build_ver:
         description: 'Build version'
         type: choice
-        default: "nightly"
+        default: "default"
         required: false
         options: 
-          - "nightly"
+          - "nightly" # git 代码仓库直接在 centos7 编译， 会出现不兼容 glibc 问题
           - "default"
   schedule:
     #- cron: '07 10 * * *' # 每天凌晨2点（UTC），对应每天上午10点（CST）, 这里对应的是中国时区的是 18 点
@@ -40,7 +40,9 @@ jobs:
         run: |
           set -xe
           export GIT_DEF_VER=$(curl -s https://raw.githubusercontent.com/git/git/refs/heads/master/GIT-VERSION-GEN | grep "^DEF_VER=" | head -n1 | cut -d= -f2 | tr -d '"')
-          if [[ -z "${{ github.event.inputs.build_ver }}" || "${{ github.event.inputs.build_ver }}" == "nightly" ]]; then 
+          # -z "${{ github.event.inputs.build_ver }}" || 
+          # git 代码仓库直接在 centos7 编译， 会出现不兼容 glibc 问题,所以默认不使用 git 代码仓库编译
+          if [[ "${{ github.event.inputs.build_ver }}" == "nightly" ]]; then 
             echo "GIT_DEF_VER=${GIT_DEF_VER}" >> "$GITHUB_OUTPUT";
           else
             echo "GIT_DEF_VER=${{ env.GIT_VERSION }}" >> "$GITHUB_OUTPUT"
@@ -272,8 +274,9 @@ jobs:
           ./vcpkg install curl[openssl] openssl zlib expat pcre2 --triplet x64-linux-dynamic
 
           cd $SETUP_INSTALL_PREFIX
-
-          if [[ -z "${{ github.event.inputs.build_ver }}" || "${{ github.event.inputs.build_ver }}" == "nightly" ]]; then
+          # -z "${{ github.event.inputs.build_ver }}" || 
+          # git 代码仓库直接在 centos7 编译， 会出现不兼容 glibc 问题,所以默认不使用 git 代码仓库编译
+          if [[ "${{ github.event.inputs.build_ver }}" == "nightly" ]]; then
             git clone --depth 1 https://github.com/git/git.git
             cd git
             make configure
