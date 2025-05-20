@@ -19,6 +19,9 @@ on:
         options: 
           - "nightly"
           - "default"
+  schedule:
+    #- cron: '07 10 * * *' # 每天凌晨2点（UTC），对应每天上午10点（CST）, 这里对应的是中国时区的是 18 点
+    - cron: '3 10 * * *' # UTC 时间 1:00 对应中国时间 9:00          
 env:
   RE2C_VERSION: "4.2" # https://github.com/skvadrik/re2c/releases
   GIT_LFS_VERSION: "3.6.1" # https://github.com/git-lfs/git-lfs/releases
@@ -273,6 +276,7 @@ jobs:
           if [[ -z "${{ github.event.inputs.build_ver }}" || "${{ github.event.inputs.build_ver }}" == "nightly" ]]; then
             git clone --depth 1 https://github.com/git/git.git
             cd git
+            make configure
           else
             if [[ ! -e "git-${{ env.GIT_VERSION }}.tar.xz" ]]; then
               wget https://mirrors.edge.kernel.org/pub/software/scm/git/git-${{ env.GIT_VERSION }}.tar.xz ;
@@ -285,7 +289,7 @@ jobs:
           fi
 
           # -L${VCPKG_ROOT}/installed/x64-linux/include/lib
-          GIT_INSTALL_DIR=$SETUP_INSTALL_PREFIX/git/${{ env.GIT_VERSION }}
+          GIT_INSTALL_DIR=$SETUP_INSTALL_PREFIX/git/${{ needs.before_build.outputs.GIT_DEF_VER }}
           mkdir -p $GIT_INSTALL_DIR/lib
           mkdir -p $GIT_INSTALL_DIR/lib64
           mkdir -p $GIT_INSTALL_DIR/include
