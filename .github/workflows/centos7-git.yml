@@ -465,7 +465,18 @@ jobs:
           # 输出变量
           echo "Commit Info: $commit_info"
           echo -e "## 你好$(date) git ${{ env.GIT_VERSION }}\n > $commit_info\n" > hello.md
-          bname=$(basename */*centos7*.xz)
+          # 查找打包文件：优先 *.xz, 没有则找 *.zip
+          pkgpath="$(find . -maxdepth 2 -type f -name '*centos7*.xz' | head -n 1)"
+          if [[ -z "$pkgpath" ]]; then
+            echo '未找到打包文件*.xz' >&2
+
+            pkgpath="$(find . -maxdepth 2 -type f -name '*centos7*.zip' | head -n 1)"
+            if [[ -z "$pkgpath" ]]; then
+              echo '未找到打包文件*.zip' >&2
+              exit 1
+            fi
+          fi
+          bname="$(basename "$pkgpath")"
           cat <<'EOF' >> hello.md
 
           |prefix|/opt/git|
@@ -485,6 +496,6 @@ jobs:
           ```
           EOF
           sed -i "s/shitshit/${bname}/g" hello.md
-          gh release create ${{ env.TAG_NAME }} -F hello.md */*.xz
+          gh release create ${{ env.TAG_NAME }} -F hello.md "$pkgpath"
         env:
           GITHUB_TOKEN: ${{ github.token }}
