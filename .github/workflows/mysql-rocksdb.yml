@@ -91,12 +91,11 @@ jobs:
       - name: Configure MySQL Build
         run: |
           export VCPKG_ROOT=$(pwd)/vcpkg
-          sudo mkdir -p percona-server/build
-          sudo mkdir -p percona-server/boost
+          mkdir -p percona-server/build percona-server/boost
           cd percona-server/build
           # cmake .. -LH
           # echo "*********************************************"
-          cmake .. \
+          sudo cmake .. \
             -DCMAKE_INSTALL_PREFIX=/opt/mysql-percona80 \
             -DWITH_BOOST=boost \
             -DWITH_ROCKSDB=ON \
@@ -107,6 +106,7 @@ jobs:
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_TOOLCHAIN_FILE="$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" \
             -DVCPKG_TARGET_TRIPLET=x64-linux-static \
+            -DVCPKG_OVERLAY_TRIPLETS=$VCPKG_ROOT/vcpkg-triplets \
             -DBUILD_SHARED_LIBS=OFF \
             -DWITH_LZ4=system \
             -DWITH_ZSTD=system \
@@ -115,8 +115,8 @@ jobs:
             -DWITH_SSL=system -DOPENSSL_USE_STATIC_LIBS=ON \
             -DWITH_PROTOBUF=system -DProtobuf_USE_STATIC_LIBS=ON \
             -DWITH_UNIT_TESTS=0
-          cmake --build . -j"$(nproc)"
-          make install
+          sudo cmake --build . -j"$(nproc)"
+          sudo make install
             
 
       # Step 8: 安装 MySQL
