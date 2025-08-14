@@ -72,8 +72,8 @@ jobs:
           ./vcpkg/bootstrap-vcpkg.sh
           export VCPKG_ROOT=$(pwd)/vcpkg
           # 写入自定义 triplet
-          mkdir -p /workspace/vcpkg-triplets
-          cat >/workspace/vcpkg-triplets/x64-linux-static.cmake <<'EOF'
+          mkdir -p $VCPKG_ROOT/vcpkg-triplets
+          cat >$VCPKG_ROOT/vcpkg-triplets/x64-linux-static.cmake <<'EOF'
           set(VCPKG_TARGET_ARCHITECTURE x64)
           set(VCPKG_CMAKE_SYSTEM_NAME Linux)
           set(VCPKG_CRT_LINKAGE dynamic)
@@ -84,7 +84,7 @@ jobs:
           # 安装依赖（静态）
           $VCPKG_ROOT/vcpkg install lz4 zstd snappy jemalloc openssl protobuf \
             --triplet x64-linux-static \
-            --overlay-triplets=/workspace/vcpkg-triplets
+            --overlay-triplets=$VCPKG_ROOT/vcpkg-triplets
           # $VCPKG_ROOT/vcpkg install lz4 zstd snappy jemalloc openssl protobuf --triplet x64-linux-static
 
       # Step 6: 配置 MySQL 构建
