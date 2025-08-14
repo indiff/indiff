@@ -128,7 +128,6 @@ jobs:
             -DWITH_LZ4=system -DWITH_ZSTD=system -DWITH_SNAPPY=system -DWITH_JEMALLOC=system \
             -DWITH_SSL=system -DOPENSSL_ROOT_DIR="$DEPS_DST" \
             -DWITH_PROTOBUF=bundled \  # protobuf 用 bundled 更稳，如需 vcpkg 也可改 system
-            -DBUILD_SHARED_LIBS=ON \
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_INSTALL_RPATH='$ORIGIN/../lib:$ORIGIN/../lib64' \
             -DCMAKE_BUILD_RPATH='$ORIGIN/../lib:$ORIGIN/../lib64' \
