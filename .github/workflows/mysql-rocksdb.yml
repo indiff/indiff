@@ -52,7 +52,8 @@ jobs:
             libzstd-dev \
             libsnappy-dev \
             liblz4-dev \
-            libnuma-dev libtirpc-dev
+            libnuma-dev libtirpc-dev \
+            libldap2-dev curl libcurl4-openssl-dev bison libudev-dev libkrb5-dev libreadline-dev zlib1g-dev liblz4-dev libedit-dev libevent-dev protobuf-compiler libprotobuf-dev libprotoc-dev libldap2-dev libsasl2-dev libsasl2-modules-gssapi-mit cmake libicu-dev libtirpc-dev libldap-dev
 
       # Step 3: 克隆 MySQL 源码
       - name: Clone MySQL Source
