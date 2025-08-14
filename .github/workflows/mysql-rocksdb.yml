@@ -73,48 +73,66 @@ jobs:
           ./vcpkg/bootstrap-vcpkg.sh
           export VCPKG_ROOT=$(pwd)/vcpkg
           # 写入自定义 triplet
-          mkdir -p $VCPKG_ROOT/vcpkg-triplets
-          cat >$VCPKG_ROOT/vcpkg-triplets/x64-linux-static.cmake <<'EOF'
-          set(VCPKG_TARGET_ARCHITECTURE x64)
-          set(VCPKG_CMAKE_SYSTEM_NAME Linux)
-          set(VCPKG_CRT_LINKAGE dynamic)
-          set(VCPKG_LIBRARY_LINKAGE static)
-          set(VCPKG_BUILD_TYPE release)
-          EOF
+          # mkdir -p $VCPKG_ROOT/vcpkg-triplets
+          # cat >$VCPKG_ROOT/vcpkg-triplets/x64-linux-static.cmake <<'EOF'
+          # set(VCPKG_TARGET_ARCHITECTURE x64)
+          # set(VCPKG_CMAKE_SYSTEM_NAME Linux)
+          # set(VCPKG_CRT_LINKAGE dynamic)
+          # set(VCPKG_LIBRARY_LINKAGE static)
+          # set(VCPKG_BUILD_TYPE release)
+          # EOF
 
           # 安装依赖（静态）
-          $VCPKG_ROOT/vcpkg install lz4 zstd snappy jemalloc openssl protobuf \
-            --triplet x64-linux-static \
-            --overlay-triplets=$VCPKG_ROOT/vcpkg-triplets
-          # $VCPKG_ROOT/vcpkg install lz4 zstd snappy jemalloc openssl protobuf --triplet x64-linux-static
+          # $VCPKG_ROOT/vcpkg install lz4 zstd snappy jemalloc openssl protobuf \
+          #   --triplet x64-linux-static \
+          #   --overlay-triplets=$VCPKG_ROOT/vcpkg-triplets
+          $VCPKG_ROOT/vcpkg install lz4 zstd snappy jemalloc openssl protobuf --triplet x64-linux
+          TRIPLET=x64-linux
+          DEPS_SRC="$VCPKG_ROOT/installed/$TRIPLET"
+          DEPS_DST="/opt/mysql-percona80"
+          sudo mkdir -p "$DEPS_DST"/{include,lib,lib64}
+
+          # 2) 复制头文件与动态库（.so 与 .so.*）及 pkgconfig
+          rsync -a "$DEPS_SRC/include/" "$DEPS_DST/include/"
+          rsync -a "$DEPS_SRC/lib/"      "$DEPS_DST/lib/"      || true
+          rsync -a "$DEPS_SRC/lib64/"    "$DEPS_DST/lib64/"    || true
+          for d in lib lib64; do
+            [[ -d "$DEPS_DST/$d/pkgconfig" ]] || mkdir -p "$DEPS_DST/$d/pkgconfig"
+            rsync -a "$DEPS_SRC/$d/pkgconfig/" "$DEPS_DST/$d/pkgconfig/" 2>/dev/null || true
+          done
+
+
 
       # Step 6: 配置 MySQL 构建
       - name: Configure MySQL Build
         run: |
           export VCPKG_ROOT=$(pwd)/vcpkg
+          DEPS_DST="/opt/mysql-percona80"
           mkdir -p percona-server/build percona-server/boost
           cd percona-server/build
           # cmake .. -LH
           # echo "*********************************************"
+
+          export CMAKE_PREFIX_PATH="$DEPS_DST${CMAKE_PREFIX_PATH:+:$CMAKE_PREFIX_PATH}"
+          export CMAKE_LIBRARY_PATH="$DEPS_DST/lib:$DEPS_DST/lib64${CMAKE_LIBRARY_PATH:+:$CMAKE_LIBRARY_PATH}"
+          export CMAKE_INCLUDE_PATH="$DEPS_DST/include${CMAKE_INCLUDE_PATH:+:$CMAKE_INCLUDE_PATH}"
+          export PKG_CONFIG_PATH="$DEPS_DST/lib/pkgconfig:$DEPS_DST/lib64/pkgconfig${PKG_CONFIG_PATH:+:$PKG_CONFIG_PATH}"
           sudo cmake .. \
             -DCMAKE_INSTALL_PREFIX=/opt/mysql-percona80 \
             -DWITH_BOOST=boost \
             -DWITH_ROCKSDB=ON \
-            -DWITH_SSL=system \
             -DDOWNLOAD_BOOST=1 \
-            -DWITH_BOOST=../boost \
-            -DWITH_UNIT_TESTS=OFF \
+            -DCMAKE_INSTALL_PREFIX=/opt/mysql-percona80 \
+            -DDOWNLOAD_BOOST=1 -DWITH_BOOST=../boost \
+            -DWITH_ROCKSDB=ON \
+            -DWITH_LZ4=system -DWITH_ZSTD=system -DWITH_SNAPPY=system -DWITH_JEMALLOC=system \
+            -DWITH_SSL=system -DOPENSSL_ROOT_DIR="$DEPS_DST" \
+            -DWITH_PROTOBUF=bundled \  # protobuf 用 bundled 更稳，如需 vcpkg 也可改 system
+            -DBUILD_SHARED_LIBS=ON \
             -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_TOOLCHAIN_FILE="$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" \
-            -DVCPKG_TARGET_TRIPLET=x64-linux-static \
-            -DVCPKG_OVERLAY_TRIPLETS=$VCPKG_ROOT/vcpkg-triplets \
-            -DBUILD_SHARED_LIBS=OFF \
-            -DWITH_LZ4=system \
-            -DWITH_ZSTD=system \
-            -DWITH_SNAPPY=system \
-            -DWITH_JEMALLOC=system \
-            -DWITH_SSL=system -DOPENSSL_USE_STATIC_LIBS=ON \
-            -DWITH_PROTOBUF=system -DProtobuf_USE_STATIC_LIBS=ON \
+            -DCMAKE_INSTALL_RPATH='$ORIGIN/../lib:$ORIGIN/../lib64' \
+            -DCMAKE_BUILD_RPATH='$ORIGIN/../lib:$ORIGIN/../lib64' \
+            -DCMAKE_INSTALL_RPATH_USE_LINK_PATH=ON \
             -DWITH_UNIT_TESTS=0 \
             -DWITH_DOCS=OFF -DWITH_MAN_PAGES=OFF
           sudo cmake --build . -j"$(nproc)"
