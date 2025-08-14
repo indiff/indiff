@@ -71,7 +71,21 @@ jobs:
           git clone --filter=blob:none --depth 1 https://github.com/microsoft/vcpkg.git
           ./vcpkg/bootstrap-vcpkg.sh
           export VCPKG_ROOT=$(pwd)/vcpkg
-          $VCPKG_ROOT/vcpkg install lz4 zstd snappy jemalloc openssl protobuf --triplet x64-linux-static
+          # 写入自定义 triplet
+          mkdir -p /workspace/vcpkg-triplets
+          cat >/workspace/vcpkg-triplets/x64-linux-static.cmake <<'EOF'
+          set(VCPKG_TARGET_ARCHITECTURE x64)
+          set(VCPKG_CMAKE_SYSTEM_NAME Linux)
+          set(VCPKG_CRT_LINKAGE dynamic)
+          set(VCPKG_LIBRARY_LINKAGE static)
+          set(VCPKG_BUILD_TYPE release)
+          EOF
+
+          # 安装依赖（静态）
+          $VCPKG_ROOT/vcpkg install lz4 zstd snappy jemalloc openssl protobuf \
+            --triplet x64-linux-static \
+            --overlay-triplets=/workspace/vcpkg-triplets
+          # $VCPKG_ROOT/vcpkg install lz4 zstd snappy jemalloc openssl protobuf --triplet x64-linux-static
 
       # Step 6: 配置 MySQL 构建
       - name: Configure MySQL Build
