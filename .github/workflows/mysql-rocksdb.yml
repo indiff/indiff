@@ -115,7 +115,8 @@ jobs:
             -DWITH_JEMALLOC=system \
             -DWITH_SSL=system -DOPENSSL_USE_STATIC_LIBS=ON \
             -DWITH_PROTOBUF=system -DProtobuf_USE_STATIC_LIBS=ON \
-            -DWITH_UNIT_TESTS=0
+            -DWITH_UNIT_TESTS=0 \
+            -DWITH_DOCS=OFF -DWITH_MAN_PAGES=OFF
           sudo cmake --build . -j"$(nproc)"
           sudo make install
             
