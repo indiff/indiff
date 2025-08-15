@@ -12,7 +12,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-mysql-rocksdb:
+  build-percona80-rocksdb:
     runs-on: ubuntu-latest
 
     steps:
@@ -102,7 +102,7 @@ jobs:
 
 
       # Step 6: 配置 MySQL 构建
-      - name: Configure MySQL Build
+      - name: Configure percona80 Build
         run: |
           set -xe
           export VCPKG_ROOT=$(pwd)/vcpkg
@@ -146,32 +146,47 @@ jobs:
             
 
       # Step 8: 安装 MySQL
-      - name: Install MySQL
+      - name: Install percona80
         run: |
           cd /opt/mysql-percona80
           zip -r -q -9 /opt/mysql-percona80.xz .
 
       # Step 9: 配置 MySQL 并启用 RocksDB 存储引擎
-      - name: Configure MySQL with RocksDB
+      - name: Configure percona80 with RocksDB
         run: |
           # 初始化数据目录
+          sudo rm -rf /opt/mysql-percona80/data || true
+          sudo mkdir -p /opt/mysql-percona80/{data,log,run,tmp}
+          sudo chown -R "$USER":"$USER" /opt/mysql-percona80
           /opt/mysql-percona80/bin/mysqld --initialize-insecure --basedir=/opt/mysql-percona80 --datadir=/opt/mysql-percona80/data
           # 最小 my.cnf（启用 rocksdb 并设为默认引擎）
-          cat >/etc/my.cnf <<'CNF'
+          cat >/opt/mysql-percona80/my.cnf <<'CNF'
           [mysqld]
           basedir=/opt/mysql-percona80
           datadir=/opt/mysql-percona80/data
           socket=/opt/mysql-percona80/mysql.sock
+          pid-file=/opt/mysql-percona80/run/mysqld.pid
+          log-error=/opt/mysql-percona80/log/error.log
           port=3306
           plugin-load-add=ha_rocksdb.so
           default-storage-engine=ROCKSDB
           rocksdb
           CNF
-          # 启动
-          /opt/mysql-percona80/bin/mysqld --defaults-file=/etc/my.cnf --user=root &
-          # 验证
-          /opt/mysql-percona80/bin/mysql -uroot -e "SHOW ENGINES\G"
-          /opt/mysql-percona80/bin/mysql -uroot -e "CREATE DATABASE t; USE t; CREATE TABLE a(id INT PRIMARY KEY) ENGINE=ROCKSDB; INSERT INTO a VALUES(1); SELECT * FROM a;"
+
+          # 2) 初始化（不读取系统配置，避免写 /var/log/mysql）
+          /opt/mysql-percona80/bin/mysqld --no-defaults \
+            --initialize-insecure \
+            --basedir=/opt/mysql-percona80 \
+            --datadir=/opt/mysql-percona80/data \
+            --log-error=/opt/mysql-percona80/log/init.err
+
+          # 3) 启动（非 root 不要 --user）
+          /opt/mysql-percona80/bin/mysqld --defaults-file=/opt/mysql-percona80/my.cnf --daemonize
+           # 4) 简单健康检查
+          sleep 5
+          tail -n 200 /opt/mysql-percona80/log/error.log || true
+          /opt/mysql-percona80/bin/mysql --protocol=socket --socket=/opt/mysql-percona80/mysql.sock -uroot -e "SELECT VERSION(); SHOW ENGINES\G"
+          /opt/mysql-percona80/bin/mysql --protocol=socket --socket=/opt/mysql-percona80/mysql.sock -uroot -e "CREATE DATABASE t; USE t; CREATE TABLE a(id INT PRIMARY KEY) ENGINE=ROCKSDB; INSERT INTO a VALUES(1); SELECT * FROM a;"
 
 
       - name: Upload prebuild git package
