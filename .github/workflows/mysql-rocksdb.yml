@@ -40,21 +40,16 @@ jobs:
             
             
           sudo apt-get update
+          # protobuf-compiler libprotobuf-dev libprotoc-dev \
           sudo apt-get install -y \
-            build-essential \
-            cmake \
+            build-essential cmake ninja-build \
             libaio-dev \
             libncurses-dev \
-            bison \
-            zlib1g-dev \
             libssl-dev \
             libgflags-dev \
-            libzstd-dev \
-            libsnappy-dev \
-            liblz4-dev \
-            libnuma-dev libtirpc-dev \
-            protobuf-compiler libprotobuf-dev libprotoc-dev \
-            libldap2-dev curl libcurl4-openssl-dev bison libudev-dev libkrb5-dev libreadline-dev zlib1g-dev liblz4-dev libedit-dev libevent-dev protobuf-compiler libprotobuf-dev libprotoc-dev libldap2-dev libsasl2-dev libsasl2-modules-gssapi-mit cmake libicu-dev libtirpc-dev libldap-dev
+            libnuma-dev \
+            libldap-dev libldap2-dev \
+            curl libcurl4-openssl-dev bison libudev-dev libkrb5-dev libreadline-dev zlib1g-dev liblz4-dev libedit-dev libevent-dev libsasl2-dev libsasl2-modules-gssapi-mit libicu-dev libtirpc-dev
 
       # Step 3: 克隆 MySQL 源码
       - name: Clone MySQL Source
@@ -119,22 +114,25 @@ jobs:
           export CMAKE_LIBRARY_PATH="$DEPS_DST/lib:$DEPS_DST/lib64${CMAKE_LIBRARY_PATH:+:$CMAKE_LIBRARY_PATH}"
           export CMAKE_INCLUDE_PATH="$DEPS_DST/include${CMAKE_INCLUDE_PATH:+:$CMAKE_INCLUDE_PATH}"
           export PKG_CONFIG_PATH="$DEPS_DST/lib/pkgconfig:$DEPS_DST/lib64/pkgconfig${PKG_CONFIG_PATH:+:$PKG_CONFIG_PATH}"
-          sudo cmake .. \
+          # 避免外部 protobuf 干扰
+          unset PROTOC
+          sudo cmake .. -G Ninja \
             -DCMAKE_INSTALL_PREFIX=/opt/mysql-percona80 \
-            -DWITH_BOOST=boost \
-            -DDOWNLOAD_BOOST=1 -DWITH_BOOST=../boost \
+            -DWITH_BOOST=boost -DDOWNLOAD_BOOST=1 -DWITH_BOOST=../boost \
             -DWITH_ROCKSDB=ON \
             -DWITH_LZ4=system -DWITH_ZSTD=system -DWITH_SNAPPY=system -DWITH_JEMALLOC=system \
             -DWITH_SSL=system -DOPENSSL_ROOT_DIR="$DEPS_DST" \
-            -DWITH_PROTOBUF=system \
+            -DWITH_PROTOBUF=bundled \
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_INSTALL_RPATH='$ORIGIN/../lib:$ORIGIN/../lib64' \
             -DCMAKE_BUILD_RPATH='$ORIGIN/../lib:$ORIGIN/../lib64' \
             -DCMAKE_INSTALL_RPATH_USE_LINK_PATH=ON \
             -DWITH_UNIT_TESTS=0 \
             -DWITH_DOCS=OFF -DWITH_MAN_PAGES=OFF
+          # Ninja 默认详细，便于定位真实失败点
           sudo cmake --build . -j"$(nproc)"
-          sudo make install
+          sudo cmake --install .
+          # sudo make install
             
 
       # Step 8: 安装 MySQL
