@@ -53,6 +53,7 @@ jobs:
             libsnappy-dev \
             liblz4-dev \
             libnuma-dev libtirpc-dev \
+            protobuf-compiler libprotobuf-dev libprotoc-dev \
             libldap2-dev curl libcurl4-openssl-dev bison libudev-dev libkrb5-dev libreadline-dev zlib1g-dev liblz4-dev libedit-dev libevent-dev protobuf-compiler libprotobuf-dev libprotoc-dev libldap2-dev libsasl2-dev libsasl2-modules-gssapi-mit cmake libicu-dev libtirpc-dev libldap-dev
 
       # Step 3: 克隆 MySQL 源码
@@ -86,7 +87,8 @@ jobs:
           # $VCPKG_ROOT/vcpkg install lz4 zstd snappy jemalloc openssl protobuf \
           #   --triplet x64-linux-static \
           #   --overlay-triplets=$VCPKG_ROOT/vcpkg-triplets
-          $VCPKG_ROOT/vcpkg install lz4 zstd snappy jemalloc openssl protobuf --triplet x64-linux
+          #  protobuf
+          $VCPKG_ROOT/vcpkg install lz4 zstd snappy jemalloc openssl --triplet x64-linux
           TRIPLET=x64-linux
           DEPS_SRC="$VCPKG_ROOT/installed/$TRIPLET"
           DEPS_DST="/opt/mysql-percona80"
