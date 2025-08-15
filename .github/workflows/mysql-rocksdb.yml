@@ -84,7 +84,7 @@ jobs:
           #   --triplet x64-linux-static \
           #   --overlay-triplets=$VCPKG_ROOT/vcpkg-triplets
           #  protobuf
-          $VCPKG_ROOT/vcpkg install lz4 zstd snappy jemalloc libjemalloc openssl --triplet x64-linux
+          $VCPKG_ROOT/vcpkg install lz4 zstd snappy jemalloc openssl --triplet x64-linux
           TRIPLET=x64-linux
           DEPS_SRC="$VCPKG_ROOT/installed/$TRIPLET"
           DEPS_DST="/opt/mysql-percona80"
