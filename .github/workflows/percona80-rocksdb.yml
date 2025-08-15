@@ -153,6 +153,7 @@ jobs:
 
       # Step 9: 配置 MySQL 并启用 RocksDB 存储引擎
       - name: Configure percona80 with RocksDB
+        if: false
         run: |
           # 初始化数据目录
           sudo rm -rf /opt/mysql-percona80/data || true
