@@ -290,7 +290,7 @@ jobs:
           yum install -y perl-Test-Simple perl-FindBin perl-IPC-Cmd perl-Text-Template perl-File-Compare perl-File-Copy perl-Data-Dumper
           yum install -y llvm llvm-devel clang clang-devel libstdc++-devel glibc-devel tree python3
           yum -y install \
-            rsync cmake ninja-build \
+            zip unzip rsync cmake ninja-build \
             jemalloc jemalloc-devel \
             libaio-devel \
             ncurses-devel \
@@ -408,7 +408,7 @@ jobs:
           EOF
           chmod +x build.sh
 
-      - name: Build GCC in Docker
+      - name: Build persona80 in Docker
         run: |
           sudo timedatectl set-timezone Asia/Shanghai
           timedatectl status
