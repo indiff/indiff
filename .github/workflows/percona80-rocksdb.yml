@@ -352,7 +352,8 @@ jobs:
           ./vcpkg/bootstrap-vcpkg.sh
           export VCPKG_ROOT=$(pwd)/vcpkg
 
-          $VCPKG_ROOT/vcpkg install lz4 zstd snappy jemalloc openssl --triplet x64-linux
+          # jemalloc 
+          $VCPKG_ROOT/vcpkg install lz4 zstd snappy openssl --triplet x64-linux
           TRIPLET=x64-linux
           DEPS_SRC="$VCPKG_ROOT/installed/$TRIPLET"
           DEPS_DST="/opt/mysql-percona80"
@@ -387,9 +388,9 @@ jobs:
           unset PROTOC
           cmake .. -G Ninja \
             -DCMAKE_INSTALL_PREFIX=/opt/mysql-percona80 \
-            -DCMAKE_EXE_LINKER_FLAGS="-L$DEPS_DST/lib -L$DEPS_DST/lib64" \
-            -DCMAKE_SHARED_LINKER_FLAGS="-L$DEPS_DST/lib -L$DEPS_DST/lib64" \
-            -DCMAKE_MODULE_LINKER_FLAGS="-L$DEPS_DST/lib -L$DEPS_DST/lib64" \
+            -DCMAKE_EXE_LINKER_FLAGS="-L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--no-as-needed -ldl" \
+            -DCMAKE_SHARED_LINKER_FLAGS="-L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--no-as-needed -ldl" \
+            -DCMAKE_MODULE_LINKER_FLAGS="-L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--no-as-needed -ldl" \
             -DWITH_BOOST=boost -DDOWNLOAD_BOOST=1 -DWITH_BOOST=../boost \
             -DWITH_ROCKSDB=ON \
             -DWITH_LZ4=system -DWITH_ZSTD=system -DWITH_SNAPPY=system -DWITH_JEMALLOC=system \
