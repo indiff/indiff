@@ -285,7 +285,7 @@ jobs:
           ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
           echo 'Asia/Shanghai' > /etc/timezone
           yum update -y
-          yum install -y flex bison ncurses-dev texinfo gcc gperf patch libtool automake g++ libncurses5-dev gawk subversion expat libexpat1-dev binutils-dev bc libcap-dev autoconf libgmp-dev build-essential pkg-config libmpc-dev libmpfr-dev autopoint gettext txt2man liblzma-dev libssl-dev libz-dev mercurial wget tar cmake zstd ninja-build lz4 liblz4-tool liblz4-dev lzma libc6-dev-i386 ncurses-devel expat-devel binutils-devel gmp-devel make pkgconfig mpfr-devel gettext-devel zlib-devel lz4-devel xz xz-devel glibc-devel.i686 which clang lld bzip2 glibc glibc-devel
+          yum install -y flex bison ncurses-dev texinfo gcc gperf patch libtool automake g++ libncurses5-dev gawk subversion expat libexpat1-dev binutils-dev bc libcap-dev autoconf libgmp-dev build-essential pkg-config libmpc-dev libmpfr-dev autopoint gettext txt2man liblzma-dev libssl-dev libz-dev mercurial wget tar cmake zstd ninja-build lz4 liblz4-tool liblz4-dev lzma libc6-dev-i386 ncurses-devel expat-devel binutils-devel gmp-devel make pkgconfig mpfr-devel gettext-devel zlib-devel lz4-devel xz xz-devel glibc-devel.i686 which lld bzip2 glibc glibc-devel
           yum install -y pcre-devel zlib-devel make git wget sed perl-IPC-Cmd GeoIP GeoIP-devel zip systemd autoconf automake libtool zstd-devel
           yum install -y perl-Test-Simple perl-FindBin perl-IPC-Cmd perl-Text-Template perl-File-Compare perl-File-Copy perl-Data-Dumper
           yum install -y llvm llvm-devel clang clang-devel libstdc++-devel glibc-devel tree python3
@@ -311,18 +311,6 @@ jobs:
             libicu-devel \
             cyrus-sasl-devel cyrus-sasl-scram \
             libtirpc libtirpc-devel
-          
-          # echo "[buildlogs-devtoolset-10-centos-x86_64]" > /etc/yum.repos.d/centos7-devtoolset-10.repo
-          # echo "name=devtoolset-10" >> /etc/yum.repos.d/centos7-devtoolset-10.repo
-          # echo "baseurl=https://buildlogs.cdn.centos.org/c7-devtoolset-10.x86_64" >> /etc/yum.repos.d/centos7-devtoolset-10.repo
-          # echo "gpgcheck=0" >> /etc/yum.repos.d/centos7-devtoolset-10.repo
-          # echo "enabled=1" >> /etc/yum.repos.d/centos7-devtoolset-10.repo
-          # yum -y update
-          # yum -y install devtoolset-10 --nogpgcheck
-          # scl enable devtoolset-10 bash
-          # source /opt/rh/devtoolset-10/enable
-          # gcc -v
-          # make -v
 
           # update git
           yum -y remove git
@@ -333,6 +321,11 @@ jobs:
           # update my gcc
           curl -sLo /opt/gcc-indiff.zip ${{ env.gcc_indiff_centos7_url }}
           unzip /opt/gcc-indiff.zip -d /opt/gcc-indiff
+
+          export PATH=/opt/gcc-indiff/bin:/usr/local/bin:/opt/cmake/bin:$PATH
+          export CC=/opt/gcc-indiff/bin/gcc
+          export CXX=/opt/gcc-indiff/bin/g++
+          export VCPKG_FORCE_SYSTEM_BINARIES=1
 
           # install cmake3 
           curl -sLo cmake3.tar.gz https://github.com/Kitware/CMake/releases/download/v3.31.6/cmake-3.31.6-linux-x86_64.tar.gz
@@ -351,10 +344,7 @@ jobs:
           cd ..
           ninja --version  # should be 1.12.1
 
-          export PATH=/opt/gcc-indiff/bin:/usr/local/bin:/opt/cmake/bin:$PATH
-          export CC=/opt/gcc-indiff/bin/gcc
-          export CXX=/opt/gcc-indiff/bin/g++
-          export VCPKG_FORCE_SYSTEM_BINARIES=1
+          
 
           git clone --filter=blob:none --depth 1 https://github.com/microsoft/vcpkg.git
           ./vcpkg/bootstrap-vcpkg.sh
