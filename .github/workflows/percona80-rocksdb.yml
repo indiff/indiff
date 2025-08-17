@@ -303,7 +303,6 @@ jobs:
             systemd-devel \
             krb5-devel \
             readline-devel \
-            zlib-devel \
             lz4 lz4-devel \
             libedit-devel \
             libevent-devel \
@@ -351,7 +350,7 @@ jobs:
           export VCPKG_ROOT=$(pwd)/vcpkg
 
           # jemalloc 
-          $VCPKG_ROOT/vcpkg install lz4 zstd snappy openssl --triplet x64-linux
+          $VCPKG_ROOT/vcpkg install lz4 zstd snappy openssl zlib --triplet x64-linux
           git clone --filter=blob:none --depth 1 https://github.com/percona/percona-server.git -b 8.0
           cd percona-server
           git submodule update --init --recursive
