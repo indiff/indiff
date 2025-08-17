@@ -333,7 +333,7 @@ jobs:
           # update my gcc
           curl -sLo /opt/gcc-indiff.zip ${{ env.gcc_indiff_centos7_url }}
           unzip /opt/gcc-indiff.zip -d /opt/gcc-indiff
-          export CC=/opt/gcc-indiff/bin/gcc
+          
 
 
           # install cmake3 
@@ -373,15 +373,17 @@ jobs:
           cd percona-server/build
 
 
+          export CC=/opt/gcc-indiff/bin/gcc
+          export CXX=/opt/gcc-indiff/bin/g++
           # 供 CMake/ld 查找 vcpkg 拷贝到 /opt 的头文件与库
           export CMAKE_PREFIX_PATH="$DEPS_DST${CMAKE_PREFIX_PATH:+:$CMAKE_PREFIX_PATH}"
           export CMAKE_LIBRARY_PATH="$DEPS_DST/lib:$DEPS_DST/lib64${CMAKE_LIBRARY_PATH:+:$CMAKE_LIBRARY_PATH}"
           export CMAKE_INCLUDE_PATH="$DEPS_DST/include${CMAKE_INCLUDE_PATH:+:$CMAKE_INCLUDE_PATH}"
           export PKG_CONFIG_PATH="/usr/lib64/pkgconfig:/usr/share/pkgconfig:$DEPS_DST/lib/pkgconfig:$DEPS_DST/lib64/pkgconfig${PKG_CONFIG_PATH:+:$PKG_CONFIG_PATH}"
 
-          # 链接期搜索路径（关键修复 -ljemalloc not found）
-          export LIBRARY_PATH="$DEPS_DST/lib:$DEPS_DST/lib64${LIBRARY_PATH:+:$LIBRARY_PATH}"
-          export LD_LIBRARY_PATH="$DEPS_DST/lib:$DEPS_DST/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+          # 链接期搜索路径(关键修复 -ljemalloc not found)
+          export LIBRARY_PATH="/opt/gcc-indiff/lib64:$DEPS_DST/lib:$DEPS_DST/lib64${LIBRARY_PATH:+:$LIBRARY_PATH}"
+          export LD_LIBRARY_PATH="/opt/gcc-indiff/lib64:$DEPS_DST/lib:$DEPS_DST/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
 
 
           # 避免外部 protobuf 干扰
@@ -398,7 +400,7 @@ jobs:
             -DWITH_PROTOBUF=bundled \
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_INSTALL_RPATH='$ORIGIN/../lib:$ORIGIN/../lib64' \
-            -DCMAKE_BUILD_RPATH='$ORIGIN/../lib:$ORIGIN/../lib64' \
+            -DCMAKE_BUILD_RPATH='/opt/gcc-indiff/lib64:$ORIGIN/../lib:$ORIGIN/../lib64' \
             -DCMAKE_INSTALL_RPATH_USE_LINK_PATH=ON \
             -DWITH_AUTHENTICATION_LDAP=ON \
             -DWITH_UNIT_TESTS=0 \
