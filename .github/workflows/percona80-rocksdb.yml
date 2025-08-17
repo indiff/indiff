@@ -335,14 +335,14 @@ jobs:
           ln -sf /opt/cmake/bin/cmake /usr/bin/cmake
 
           # Build Ninja 1.12.1 from source (prebuilt may not run on CentOS 7)
-          curl -sLo ninja-1.12.1.tar.gz https://github.com/ninja-build/ninja/archive/refs/tags/v1.12.1.tar.gz
-          tar -xzf ninja-1.12.1.tar.gz
-          cd ninja-1.12.1
-          /opt/cmake/bin/cmake -B build -G "Ninja" -DCMAKE_BUILD_TYPE=Release
-          /opt/cmake/bin/cmake --build build -j"$(nproc)"
-          install -m 0755 build/ninja /usr/local/bin/ninja
-          cd ..
-          ninja --version  # should be 1.12.1
+          #curl -sLo ninja-1.12.1.tar.gz https://github.com/ninja-build/ninja/archive/refs/tags/v1.12.1.tar.gz
+          #tar -xzf ninja-1.12.1.tar.gz
+          #cd ninja-1.12.1
+          #/opt/cmake/bin/cmake -B build -G "Ninja" -DCMAKE_BUILD_TYPE=Release
+          #/opt/cmake/bin/cmake --build build -j"$(nproc)"
+          #install -m 0755 build/ninja /usr/local/bin/ninja
+          #cd ..
+          #ninja --version  # should be 1.12.1
 
           
 
