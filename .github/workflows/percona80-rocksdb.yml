@@ -333,8 +333,6 @@ jobs:
           # update my gcc
           curl -sLo /opt/gcc-indiff.zip ${{ env.gcc_indiff_centos7_url }}
           unzip /opt/gcc-indiff.zip -d /opt/gcc-indiff
-          
-
 
           # install cmake3 
           curl -sLo cmake3.tar.gz https://github.com/Kitware/CMake/releases/download/v3.31.6/cmake-3.31.6-linux-x86_64.tar.gz
@@ -343,10 +341,20 @@ jobs:
           rm -f /usr/bin/cmake
           ln -sf /opt/cmake/bin/cmake /usr/bin/cmake
 
-          git clone --filter=blob:none --depth 1 https://github.com/percona/percona-server.git -b 8.0
-          cd percona-server
-          git submodule update --init --recursive
+          # Build Ninja 1.12.1 from source (prebuilt may not run on CentOS 7)
+          curl -sLo ninja-1.12.1.tar.gz https://github.com/ninja-build/ninja/archive/refs/tags/v1.12.1.tar.gz
+          tar -xzf ninja-1.12.1.tar.gz
+          cd ninja-1.12.1
+          /opt/cmake/bin/cmake -B build -G "Ninja" -DCMAKE_BUILD_TYPE=Release
+          /opt/cmake/bin/cmake --build build -j"$(nproc)"
+          install -m 0755 build/ninja /usr/local/bin/ninja
           cd ..
+          ninja --version  # should be 1.12.1
+
+          export PATH=/opt/gcc-indiff/bin:/usr/local/bin:/opt/cmake/bin:$PATH
+          export CC=/opt/gcc-indiff/bin/gcc
+          export CXX=/opt/gcc-indiff/bin/g++
+          export VCPKG_FORCE_SYSTEM_BINARIES=1
 
           git clone --filter=blob:none --depth 1 https://github.com/microsoft/vcpkg.git
           ./vcpkg/bootstrap-vcpkg.sh
@@ -354,6 +362,12 @@ jobs:
 
           # jemalloc 
           $VCPKG_ROOT/vcpkg install lz4 zstd snappy openssl --triplet x64-linux
+          git clone --filter=blob:none --depth 1 https://github.com/percona/percona-server.git -b 8.0
+          cd percona-server
+          git submodule update --init --recursive
+          cd ..
+
+
           TRIPLET=x64-linux
           DEPS_SRC="$VCPKG_ROOT/installed/$TRIPLET"
           DEPS_DST="/opt/mysql-percona80"
@@ -372,9 +386,6 @@ jobs:
           mkdir -p percona-server/build percona-server/boost
           cd percona-server/build
 
-
-          export CC=/opt/gcc-indiff/bin/gcc
-          export CXX=/opt/gcc-indiff/bin/g++
           # 供 CMake/ld 查找 vcpkg 拷贝到 /opt 的头文件与库
           export CMAKE_PREFIX_PATH="$DEPS_DST${CMAKE_PREFIX_PATH:+:$CMAKE_PREFIX_PATH}"
           export CMAKE_LIBRARY_PATH="$DEPS_DST/lib:$DEPS_DST/lib64${CMAKE_LIBRARY_PATH:+:$CMAKE_LIBRARY_PATH}"
@@ -384,7 +395,6 @@ jobs:
           # 链接期搜索路径(关键修复 -ljemalloc not found)
           export LIBRARY_PATH="/opt/gcc-indiff/lib64:$DEPS_DST/lib:$DEPS_DST/lib64${LIBRARY_PATH:+:$LIBRARY_PATH}"
           export LD_LIBRARY_PATH="/opt/gcc-indiff/lib64:$DEPS_DST/lib:$DEPS_DST/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
-
 
           # 避免外部 protobuf 干扰
           unset PROTOC
