@@ -309,6 +309,7 @@ jobs:
             cyrus-sasl cyrus-sasl-devel cyrus-sasl-gssapi \
             libicu-devel \
             cyrus-sasl-devel cyrus-sasl-scram \
+            libatomic \
             libtirpc libtirpc-devel
 
           # update git
