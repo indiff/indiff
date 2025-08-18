@@ -493,6 +493,6 @@ jobs:
             ```
             EOF
             sed -i "s/shitshit/${bname}/g" hello.md
-            gh release create ${{ env.TAG_NAME }} -F hello.md "artifacts/*"
+            gh release create ${{ env.TAG_NAME }} -F hello.md "artifacts/*.xz"
           env:
             GITHUB_TOKEN: ${{ github.token }}
