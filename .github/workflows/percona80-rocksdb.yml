@@ -152,6 +152,17 @@ jobs:
         run: |
           cd /opt/mysql-percona80
           # zip -r -q -9 /opt/mysql-percona80.xz .
+          sudo rm -rf /opt/mysql-percona80/man
+          sudo rm -rf /opt/mysql-percona80/mysql-test
+          sudo rm -rf /opt/mysql-percona80/bin/mysqld-debug
+          sudo rm -rf /opt/mysql-percona80/sbin/mysqld-debug
+          sudo rm -f /opt/mysql-percona80/bin/mysqltest_safe_process
+          sudo rm -f /opt/mysql-percona80/bin/ps_mysqld_helper
+          sudo rm -f /opt/mysql-percona80/bin/ps-admin
+          sudo rm -f /opt/mysql-percona80/bin/mysqltest
+          sudo rm -f /opt/mysql-percona80/bin/mysqlxtest
+          sudo rm -f /opt/mysql-percona80/bin/mytap
+          tree . > ${{ github.workspace }}/percona80-ubuntu-x86_64-$(date +'%Y%m%d_%H%M').txt
           zip -r -q -9 ${{ github.workspace }}/percona80-ubuntu-x86_64-$(date +'%Y%m%d_%H%M').xz .
 
 
@@ -200,6 +211,7 @@ jobs:
           name: percona80-ubuntu
           path: |
             ${{ github.workspace }}/*.xz
+            ${{ github.workspace }}/*.txt
             ${{ github.workspace }}/*.zip
 
   build-in-centos7:
@@ -415,6 +427,16 @@ jobs:
           cmake --install .
 
           cd /opt/mysql-percona80
+          rm -rf /opt/mysql-percona80/man
+          rm -rf /opt/mysql-percona80/mysql-test
+          rm -rf /opt/mysql-percona80/bin/mysqld-debug
+          rm -rf /opt/mysql-percona80/sbin/mysqld-debug
+          rm -f /opt/mysql-percona80/bin/mysqltest_safe_process
+          rm -f /opt/mysql-percona80/bin/ps_mysqld_helper
+          rm -f /opt/mysql-percona80/bin/ps-admin
+          rm -f /opt/mysql-percona80/bin/mysqltest
+          rm -f /opt/mysql-percona80/bin/mysqlxtest
+          rm -f /opt/mysql-percona80/bin/mytap
           zip -r -q -9 /workspace/percona80-centos7-x86_64-$(date +'%Y%m%d_%H%M').xz .
 
           # free memory
