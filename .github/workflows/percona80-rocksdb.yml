@@ -506,11 +506,17 @@ jobs:
         - name: Create Release
           run: |
             set -xe
+            sudo apt-get update
+            sudo apt-get install -y zip unzip systemd language-pack-zh-hans language-pack-zh-hans-base locales tree
+            sudo locale-gen zh_CN.UTF-8; /usr/bin/localectl set-locale LANG=zh_CN.UTF-8 || true ; 
+            /usr/bin/timedatectl set-timezone Asia/Shanghai || true; 
+            /usr/bin/timedatectl set-ntp true || true;
             # 使用 GitHub API 获取最后一次提交信息
             commit_info=$(curl -s -H "Authorization: Bearer $GITHUB_TOKEN" \
             -H "Accept: application/vnd.github.v3+json" \
             https://api.github.com/repos/percona/percona-server/commits \
             | jq -r '.[0] | "\(.commit.author.name) \(.commit.message) \(.commit.author.date)"')
+            tree .
             # 输出变量
             echo "Commit Info: $commit_info"
             echo -e "## 你好$(date) percona \n > $commit_info\n" > hello.md
@@ -526,6 +532,6 @@ jobs:
             ```
             EOF
             sed -i "s/shitshit/${bname}/g" hello.md
-            gh release create ${{ env.TAG_NAME }} -F hello.md "artifacts/*.zip"
+            gh release create ${{ env.TAG_NAME }} -F hello.md "artifacts/*percona*"
           env:
             GITHUB_TOKEN: ${{ github.token }}
