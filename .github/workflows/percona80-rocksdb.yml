@@ -10,6 +10,9 @@ on:
   #   branches:
   #     - main
   workflow_dispatch:
+  schedule:
+    #- cron: '07 10 * * *' # 每天凌晨2点（UTC），对应每天上午10点（CST）, 这里对应的是中国时区的是 18 点
+    - cron: '3 7 * * *' # UTC 时间 1:00 对应中国时间 9:00          
 env:
   gcc_indiff_ubuntu_url: "https://github.com/indiff/gcc-build/releases/download/20250416_1126/gcc-indiff-ubuntu-x86_64-20250416_1125.xz"
   gcc_indiff_centos7_url: "https://github.com/indiff/gcc-build/releases/download/20250818_1113_16.0.0/gcc-indiff-centos7-16.0.0-x86_64-20250818_1111.xz"
@@ -141,6 +144,9 @@ jobs:
             -DWITH_TESTS=0 \
             -DWITH_XPLUGIN_TESTS=0 \
             -DWITH_DOCS=OFF -DWITH_MAN_PAGES=OFF
+
+          cmake -LAH -N . | tee ${{ github.workspace }}/cmake-cache-vars-ubuntu.txt
+
           # Ninja 默认详细，便于定位真实失败点 [3343/4756]
           sudo cmake --build . -j"$(nproc)" --target install
           sudo cmake --install .
@@ -421,6 +427,9 @@ jobs:
             -DWITH_TESTS=0 \
             -DWITH_XPLUGIN_TESTS=0 \
             -DWITH_DOCS=OFF -DWITH_MAN_PAGES=OFF
+
+          cmake -LAH -N . | tee /workspace/cmake-cache-vars-centos7.txt
+
           # Ninja 默认详细，便于定位真实失败点
           # 只会编译并安装最终产物(不会编译 tests)  [3343/4756]
           cmake --build . -j"$(nproc)" --target install
