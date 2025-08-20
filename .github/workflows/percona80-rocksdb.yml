@@ -184,7 +184,7 @@ jobs:
       - name: Upload percona80 cmake
         uses: actions/upload-artifact@v4
         with:
-          name: build-info
+          name: build-info-ubuntu
           path: |
             ${{ github.workspace }}/*.txt
 
@@ -455,7 +455,7 @@ jobs:
       - name: Upload percona80 cmake
         uses: actions/upload-artifact@v4
         with:
-          name: build-info
+          name: build-info-centos7
           path: |
             ${{ github.workspace }}/*.txt
 
