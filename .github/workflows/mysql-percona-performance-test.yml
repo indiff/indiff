@@ -1,0 +1,241 @@
+name: MySQL vs Percona Performance Testing
+
+on:
+  workflow_dispatch:
+    inputs:
+      test_duration:
+        description: 'Test duration in seconds'
+        type: number
+        default: 300
+        required: false
+      table_size:
+        description: 'Test table size'
+        type: number
+        default: 100000
+        required: false
+      threads:
+        description: 'Thread counts (space separated)'
+        type: string
+        default: "1 4 8 16 32"
+        required: false
+      mysql_version:
+        description: 'MySQL version'
+        type: string
+        default: "8.0"
+        required: false
+      percona_version:
+        description: 'Percona version'
+        type: string
+        default: "8.0"
+        required: false
+  schedule:
+    # Run weekly performance tests on Sundays at 02:00 UTC (10:00 CST)
+    - cron: '0 2 * * 0'
+
+env:
+  TEST_DURATION: ${{ github.event.inputs.test_duration || 300 }}
+  TABLE_SIZE: ${{ github.event.inputs.table_size || 100000 }}
+  THREADS_LIST: ${{ github.event.inputs.threads || '1 4 8 16 32' }}
+  MYSQL_VERSION: ${{ github.event.inputs.mysql_version || '8.0' }}
+  PERCONA_VERSION: ${{ github.event.inputs.percona_version || '8.0' }}
+
+jobs:
+  performance-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Free disk space
+        run: |
+          df -h
+          sudo apt-get clean
+          docker system prune -a -f
+          sudo rm -rf /opt/ghc /usr/local/.ghcup /usr/local/lib/android /usr/share/dotnet
+          df -h
+
+      - name: Set up timezone
+        run: |
+          sudo timedatectl set-timezone Asia/Shanghai
+          timedatectl status
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            sysbench \
+            bc \
+            curl \
+            jq \
+            tree
+
+      - name: Verify sysbench installation
+        run: |
+          sysbench --version
+          sysbench --help
+
+      - name: Make scripts executable
+        run: |
+          chmod +x scripts/mysql-performance-test.sh
+
+      - name: Pull Docker images
+        run: |
+          docker pull mysql:${{ env.MYSQL_VERSION }}
+          docker pull percona/percona-server:${{ env.PERCONA_VERSION }}
+
+      - name: Run performance tests
+        run: |
+          cd ${{ github.workspace }}
+          ./scripts/mysql-performance-test.sh \
+            --mysql-version "${{ env.MYSQL_VERSION }}" \
+            --percona-version "${{ env.PERCONA_VERSION }}" \
+            --test-duration "${{ env.TEST_DURATION }}" \
+            --table-size "${{ env.TABLE_SIZE }}" \
+            --threads "${{ env.THREADS_LIST }}" \
+            --report-dir "./performance_reports"
+
+      - name: Generate summary report
+        run: |
+          cd performance_reports
+          LATEST_DIR=$(ls -1t | grep "test_" | head -1)
+          if [ -n "$LATEST_DIR" ]; then
+            cd "$LATEST_DIR"
+            echo "## 性能测试摘要" > summary.md
+            echo "" >> summary.md
+            echo "测试时间: $(date '+%Y-%m-%d %H:%M:%S')" >> summary.md
+            echo "MySQL版本: ${{ env.MYSQL_VERSION }}" >> summary.md
+            echo "Percona版本: ${{ env.PERCONA_VERSION }}" >> summary.md
+            echo "测试持续时间: ${{ env.TEST_DURATION }}秒" >> summary.md
+            echo "表大小: ${{ env.TABLE_SIZE }}行" >> summary.md
+            echo "线程数: ${{ env.THREADS_LIST }}" >> summary.md
+            echo "" >> summary.md
+            
+            # 检查是否有测试报告
+            if [ -f "performance_comparison_report.md" ]; then
+              echo "✅ 性能测试报告已生成" >> summary.md
+              echo "" >> summary.md
+              echo "### 快速结果预览" >> summary.md
+              echo "" >> summary.md
+              # 提取一些关键指标
+              head -30 performance_comparison_report.md | tail -20 >> summary.md
+            else
+              echo "❌ 性能测试报告生成失败" >> summary.md
+            fi
+            
+            # 列出生成的文件
+            echo "" >> summary.md
+            echo "### 生成的文件" >> summary.md
+            echo "" >> summary.md
+            echo '```' >> summary.md
+            ls -la >> summary.md
+            echo '```' >> summary.md
+          fi
+
+      - name: Archive performance reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-test-reports-${{ github.run_id }}
+          path: |
+            performance_reports/
+          retention-days: 30
+
+      - name: Create performance test summary
+        if: always()
+        run: |
+          cd performance_reports
+          LATEST_DIR=$(ls -1t | grep "test_" | head -1)
+          if [ -n "$LATEST_DIR" ]; then
+            cp "$LATEST_DIR/summary.md" ../performance_summary.md 2>/dev/null || echo "未能找到摘要文件" > ../performance_summary.md
+          else
+            echo "未找到测试结果目录" > ../performance_summary.md
+          fi
+
+      - name: Upload summary as artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-summary-${{ github.run_id }}
+          path: performance_summary.md
+
+  publish-results:
+    needs: performance-test
+    runs-on: ubuntu-latest
+    if: always()
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download performance reports
+        uses: actions/download-artifact@v4
+        with:
+          name: performance-test-reports-${{ github.run_id }}
+          path: artifacts/
+
+      - name: Download summary
+        uses: actions/download-artifact@v4
+        with:
+          name: performance-summary-${{ github.run_id }}
+          path: ./
+
+      - name: Prepare release artifacts
+        run: |
+          sudo timedatectl set-timezone Asia/Shanghai
+          timedatectl status
+          TIMESTAMP=$(date +'%Y%m%d_%H%M')
+          TAG_NAME="${TIMESTAMP}_mysql_vs_percona_perf_test"
+          echo "TAG_NAME=$TAG_NAME" >> $GITHUB_ENV
+          
+          # 创建压缩包
+          cd artifacts
+          tar -czf "../mysql-vs-percona-performance-test-${TIMESTAMP}.tar.gz" .
+
+      - name: Create release
+        run: |
+          # 检查是否有摘要文件
+          if [ -f "performance_summary.md" ]; then
+            DESCRIPTION=$(cat performance_summary.md)
+          else
+            DESCRIPTION="MySQL vs Percona 性能测试完成于 $(date '+%Y-%m-%d %H:%M:%S')"
+          fi
+          
+          # 创建release描述
+          cat > release_notes.md << EOF
+          # MySQL vs Percona 性能测试报告
+          
+          测试时间: $(date '+%Y-%m-%d %H:%M:%S')
+          
+          ## 测试配置
+          - MySQL版本: ${{ env.MYSQL_VERSION }}
+          - Percona版本: ${{ env.PERCONA_VERSION }}
+          - 测试持续时间: ${{ env.TEST_DURATION }}秒
+          - 表大小: ${{ env.TABLE_SIZE }}行
+          - 线程数: ${{ env.THREADS_LIST }}
+          
+          ## 下载说明
+          
+          下载测试报告:
+          \`\`\`bash
+          curl -L "https://github.com/indiff/indiff/releases/download/${{ env.TAG_NAME }}/mysql-vs-percona-performance-test-$(date +'%Y%m%d_%H%M').tar.gz" -o performance-test-results.tar.gz
+          tar -xzf performance-test-results.tar.gz
+          \`\`\`
+          
+          $DESCRIPTION
+          EOF
+          
+          # 查找压缩包文件
+          ARCHIVE_FILE=$(ls mysql-vs-percona-performance-test-*.tar.gz | head -1)
+          
+          if [ -n "$ARCHIVE_FILE" ]; then
+            gh release create "${{ env.TAG_NAME }}" \
+              -F release_notes.md \
+              --title "MySQL vs Percona 性能测试 $(date +'%Y-%m-%d %H:%M')" \
+              "$ARCHIVE_FILE"
+          else
+            echo "未找到压缩包文件"
+            exit 1
+          fi
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
