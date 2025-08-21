@@ -17,7 +17,7 @@ env:
   gcc_indiff_ubuntu_url: "https://github.com/indiff/gcc-build/releases/download/20250416_1126/gcc-indiff-ubuntu-x86_64-20250416_1125.xz"
   gcc_indiff_centos7_url: "https://github.com/indiff/gcc-build/releases/download/20250818_1113_16.0.0/gcc-indiff-centos7-16.0.0-x86_64-20250818_1111.xz"
 jobs:
-  build-in-ubuntu:
+  build-percona-in-ubuntu:
     runs-on: ubuntu-latest
 
     steps:
@@ -188,7 +188,7 @@ jobs:
           path: |
             ${{ github.workspace }}/*.txt
 
-  build-in-centos7:
+  build-percona-in-centos7:
     runs-on: ubuntu-latest
     # needs: before_build
     timeout-minutes: 360 # 设置超时时间为6小时
@@ -657,9 +657,6 @@ jobs:
             libevent \
             pcre2 \
             ncurses \
-            libedit \
-            readline \
-            icu  \
             libaio  \
             --triplet $TRIPLET	
 
@@ -790,7 +787,7 @@ jobs:
 
 
   publish-release:
-      needs: [build-in-ubuntu,build-in-centos7] 
+      needs: [build-percona-in-ubuntu,build-percona-in-centos7,build-mariadb-in-centos7] 
       runs-on: ubuntu-latest
 
       steps:
