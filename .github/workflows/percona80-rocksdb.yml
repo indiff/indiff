@@ -570,19 +570,20 @@ jobs:
             cyrus-sasl-devel cyrus-sasl-scram \
             libatomic \
             libtirpc libtirpc-devel
-            yum install git                 # Git 版本控制工具，用于克隆/管理源码
-          yum -y install gcc                 # GCC C 编译器，编译 C 源码
-          yum -y install gcc-c++             # G++ C++ 编译器，编译 C++ 源码
-          yum -y install tar make cmake      # tar 打包/解包；make 构建工具；cmake 跨平台构建系统生成器
+          # yum install git                 # Git 版本控制工具，用于克隆/管理源码
+          # yum -y install gcc                 # GCC C 编译器，编译 C 源码
+          # yum -y install gcc-c++             # G++ C++ 编译器，编译 C++ 源码
+          # yum -y install tar make cmake      # tar 打包/解包 make 构建工具 cmake 跨平台构建系统生成器
+          yum -y install tar                 # tar 打包/解包
           yum -y install bison               # Bison 解析器生成器（编译器/语法解析时常用）
           yum -y install valgrind            # Valgrind 内存/线程检测工具（调试工具）
           yum -y install gzip                # gzip 压缩/解压工具
 
           yum -y install systemd-devel       # systemd 开发文件（编写/集成 systemd 单元或守护进程）
           yum -y install rpm-build           # rpm 构建工具（打包成 RPM 时需要）
-          yum -y install pam-devel           # PAM 开发库（身份认证模块，LDAP/Kerberos 集成等）
+          yum -y install pam-devel           # PAM 开发库(身份认证模块,LDAP/Kerberos 集成等）
           yum -y install checkpolicy         # SELinux 策略检查工具（开发/调试 SELinux 策略）
-          yum -y install policycoreutils-python # SELinux 管理工具（semanage/restorecon 等操作可能需要）
+          yum -y install policycoreutils-python # SELinux 管理工具(semanage/restorecon 等操作可能需要）
           yum -y install galera.x86_64       # Galera 集群库（二进制包），用于多主复制/同步（如果需要 Galera 多主集群）
 
 
@@ -617,7 +618,6 @@ jobs:
           #install -m 0755 build/ninja /usr/local/bin/ninja
           #cd ..
           #ninja --version  # should be 1.12.1
-
           
 
           git clone --filter=blob:none --depth 1 https://github.com/microsoft/vcpkg.git
@@ -627,7 +627,7 @@ jobs:
           TRIPLET=x64-linux
 
           # 用 vcpkg 安装第三方库（确认需的端口名，必要时用 --overlay-ports)
-          # curl（vcpkg 名称 curl）=> 替代 libcurl-devel
+          # curl => 替代 libcurl-devel
           # yum install libcurl-devel       # libcurl 开发库（HTTP 客户端、下载等功能）
           # yum install zlib-devel          # zlib 开发库（通用压缩库）
           # yum install lz4-devel           # LZ4 开发库（高速压缩，MySQL 用于快速压缩）
@@ -642,6 +642,8 @@ jobs:
           # yum install libaio-devel        # libaio 异步 IO 开发库（高性能 IO 支持，数据库常用）
           # yum install libevent-devel      # libevent 开发库（高性能事件通知库，网络组件常用）
           # yum install bzip2-devel         # bzip2 开发库（压缩算法支持）
+          $VCPKG_ROOT/vcpkg install boost
+          
           $VCPKG_ROOT/vcpkg install \
             curl \
             zlib \
@@ -653,7 +655,6 @@ jobs:
             lzo \
             libxml2 \
             libevent \
-            boost \
             pcre2 \
             ncurses \
             libedit \
