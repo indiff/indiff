@@ -709,6 +709,10 @@ jobs:
           export LD_LIBRARY_PATH="/opt/gcc-indiff/lib64:$DEPS_DST/lib:$DEPS_DST/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
 
           # 避免外部 protobuf 干扰
+          # cmake ../server -DCONC_WITH_{UNITTEST,SSL}=OFF 
+          # -DWITH_UNIT_TESTS=OFF 
+          # -DCMAKE_BUILD_TYPE=Debug 
+          # -DWITHOUT_DYNAMIC_PLUGIN=ON -DWITH_SAFEMALLOC=OFF -DWITH_SSL=bundled -DMYSQL_MAINTAINER_MODE=OFF -G Ninja
           unset PROTOC
           cmake .. -G Ninja \
             -DCMAKE_INSTALL_PREFIX=$DEPS_DST \
@@ -721,16 +725,19 @@ jobs:
             -DWITH_SSL=system -DOPENSSL_ROOT_DIR="$DEPS_DST" \
             -DWITH_PROTOBUF=bundled \
             -DCMAKE_BUILD_TYPE=Release \
+            -DMYSQL_MAINTAINER_MODE=OFF \
+            -DWITH_SAFEMALLOC=OFF \
             -DCMAKE_INSTALL_RPATH='$ORIGIN/../lib:$ORIGIN/../lib64' \
             -DCMAKE_BUILD_RPATH='/opt/gcc-indiff/lib64:$ORIGIN/../lib:$ORIGIN/../lib64' \
             -DCMAKE_INSTALL_RPATH_USE_LINK_PATH=ON \
             -DWITH_AUTHENTICATION_LDAP=ON \
-            -DWITH_UNIT_TESTS=0 \
+            -DWITH_UNIT_TESTS=OFF \
+            -DCONC_WITH_{UNITTEST,SSL}=OFF \
             -DWITH_TESTS=0 \
             -DWITH_XPLUGIN_TESTS=0 \
             -DWITH_DOCS=OFF -DWITH_MAN_PAGES=OFF
 
-          cmake -LAH -N . | tee /workspace/cmake-cache-vars-centos7.txt
+          cmake .. -LH | tee /workspace/cmake-cache-vars-centos7.txt
 
           # Ninja 默认详细，便于定位真实失败点
           # 只会编译并安装最终产物(不会编译 tests)  [3343/4756]
