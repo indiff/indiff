@@ -1,0 +1,64 @@
+[mysqld]
+# Percona Server 从库配置 (RocksDB)
+# 基本配置
+port = 3306
+socket = /tmp/percona-slave.sock
+pid-file = /tmp/percona-slave.pid
+
+# 数据目录
+datadir = ./data/percona-slave
+
+# 服务器标识
+server-id = 2
+
+# 二进制日志配置
+log-bin = mysql-bin
+binlog-format = ROW
+sync_binlog = 1
+expire_logs_days = 7
+
+# RocksDB 配置
+default-storage-engine = ROCKSDB
+rocksdb_max_open_files = 1000
+rocksdb_max_background_jobs = 8
+rocksdb_max_total_wal_size = 1GB
+rocksdb_block_cache_size = 256MB
+rocksdb_table_cache_numshardbits = 6
+rocksdb_block_size = 16KB
+
+# 复制配置
+gtid-mode = ON
+enforce-gtid-consistency = ON
+log-slave-updates = ON
+read-only = ON
+super-read-only = ON
+
+# 从库特定配置
+relay-log = relay-bin
+relay-log-index = relay-bin.index
+slave-parallel-workers = 4
+slave-parallel-type = LOGICAL_CLOCK
+
+# 字符集
+character-set-server = utf8mb4
+collation-server = utf8mb4_unicode_ci
+
+# 网络配置
+max_connections = 200
+max_allowed_packet = 16M
+
+# 安全配置
+skip-name-resolve
+local-infile = 0
+
+# 性能配置
+query_cache_type = 0
+query_cache_size = 0
+tmp_table_size = 32M
+max_heap_table_size = 32M
+
+[mysql]
+default-character-set = utf8mb4
+
+[client]
+default-character-set = utf8mb4

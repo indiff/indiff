@@ -1,0 +1,122 @@
+version: '3.8'
+
+services:
+  # MariaDB 主库 (InnoDB)
+  mariadb-master:
+    image: mariadb:latest
+    container_name: mariadb-master
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: test_replication
+    ports:
+      - "3307:3306"
+    volumes:
+      - ./configs/mariadb-master-innodb.cnf:/etc/mysql/conf.d/custom.cnf:ro
+      - mariadb_master_data:/var/lib/mysql
+    command: >
+      --server-id=3
+      --log-bin=mariadb-bin
+      --binlog-format=ROW
+      --default-storage-engine=InnoDB
+      --gtid_strict_mode=ON
+    networks:
+      - replication_net
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      timeout: 20s
+      retries: 10
+
+  # MariaDB 从库 (ColumnStore)
+  mariadb-slave:
+    image: mariadb:latest
+    container_name: mariadb-slave
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: test_replication
+    ports:
+      - "3308:3306"
+    volumes:
+      - ./configs/mariadb-slave-columnstore.cnf:/etc/mysql/conf.d/custom.cnf:ro
+      - mariadb_slave_data:/var/lib/mysql
+    command: >
+      --server-id=4
+      --log-bin=mariadb-bin
+      --binlog-format=ROW
+      --default-storage-engine=InnoDB
+      --gtid_strict_mode=ON
+      --read-only=ON
+    networks:
+      - replication_net
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      timeout: 20s
+      retries: 10
+    depends_on:
+      mariadb-master:
+        condition: service_healthy
+
+  # Percona 主库容器 (用于简化测试)
+  percona-master:
+    image: percona:8.0
+    container_name: percona-master
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: test_replication
+    ports:
+      - "3309:3306"
+    volumes:
+      - ./configs/percona-master-innodb.cnf:/etc/mysql/conf.d/custom.cnf:ro
+      - percona_master_data:/var/lib/mysql
+    command: >
+      --server-id=1
+      --log-bin=mysql-bin
+      --binlog-format=ROW
+      --default-storage-engine=InnoDB
+      --gtid-mode=ON
+      --enforce-gtid-consistency=ON
+    networks:
+      - replication_net
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      timeout: 20s
+      retries: 10
+
+  # Percona 从库容器 (用于简化测试)
+  percona-slave:
+    image: percona:8.0
+    container_name: percona-slave
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: test_replication
+    ports:
+      - "3310:3306"
+    volumes:
+      - ./configs/percona-slave-rocksdb.cnf:/etc/mysql/conf.d/custom.cnf:ro
+      - percona_slave_data:/var/lib/mysql
+    command: >
+      --server-id=2
+      --log-bin=mysql-bin
+      --binlog-format=ROW
+      --default-storage-engine=InnoDB
+      --gtid-mode=ON
+      --enforce-gtid-consistency=ON
+      --read-only=ON
+    networks:
+      - replication_net
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      timeout: 20s
+      retries: 10
+    depends_on:
+      percona-master:
+        condition: service_healthy
+
+networks:
+  replication_net:
+    driver: bridge
+
+volumes:
+  mariadb_master_data:
+  mariadb_slave_data:
+  percona_master_data:
+  percona_slave_data:
