@@ -643,7 +643,7 @@ jobs:
           # yum install libevent-devel      # libevent 开发库（高性能事件通知库，网络组件常用）
           # yum install bzip2-devel         # bzip2 开发库（压缩算法支持）
           $VCPKG_ROOT/vcpkg install \
-            libcurl-devel \
+            curl \
             zlib \
             lz4 \
             zstd \
