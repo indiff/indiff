@@ -459,6 +459,327 @@ jobs:
           path: |
             ${{ github.workspace }}/*.txt
 
+  build-mariadb-in-centos7:
+    runs-on: ubuntu-latest
+    # needs: before_build
+    timeout-minutes: 360 # 设置超时时间为6小时
+
+    steps:
+      - name: Free Disk-Space
+        run: df -h && sudo apt-get clean && docker system prune -a -f && sudo rm -rf /opt/ghc /usr/local/.ghcup /usr/local/lib/android && df -h && free -h
+
+      - name: Checkout v5
+        uses: actions/checkout@v5    
+
+      - name: Create build script
+        run: |
+          set -xe
+          cat << 'EOF' > build.sh
+          #!/bin/bash
+          set -xe
+          echo 'LANG=zh_CN.UTF-8' >> /etc/environment
+          echo 'LANGUAGE=zh_CN.UTF-8' >> /etc/environment
+          echo 'LC_ALL=zh_CN.UTF-8' >> /etc/environment
+          echo 'LC_CTYPE=zh_CN.UTF-8' >> /etc/environment
+          # curl -o /etc/yum.repos.d/CentOS-Base.repo https://mirrors.aliyun.com/repo/Centos-7.repo
+          # curl -o /etc/yum.repos.d/epel.repo https://mirrors.aliyun.com/repo/epel-7.repo
+
+          # 定义镜像列表  "http://mirrors.aliyun.com/centos-vault/7.9.2009"
+          MIRRORS=(
+              "http://mirror.rackspace.com/centos-vault/7.9.2009"
+              "https://mirror.nsc.liu.se/centos-store/7.9.2009"
+              "https://linuxsoft.cern.ch/centos-vault/7.9.2009"
+              "https://archive.kernel.org/centos-vault/7.9.2009"
+              "https://vault.centos.org/7.9.2009"
+          )
+
+          # 初始化变量
+          FASTEST_MIRROR=""
+          FASTEST_TIME=99999
+
+          echo "Testing mirror response times..."
+
+          # 测试每个镜像的响应时间
+          for MIRROR in "${MIRRORS[@]}"; do
+              echo -n "Testing $MIRROR ... "
+              # 使用 curl 测试响应时间
+              TIME=$(curl -o /dev/null -s -w "%{time_total}\n" "$MIRROR")
+              echo "$TIME seconds"
+
+              # 比较响应时间，记录最快的镜像
+              if (( $(echo "$TIME < $FASTEST_TIME" | bc -l) )); then
+                  FASTEST_TIME=$TIME
+                  FASTEST_MIRROR=$MIRROR
+              fi
+          done
+
+          # 输出最快的镜像
+          echo "-----------------------------------"
+          echo "Fastest mirror: $FASTEST_MIRROR"
+          echo "Response time: $FASTEST_TIME seconds"
+
+          echo "[base]" > /etc/yum.repos.d/CentOS-Base.repo
+          echo "name=CentOS-Base" >> /etc/yum.repos.d/CentOS-Base.repo
+          echo "baseurl=${FASTEST_MIRROR}/os/\$basearch/" >> /etc/yum.repos.d/CentOS-Base.repo
+          echo "gpgcheck=0" >> /etc/yum.repos.d/CentOS-Base.repo
+          echo "[updates]"  >> /etc/yum.repos.d/CentOS-Base.repo
+          echo "name=CentOS-updates" >> /etc/yum.repos.d/CentOS-Base.repo
+          echo "baseurl=${FASTEST_MIRROR}/updates/\$basearch/" >> /etc/yum.repos.d/CentOS-Base.repo
+          echo "gpgcheck=0" >> /etc/yum.repos.d/CentOS-Base.repo
+          echo "[extras]"  >> /etc/yum.repos.d/CentOS-Base.repo
+          echo "name=CentOS-extras" >> /etc/yum.repos.d/CentOS-Base.repo
+          echo "baseurl=${FASTEST_MIRROR}/extras/\$basearch/" >> /etc/yum.repos.d/CentOS-Base.repo
+          echo "gpgcheck=0" >> /etc/yum.repos.d/CentOS-Base.repo
+          echo "[centosplus]"  >> /etc/yum.repos.d/CentOS-Base.repo
+          echo "name=CentOS-centosplus" >> /etc/yum.repos.d/CentOS-Base.repo
+          echo "baseurl=${FASTEST_MIRROR}/centosplus/\$basearch/" >> /etc/yum.repos.d/CentOS-Base.repo
+          echo "gpgcheck=0" >> /etc/yum.repos.d/CentOS-Base.repo
+
+          yum clean all
+          yum makecache
+          yum install -y https://dl.fedoraproject.org/pub/archive/epel/7/x86_64/Packages/e/epel-release-7-14.noarch.rpm
+          ls -lh /etc/yum.repos.d/
+
+          yum -y install tzdata
+          ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+          echo 'Asia/Shanghai' > /etc/timezone
+          yum update -y
+          yum install -y flex bison ncurses-dev texinfo gcc gperf patch libtool automake g++ libncurses5-dev gawk subversion expat libexpat1-dev binutils-dev bc libcap-dev autoconf libgmp-dev build-essential pkg-config libmpc-dev libmpfr-dev autopoint gettext txt2man liblzma-dev libssl-dev libz-dev mercurial wget tar cmake zstd ninja-build lz4 liblz4-tool liblz4-dev lzma libc6-dev-i386 ncurses-devel expat-devel binutils-devel gmp-devel make pkgconfig mpfr-devel gettext-devel zlib-devel lz4-devel xz xz-devel glibc-devel.i686 which lld bzip2 glibc glibc-devel
+          yum install -y pcre-devel zlib-devel make git wget sed perl-IPC-Cmd GeoIP GeoIP-devel zip systemd autoconf automake libtool zstd-devel
+          yum install -y perl-Test-Simple perl-FindBin perl-IPC-Cmd perl-Text-Template perl-File-Compare perl-File-Copy perl-Data-Dumper
+          yum install -y llvm llvm-devel clang clang-devel libstdc++-devel glibc-devel tree python3
+          yum -y install \
+            zip unzip rsync cmake3 ninja-build \
+            jemalloc jemalloc-devel \
+            libaio-devel \
+            ncurses-devel \
+            openssl-devel \
+            gflags-devel \
+            numactl-devel \
+            openldap-devel \
+            curl libcurl-devel \
+            bison \
+            systemd-devel \
+            krb5-devel \
+            readline-devel \
+            lz4 lz4-devel \
+            libedit-devel \
+            libevent-devel \
+            cyrus-sasl cyrus-sasl-devel cyrus-sasl-gssapi \
+            libicu-devel \
+            cyrus-sasl-devel cyrus-sasl-scram \
+            libatomic \
+            libtirpc libtirpc-devel
+            yum install git                 # Git 版本控制工具，用于克隆/管理源码
+          yum -y install gcc                 # GCC C 编译器，编译 C 源码
+          yum -y install gcc-c++             # G++ C++ 编译器，编译 C++ 源码
+          yum -y install tar make cmake      # tar 打包/解包；make 构建工具；cmake 跨平台构建系统生成器
+          yum -y install bison               # Bison 解析器生成器（编译器/语法解析时常用）
+          yum -y install valgrind            # Valgrind 内存/线程检测工具（调试工具）
+          yum -y install gzip                # gzip 压缩/解压工具
+
+          yum -y install systemd-devel       # systemd 开发文件（编写/集成 systemd 单元或守护进程）
+          yum -y install rpm-build           # rpm 构建工具（打包成 RPM 时需要）
+          yum -y install pam-devel           # PAM 开发库（身份认证模块，LDAP/Kerberos 集成等）
+          yum -y install checkpolicy         # SELinux 策略检查工具（开发/调试 SELinux 策略）
+          yum -y install policycoreutils-python # SELinux 管理工具（semanage/restorecon 等操作可能需要）
+          yum -y install galera.x86_64       # Galera 集群库（二进制包），用于多主复制/同步（如果需要 Galera 多主集群）
+
+
+          # update git
+          yum -y remove git
+          yum -y install https://packages.endpointdev.com/rhel/7/os/x86_64/endpoint-repo.x86_64.rpm
+          yum -y install git
+          git --version
+
+          # update my gcc
+          curl -sLo /opt/gcc-indiff.zip ${{ env.gcc_indiff_centos7_url }}
+          unzip /opt/gcc-indiff.zip -d /opt/gcc-indiff
+
+          export PATH=/opt/gcc-indiff/bin:/usr/local/bin:/opt/cmake/bin:$PATH
+          export CC=/opt/gcc-indiff/bin/gcc
+          export CXX=/opt/gcc-indiff/bin/g++
+          export VCPKG_FORCE_SYSTEM_BINARIES=1
+
+          # install cmake3 
+          curl -sLo cmake3.tar.gz https://github.com/Kitware/CMake/releases/download/v3.31.6/cmake-3.31.6-linux-x86_64.tar.gz
+          tar -xzf cmake3.tar.gz
+          mv cmake-3.31.6-linux-x86_64 /opt/cmake
+          rm -f /usr/bin/cmake
+          ln -sf /opt/cmake/bin/cmake /usr/bin/cmake
+
+          # Build Ninja 1.12.1 from source (prebuilt may not run on CentOS 7)
+          #curl -sLo ninja-1.12.1.tar.gz https://github.com/ninja-build/ninja/archive/refs/tags/v1.12.1.tar.gz
+          #tar -xzf ninja-1.12.1.tar.gz
+          #cd ninja-1.12.1
+          #/opt/cmake/bin/cmake -B build -G "Ninja" -DCMAKE_BUILD_TYPE=Release
+          #/opt/cmake/bin/cmake --build build -j"$(nproc)"
+          #install -m 0755 build/ninja /usr/local/bin/ninja
+          #cd ..
+          #ninja --version  # should be 1.12.1
+
+          
+
+          git clone --filter=blob:none --depth 1 https://github.com/microsoft/vcpkg.git
+          ./vcpkg/bootstrap-vcpkg.sh
+          export VCPKG_ROOT=$(pwd)/vcpkg
+
+          TRIPLET=x64-linux
+
+          # 用 vcpkg 安装第三方库（确认需的端口名，必要时用 --overlay-ports)
+          # curl（vcpkg 名称 curl）=> 替代 libcurl-devel
+          # yum install libcurl-devel       # libcurl 开发库（HTTP 客户端、下载等功能）
+          # yum install zlib-devel          # zlib 开发库（通用压缩库）
+          # yum install lz4-devel           # LZ4 开发库（高速压缩，MySQL 用于快速压缩）
+          # yum install zstd                # Zstandard 压缩工具与库（快速压缩算法，现代替代选项）
+          # yum install snappy snappy-devel # Snappy 压缩库及开发文件（RocksDB 等依赖）
+          # yum install openssl openssl-devel   # OpenSSL 运行时与开发库（TLS/加密与 SSL 编译依赖）
+          # yum install boost               # Boost C++ 库集合（通用 C++ 库，构建时常用；在某些发行版为 boost-devel）
+          # yum install pcre2-devel         # PCRE2 正则表达式开发库（正则匹配功能）
+          # yum install lzo-devel           # LZO 开发库（另一种压缩算法，部分组件可能依赖）
+          # yum install ncurses-devel       # ncurses 开发库（终端界面库，某些工具依赖）
+          # yum install libxml2-devel       # libxml2 开发库（XML 解析，部分插件或工具需要）
+          # yum install libaio-devel        # libaio 异步 IO 开发库（高性能 IO 支持，数据库常用）
+          # yum install libevent-devel      # libevent 开发库（高性能事件通知库，网络组件常用）
+          # yum install bzip2-devel         # bzip2 开发库（压缩算法支持）
+          $VCPKG_ROOT/vcpkg install \
+            libcurl-devel \
+            zlib \
+            lz4 \
+            zstd \
+            snappy \
+            openssl \
+            bzip2 \
+            lzo \
+            libxml2 \
+            libevent \
+            boost \
+            pcre2 \
+            ncurses \
+            libedit \
+            readline \
+            icu  \
+            libaio  \
+            --triplet $TRIPLET	
+
+          git clone --filter=blob:none --depth 1 https://github.com/MariaDB/server.git
+          cd server
+          git submodule update --init --recursive
+          cd ..
+
+          TRIPLET=x64-linux
+          DEPS_SRC="$VCPKG_ROOT/installed/$TRIPLET"
+          DEPS_DST="/opt/mariadb"
+          mkdir -p "$DEPS_DST"/{include,lib,lib64}
+
+          # 2) 复制头文件与动态库（.so 与 .so.*）及 pkgconfig
+          rsync -a "$DEPS_SRC/include/" "$DEPS_DST/include/"
+          rsync -a "$DEPS_SRC/lib/"      "$DEPS_DST/lib/"      || true
+          rsync -a "$DEPS_SRC/lib64/"    "$DEPS_DST/lib64/"    || true
+                    
+          rsync -a "/opt/gcc-indiff/include/" "$DEPS_DST/include/"
+          rsync -a "/opt/gcc-indiff/lib64/"    "$DEPS_DST/lib64/"    || true
+
+          # 如果宿主镜像/系统有 /lib64/libjemalloc.so.1 同步到目标目录
+          if [ -f /lib64/libjemalloc.so.1 ]; then
+            echo "Found /lib64/libjemalloc.so.1 on build host, copying to $DEPS_DST/lib64"
+            mkdir -p "$DEPS_DST/lib64"
+            cp -a /lib64/libjemalloc.so* "$DEPS_DST/lib64/" || true
+            chmod 644 "$DEPS_DST/lib64"/libjemalloc.so* 2>/dev/null || true
+          fi
+
+          for d in lib lib64; do
+            [[ -d "$DEPS_DST/$d/pkgconfig" ]] || mkdir -p "$DEPS_DST/$d/pkgconfig"
+            rsync -a "$DEPS_SRC/$d/pkgconfig/" "$DEPS_DST/$d/pkgconfig/" 2>/dev/null || true
+          done
+
+          # build persona mysql
+          mkdir -p server/build server/boost
+          cd server/build
+
+          # 供 CMake/ld 查找 vcpkg 拷贝到 /opt 的头文件与库
+          export CMAKE_PREFIX_PATH="$DEPS_DST${CMAKE_PREFIX_PATH:+:$CMAKE_PREFIX_PATH}"
+          export CMAKE_LIBRARY_PATH="$DEPS_DST/lib:$DEPS_DST/lib64${CMAKE_LIBRARY_PATH:+:$CMAKE_LIBRARY_PATH}"
+          export CMAKE_INCLUDE_PATH="$DEPS_DST/include${CMAKE_INCLUDE_PATH:+:$CMAKE_INCLUDE_PATH}"
+          export PKG_CONFIG_PATH="/usr/lib64/pkgconfig:/usr/share/pkgconfig:$DEPS_DST/lib/pkgconfig:$DEPS_DST/lib64/pkgconfig${PKG_CONFIG_PATH:+:$PKG_CONFIG_PATH}"
+
+          # 链接期搜索路径(关键修复 -ljemalloc not found)
+          export LIBRARY_PATH="/opt/gcc-indiff/lib64:$DEPS_DST/lib:$DEPS_DST/lib64${LIBRARY_PATH:+:$LIBRARY_PATH}"
+          export LD_LIBRARY_PATH="/opt/gcc-indiff/lib64:$DEPS_DST/lib:$DEPS_DST/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+
+          # 避免外部 protobuf 干扰
+          unset PROTOC
+          cmake .. -G Ninja \
+            -DCMAKE_INSTALL_PREFIX=$DEPS_DST \
+            -DCMAKE_EXE_LINKER_FLAGS="-L/usr/lib64 -L/opt/gcc-indiff/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--no-as-needed -ldl" \
+            -DCMAKE_SHARED_LINKER_FLAGS="-L/usr/lib64 -L/opt/gcc-indiff/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--no-as-needed -ldl" \
+            -DCMAKE_MODULE_LINKER_FLAGS="-L/usr/lib64 -L/opt/gcc-indiff/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--no-as-needed -ldl" \
+            -DWITH_BOOST=boost -DDOWNLOAD_BOOST=1 -DWITH_BOOST=../boost \
+            -DWITH_ROCKSDB=ON \
+            -DWITH_LZ4=system -DWITH_ZSTD=system -DWITH_SNAPPY=system -DWITH_JEMALLOC=system \
+            -DWITH_SSL=system -DOPENSSL_ROOT_DIR="$DEPS_DST" \
+            -DWITH_PROTOBUF=bundled \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_INSTALL_RPATH='$ORIGIN/../lib:$ORIGIN/../lib64' \
+            -DCMAKE_BUILD_RPATH='/opt/gcc-indiff/lib64:$ORIGIN/../lib:$ORIGIN/../lib64' \
+            -DCMAKE_INSTALL_RPATH_USE_LINK_PATH=ON \
+            -DWITH_AUTHENTICATION_LDAP=ON \
+            -DWITH_UNIT_TESTS=0 \
+            -DWITH_TESTS=0 \
+            -DWITH_XPLUGIN_TESTS=0 \
+            -DWITH_DOCS=OFF -DWITH_MAN_PAGES=OFF
+
+          cmake -LAH -N . | tee /workspace/cmake-cache-vars-centos7.txt
+
+          # Ninja 默认详细，便于定位真实失败点
+          # 只会编译并安装最终产物(不会编译 tests)  [3343/4756]
+          cmake --build . -j"$(nproc)" --target install
+          cmake --install .
+
+          cd $DEPS_DST
+          rm -rf $DEPS_DST/man
+          rm -rf $DEPS_DST/mysql-test
+          rm -rf $DEPS_DST/bin/mysqld-debug
+          rm -rf $DEPS_DST/sbin/mysqld-debug
+          rm -f $DEPS_DST/bin/mysqltest_safe_process
+          rm -f $DEPS_DST/bin/ps_mysqld_helper
+          rm -f $DEPS_DST/bin/ps-admin
+          rm -f $DEPS_DST/bin/mysqltest
+          rm -f $DEPS_DST/bin/mysqlxtest
+          rm -f $DEPS_DST/bin/mytap
+          zip -r -q -9 /workspace/maria-centos7-x86_64-$(date +'%Y%m%d_%H%M').xz .
+
+          # free memory
+          free -h
+          sync
+          echo 3 > /proc/sys/vm/drop_caches
+          free -h && df -h
+          # follow can not work,exit success
+          exit 0
+          EOF
+          chmod +x build.sh
+
+      - name: Build mariadb in Docker
+        run: |
+          sudo timedatectl set-timezone Asia/Shanghai
+          timedatectl status
+          docker run --cpus="$(nproc --all)" --privileged -u root --rm -v ${{ github.workspace }}:/workspace -w /workspace centos:7 /bin/bash -c "/workspace/build.sh -a x86"
+
+      - name: Upload mariadb package
+        uses: actions/upload-artifact@v4
+        with:
+          name: mariadb-centos7
+          path: |
+            ${{ github.workspace }}/*.xz
+            ${{ github.workspace }}/*.zip
+
+      - name: Upload mariadb cmake
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-info-mariadb
+          path: |
+            ${{ github.workspace }}/*.txt
+
 
   publish-release:
       needs: [build-in-ubuntu,build-in-centos7] 
@@ -507,15 +828,20 @@ jobs:
             cat <<'EOF' >> hello.md
             Proxy download:
             ```bash         
-            curl -#Lo gcc-indiff.zip "https://ghproxy.cfd/https://github.com/indiff/indiff/releases/download/${{ env.TAG_NAME }}/shitshit"
+            curl -#Lo /opt/percona80.zip "https://ghproxy.cfd/https://github.com/indiff/indiff/releases/download/${{ env.TAG_NAME }}/shitshitcentos7"
+            curl -#Lo /opt/percona80.zip "https://ghproxy.cfd/https://github.com/indiff/indiff/releases/download/${{ env.TAG_NAME }}/shitshitubuntu"
             ```
             
             Direct download:
             ```bash         
-            curl -#Lo gcc-indiff.zip "https://github.com/indiff/indiff/releases/download/${{ env.TAG_NAME }}/shitshit"
+            curl -#Lo /opt/percona80.zip "https://github.com/indiff/indiff/releases/download/${{ env.TAG_NAME }}/shitshitcentos7"
+            curl -#Lo /opt/percona80.zip "https://github.com/indiff/indiff/releases/download/${{ env.TAG_NAME }}/shitshitubuntu"
             ```
             EOF
-            sed -i "s/shitshit/${bname}/g" hello.md
+            centos7_bname="$(basename artifacts/*percona*/*centos7*.xz)"
+            ubuntu_bname="$(basename artifacts/*percona*/*ubuntu*.xz)"
+            sed -i "s/shitshitcentos7/${centos7_bname}/g" hello.md
+            sed -i "s/shitshitubuntu/${ubuntu_bname}/g" hello.md
             gh release create ${{ env.TAG_NAME }} -F hello.md "artifacts/*percona*/*.xz"
           env:
             GITHUB_TOKEN: ${{ github.token }}
