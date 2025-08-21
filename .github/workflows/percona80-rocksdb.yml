@@ -585,6 +585,7 @@ jobs:
           yum -y install checkpolicy         # SELinux 策略检查工具（开发/调试 SELinux 策略）
           yum -y install policycoreutils-python # SELinux 管理工具(semanage/restorecon 等操作可能需要）
           yum -y install galera.x86_64       # Galera 集群库（二进制包），用于多主复制/同步（如果需要 Galera 多主集群）
+          yum install boost               # Boost C++ 库集合（通用 C++ 库，构建时常用；在某些发行版为 boost-devel）
 
 
           # update git
@@ -634,7 +635,6 @@ jobs:
           # yum install zstd                # Zstandard 压缩工具与库（快速压缩算法，现代替代选项）
           # yum install snappy snappy-devel # Snappy 压缩库及开发文件（RocksDB 等依赖）
           # yum install openssl openssl-devel   # OpenSSL 运行时与开发库（TLS/加密与 SSL 编译依赖）
-          # yum install boost               # Boost C++ 库集合（通用 C++ 库，构建时常用；在某些发行版为 boost-devel）
           # yum install pcre2-devel         # PCRE2 正则表达式开发库（正则匹配功能）
           # yum install lzo-devel           # LZO 开发库（另一种压缩算法，部分组件可能依赖）
           # yum install ncurses-devel       # ncurses 开发库（终端界面库，某些工具依赖）
@@ -642,8 +642,8 @@ jobs:
           # yum install libaio-devel        # libaio 异步 IO 开发库（高性能 IO 支持，数据库常用）
           # yum install libevent-devel      # libevent 开发库（高性能事件通知库，网络组件常用）
           # yum install bzip2-devel         # bzip2 开发库（压缩算法支持）
-          $VCPKG_ROOT/vcpkg install boost
-          
+          # $VCPKG_ROOT/vcpkg install boost
+
           $VCPKG_ROOT/vcpkg install \
             curl \
             zlib \
