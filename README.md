@@ -15,18 +15,28 @@ I'm A software developer .
 - [DBCHM](https://github.com/indiff/DBCHM)
 - [Jutils](https://github.com/indiff/Jutils_Plugin)
 
-## 🚀 MySQL vs Percona 性能测试框架
+## 🚀 MySQL vs Percona vs MariaDB 三数据库性能测试框架
 
-本仓库包含了一个完整的 MySQL 与 Percona Server 性能对比测试框架，支持自动化并发测试和详细的性能分析报告。
+本仓库包含了一个完整的三数据库性能对比测试框架，支持 MySQL 8.0、Percona Server 8.0 和 MariaDB 的自动化并发测试，包含多种存储引擎的性能对比分析。
 
 ### ✨ 主要特性
 
-- 📊 **全面的性能对比**: 使用 sysbench 进行 OLTP 工作负载测试
-- 🔧 **多种测试场景**: 读写混合、只读、只写、插入等测试
-- 🐳 **容器化环境**: 基于 Docker 确保测试环境一致性
-- 📈 **详细报告**: 生成包含 TPS、延迟、资源使用等指标的报告
+- 📊 **三数据库全面对比**: MySQL 8.0、Percona Server 8.0、MariaDB latest 
+- 🗄️ **多存储引擎支持**: InnoDB、RocksDB、ColumnStore 存储引擎对比
+- 🔧 **多种测试场景**: OLTP 读写混合、只读、只写、插入及分析查询测试
+- 🏗️ **预编译 Percona 集成**: 使用预编译的 CentOS7 版本 Percona Server (包含 RocksDB)
+- 🐳 **容器化环境**: 基于 Docker Compose 确保测试环境一致性
+- 📈 **增强的报告系统**: 生成包含 TPS、延迟、存储引擎对比等详细指标
 - ⚡ **自动化测试**: GitHub Actions 支持定时和手动触发
-- 📊 **监控集成**: Prometheus + Grafana 实时性能监控
+- 📊 **全面监控**: Prometheus + Grafana 三数据库实时性能监控
+
+### 🎯 支持的数据库和存储引擎
+
+| 数据库 | 版本 | 支持的存储引擎 | 主要特点 |
+|--------|------|----------------|----------|
+| MySQL | 8.0 | InnoDB | 业界标准，通用 OLTP 优化 |
+| Percona Server | 8.0 | InnoDB, RocksDB | 高性能 MySQL 分支，写优化 |
+| MariaDB | latest | InnoDB, ColumnStore | MySQL 分支，分析查询优化 |
 
 ### 🏃‍♂️ 快速开始
 
@@ -35,13 +45,16 @@ I'm A software developer .
 git clone https://github.com/indiff/indiff.git
 cd indiff
 
-# 运行快速测试 (1分钟)
+# 运行快速三数据库测试 (1分钟)
 ./quick-start.sh --quick
 
-# 运行标准测试 (5分钟)
+# 运行标准三数据库测试 (5分钟)
 ./quick-start.sh
 
-# 启动监控环境
+# 运行传统双数据库测试 (MySQL vs Percona)
+./quick-start.sh --legacy
+
+# 启动三数据库监控环境
 ./quick-start.sh --monitor
 \`\`\`
 

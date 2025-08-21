@@ -1,0 +1,35 @@
+[mysql]
+default-character-set = utf8mb4
+
+[mysqld]
+# Basic settings
+character-set-server = utf8mb4
+collation-server = utf8mb4_unicode_ci
+default-storage-engine = InnoDB
+transaction-isolation = READ-COMMITTED
+
+# Performance settings
+innodb_buffer_pool_size = 1G
+innodb_log_file_size = 256M
+innodb_log_buffer_size = 16M
+innodb_flush_log_at_trx_commit = 2
+innodb_flush_method = O_DIRECT
+innodb_file_per_table = 1
+
+# ColumnStore specific settings
+plugin_load_add = ha_columnstore
+columnstore_use_import_for_batchinsert = ON
+
+# Query cache
+query_cache_type = 1
+query_cache_size = 128M
+
+# Connection settings
+max_connections = 200
+thread_cache_size = 8
+
+# Logging
+general_log = 0
+slow_query_log = 1
+slow_query_log_file = /var/log/mysql/mariadb-slow.log
+long_query_time = 2

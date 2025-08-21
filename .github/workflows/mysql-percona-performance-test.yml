@@ -1,8 +1,16 @@
-name: MySQL vs Percona Performance Testing
+name: MySQL vs Percona vs MariaDB Performance Testing
 
 on:
   workflow_dispatch:
     inputs:
+      test_type:
+        description: 'Test type'
+        type: choice
+        options: 
+          - 'three-db'
+          - 'legacy'
+        default: 'three-db'
+        required: false
       test_duration:
         description: 'Test duration in seconds'
         type: number
@@ -28,16 +36,23 @@ on:
         type: string
         default: "8.0"
         required: false
+      mariadb_version:
+        description: 'MariaDB version'
+        type: string
+        default: "latest"
+        required: false
   schedule:
     # Run weekly performance tests on Sundays at 02:00 UTC (10:00 CST)
     - cron: '0 2 * * 0'
 
 env:
+  TEST_TYPE: ${{ github.event.inputs.test_type || 'three-db' }}
   TEST_DURATION: ${{ github.event.inputs.test_duration || 300 }}
   TABLE_SIZE: ${{ github.event.inputs.table_size || 100000 }}
   THREADS_LIST: ${{ github.event.inputs.threads || '1 4 8 16 32' }}
   MYSQL_VERSION: ${{ github.event.inputs.mysql_version || '8.0' }}
   PERCONA_VERSION: ${{ github.event.inputs.percona_version || '8.0' }}
+  MARIADB_VERSION: ${{ github.event.inputs.mariadb_version || 'latest' }}
 
 jobs:
   performance-test:
@@ -79,22 +94,36 @@ jobs:
       - name: Make scripts executable
         run: |
           chmod +x scripts/mysql-performance-test.sh
+          chmod +x scripts/enhanced-mysql-performance-test.sh
 
       - name: Pull Docker images
         run: |
           docker pull mysql:${{ env.MYSQL_VERSION }}
           docker pull percona/percona-server:${{ env.PERCONA_VERSION }}
+          docker pull mariadb:${{ env.MARIADB_VERSION }}
 
       - name: Run performance tests
         run: |
           cd ${{ github.workspace }}
-          ./scripts/mysql-performance-test.sh \
-            --mysql-version "${{ env.MYSQL_VERSION }}" \
-            --percona-version "${{ env.PERCONA_VERSION }}" \
-            --test-duration "${{ env.TEST_DURATION }}" \
-            --table-size "${{ env.TABLE_SIZE }}" \
-            --threads "${{ env.THREADS_LIST }}" \
-            --report-dir "./performance_reports"
+          if [ "${{ env.TEST_TYPE }}" = "three-db" ]; then
+            echo "Running three-database performance test..."
+            ./scripts/enhanced-mysql-performance-test.sh \
+              --mysql-version "${{ env.MYSQL_VERSION }}" \
+              --percona-version "${{ env.PERCONA_VERSION }}" \
+              --mariadb-version "${{ env.MARIADB_VERSION }}" \
+              --test-duration "${{ env.TEST_DURATION }}" \
+              --table-size "${{ env.TABLE_SIZE }}" \
+              --threads "${{ env.THREADS_LIST }}"
+          else
+            echo "Running legacy two-database performance test..."
+            ./scripts/mysql-performance-test.sh \
+              --mysql-version "${{ env.MYSQL_VERSION }}" \
+              --percona-version "${{ env.PERCONA_VERSION }}" \
+              --test-duration "${{ env.TEST_DURATION }}" \
+              --table-size "${{ env.TABLE_SIZE }}" \
+              --threads "${{ env.THREADS_LIST }}" \
+              --report-dir "./performance_reports"
+          fi
 
       - name: Generate summary report
         run: |
@@ -105,8 +134,12 @@ jobs:
             echo "## 性能测试摘要" > summary.md
             echo "" >> summary.md
             echo "测试时间: $(date '+%Y-%m-%d %H:%M:%S')" >> summary.md
+            echo "测试类型: ${{ env.TEST_TYPE }}" >> summary.md
             echo "MySQL版本: ${{ env.MYSQL_VERSION }}" >> summary.md
             echo "Percona版本: ${{ env.PERCONA_VERSION }}" >> summary.md
+            if [ "${{ env.TEST_TYPE }}" = "three-db" ]; then
+              echo "MariaDB版本: ${{ env.MARIADB_VERSION }}" >> summary.md
+            fi
             echo "测试持续时间: ${{ env.TEST_DURATION }}秒" >> summary.md
             echo "表大小: ${{ env.TABLE_SIZE }}行" >> summary.md
             echo "线程数: ${{ env.THREADS_LIST }}" >> summary.md

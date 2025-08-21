@@ -8,6 +8,21 @@ bind-address = 0.0.0.0
 skip-host-cache
 skip-name-resolve
 
+# Storage Engines
+default-storage-engine = InnoDB
+# Enable RocksDB storage engine
+plugin-load = rocksdb=ha_rocksdb.so
+default-tmp-storage-engine = MyISAM
+
+# RocksDB Configuration
+rocksdb_max_open_files = -1
+rocksdb_max_background_jobs = 8
+rocksdb_max_total_wal_size = 4G
+rocksdb_block_size = 16384
+rocksdb_block_cache_size = 512M
+rocksdb_table_cache_numshardbits = 6
+rocksdb_max_subcompactions = 4
+
 # InnoDB Settings
 innodb_buffer_pool_size = 1G
 innodb_log_file_size = 256M
@@ -89,8 +104,3 @@ userstat = 1
 innodb_show_verbose_locks = 1
 innodb_show_locks_held = 10
 innodb_print_all_deadlocks = ON
-
-# TokuDB settings (if using TokuDB)
-# tokudb_cache_size = 512M
-# tokudb_commit_sync = OFF
-# tokudb_directio = ON

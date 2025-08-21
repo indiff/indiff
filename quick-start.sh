@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Quick Start Script for MySQL vs Percona Performance Testing
-# 快速启动 MySQL vs Percona 性能测试脚本
+# Quick Start Script for MySQL vs Percona vs MariaDB Performance Testing
+# 快速启动三数据库性能测试脚本 (MySQL, Percona, MariaDB)
 
 set -e
 
@@ -9,6 +9,8 @@ set -e
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 RED='\033[0;31m'
+BLUE='\033[0;34m'
+CYAN='\033[0;36m'
 NC='\033[0m'
 
 log() {
@@ -21,6 +23,10 @@ log_warn() {
 
 log_error() {
     echo -e "${RED}[ERROR]${NC} $1"
+}
+
+log_info() {
+    echo -e "${CYAN}[INFO]${NC} $1"
 }
 
 # 检查必要的依赖
@@ -63,7 +69,7 @@ check_dependencies() {
 # 显示帮助信息
 show_help() {
     cat << EOF
-MySQL vs Percona 性能测试快速启动脚本
+MySQL vs Percona vs MariaDB 三数据库性能测试快速启动脚本
 
 用法:
   $0 [选项]
@@ -76,11 +82,18 @@ MySQL vs Percona 性能测试快速启动脚本
   -c, --compose       使用 Docker Compose 启动环境
   -m, --monitor       启动监控环境 (Prometheus + Grafana)
   --cleanup           清理所有测试容器和数据
+  --legacy            使用原有的双数据库测试 (MySQL vs Percona)
+
+测试对比:
+  - MySQL 8.0 (InnoDB)
+  - Percona 8.0 (InnoDB + RocksDB)  
+  - MariaDB latest (InnoDB + ColumnStore)
 
 示例:
-  $0                  # 运行标准测试
-  $0 -q               # 运行快速测试
-  $0 -l               # 运行长时间测试
+  $0                  # 运行标准三数据库测试
+  $0 -q               # 运行快速三数据库测试
+  $0 -l               # 运行长时间深度测试
+  $0 --legacy         # 运行原有的 MySQL vs Percona 测试
   $0 -c               # 使用 Docker Compose
   $0 -m               # 启动监控环境
   $0 --cleanup        # 清理环境
@@ -90,8 +103,10 @@ EOF
 
 # 运行快速测试
 run_quick_test() {
-    log "运行快速性能测试 (1分钟)..."
-    ./scripts/mysql-performance-test.sh \
+    log "运行快速三数据库性能测试 (1分钟)..."
+    log_info "测试数据库: MySQL 8.0, Percona 8.0, MariaDB latest"
+    log_info "存储引擎: InnoDB, RocksDB, ColumnStore"
+    ./scripts/enhanced-mysql-performance-test.sh \
         --test-duration 60 \
         --table-size 10000 \
         --threads "1 4 8"
@@ -99,8 +114,10 @@ run_quick_test() {
 
 # 运行标准测试
 run_standard_test() {
-    log "运行标准性能测试 (5分钟)..."
-    ./scripts/mysql-performance-test.sh \
+    log "运行标准三数据库性能测试 (5分钟)..."
+    log_info "测试数据库: MySQL 8.0, Percona 8.0, MariaDB latest"
+    log_info "存储引擎: InnoDB, RocksDB, ColumnStore"
+    ./scripts/enhanced-mysql-performance-test.sh \
         --test-duration 300 \
         --table-size 100000 \
         --threads "1 4 8 16 32"
@@ -108,26 +125,38 @@ run_standard_test() {
 
 # 运行长时间测试
 run_long_test() {
-    log "运行长时间性能测试 (30分钟)..."
-    ./scripts/mysql-performance-test.sh \
+    log "运行长时间三数据库性能测试 (30分钟)..."
+    log_info "测试数据库: MySQL 8.0, Percona 8.0, MariaDB latest"
+    log_info "存储引擎: InnoDB, RocksDB, ColumnStore"
+    ./scripts/enhanced-mysql-performance-test.sh \
         --test-duration 1800 \
         --table-size 500000 \
         --threads "1 4 8 16 32 64 128"
 }
 
+# 运行传统双数据库测试
+run_legacy_test() {
+    log "运行传统 MySQL vs Percona 性能测试..."
+    log_info "使用原有的双数据库测试框架"
+    ./scripts/mysql-performance-test.sh \
+        --test-duration 300 \
+        --table-size 100000 \
+        --threads "1 4 8 16 32"
+}
+
 # 使用 Docker Compose
 use_docker_compose() {
-    log "使用 Docker Compose 启动测试环境..."
+    log "使用 Docker Compose 启动三数据库测试环境..."
     
     if [ -f "docker-compose.yml" ]; then
         log "启动数据库容器..."
-        docker-compose up -d mysql percona
+        docker-compose up -d mysql percona mariadb
         
         log "等待数据库启动..."
-        sleep 30
+        sleep 45  # 三个数据库需要更多时间
         
         log "在容器中运行测试..."
-        docker-compose run --rm sysbench /scripts/mysql-performance-test.sh
+        docker-compose run --rm sysbench /scripts/enhanced-mysql-performance-test.sh
         
         log "停止环境..."
         docker-compose down
@@ -139,16 +168,19 @@ use_docker_compose() {
 
 # 启动监控环境
 start_monitoring() {
-    log "启动监控环境 (Prometheus + Grafana)..."
+    log "启动三数据库监控环境 (Prometheus + Grafana)..."
     
     if [ -f "docker-compose.yml" ]; then
-        docker-compose up -d prometheus grafana mysql-exporter percona-exporter mysql percona
+        docker-compose up -d prometheus grafana mysql-exporter percona-exporter mariadb-exporter mysql percona mariadb
         
         log "监控环境已启动:"
         log "  Grafana: http://localhost:3000 (admin/admin123)"
         log "  Prometheus: http://localhost:9090"
+        log "  MySQL Exporter: http://localhost:9104"
+        log "  Percona Exporter: http://localhost:9105"
+        log "  MariaDB Exporter: http://localhost:9106"
         log ""
-        log "请等待数据库完全启动后再运行测试"
+        log "请等待所有数据库完全启动后再运行测试"
     else
         log_error "未找到 docker-compose.yml 文件"
         exit 1
@@ -157,17 +189,19 @@ start_monitoring() {
 
 # 清理环境
 cleanup_environment() {
-    log "清理测试环境..."
+    log "清理三数据库测试环境..."
     
     # 停止所有相关容器
     docker stop $(docker ps -aq --filter name=mysql_perf_test) 2>/dev/null || true
     docker stop $(docker ps -aq --filter name=percona_performance_test) 2>/dev/null || true
     docker stop $(docker ps -aq --filter name=mysql_performance_test) 2>/dev/null || true
+    docker stop $(docker ps -aq --filter name=mariadb_performance_test) 2>/dev/null || true
     
     # 删除容器
     docker rm $(docker ps -aq --filter name=mysql_perf_test) 2>/dev/null || true
     docker rm $(docker ps -aq --filter name=percona_performance_test) 2>/dev/null || true
     docker rm $(docker ps -aq --filter name=mysql_performance_test) 2>/dev/null || true
+    docker rm $(docker ps -aq --filter name=mariadb_performance_test) 2>/dev/null || true
     
     # 使用 docker-compose 清理
     if [ -f "docker-compose.yml" ]; then
@@ -183,13 +217,18 @@ cleanup_environment() {
 # 主函数
 main() {
     # 检查是否在正确的目录
-    if [ ! -f "scripts/mysql-performance-test.sh" ]; then
-        log_error "请在项目根目录下运行此脚本"
-        exit 1
+    if [ ! -f "scripts/enhanced-mysql-performance-test.sh" ]; then
+        if [ ! -f "scripts/mysql-performance-test.sh" ]; then
+            log_error "请在项目根目录下运行此脚本"
+            exit 1
+        else
+            log_warn "未找到增强版测试脚本，将使用传统版本"
+        fi
     fi
     
     # 确保脚本可执行
-    chmod +x scripts/mysql-performance-test.sh
+    chmod +x scripts/mysql-performance-test.sh 2>/dev/null || true
+    chmod +x scripts/enhanced-mysql-performance-test.sh 2>/dev/null || true
     
     case "${1:-standard}" in
         quick|-q|--quick)
@@ -203,6 +242,10 @@ main() {
         long|-l|--long)
             check_dependencies
             run_long_test
+            ;;
+        legacy|--legacy)
+            check_dependencies
+            run_legacy_test
             ;;
         compose|-c|--compose)
             check_dependencies

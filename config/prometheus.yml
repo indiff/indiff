@@ -22,3 +22,9 @@ scrape_configs:
       - targets: ['percona-exporter:9104']
     scrape_interval: 5s
     metrics_path: /metrics
+
+  - job_name: 'mariadb-exporter'
+    static_configs:
+      - targets: ['mariadb-exporter:9104']
+    scrape_interval: 5s
+    metrics_path: /metrics

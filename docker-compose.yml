@@ -16,8 +16,11 @@ services:
       - perf_test_network
     command: --default-authentication-plugin=mysql_native_password
     
+  # Pre-compiled Percona with RocksDB support
   percona:
-    image: percona/percona-server:8.0
+    build:
+      context: ./percona-custom
+      dockerfile: Dockerfile
     container_name: percona_performance_test
     ports:
       - "3307:3306"
@@ -33,6 +36,22 @@ services:
       - perf_test_network
     command: --default-authentication-plugin=mysql_native_password
     
+  mariadb:
+    image: mariadb:latest
+    container_name: mariadb_performance_test
+    ports:
+      - "3308:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: test123
+      MYSQL_DATABASE: performance_test
+      MYSQL_USER: testuser
+      MYSQL_PASSWORD: testpass
+    volumes:
+      - mariadb_data:/var/lib/mysql
+      - ./config/mariadb.cnf:/etc/mysql/conf.d/custom.cnf:ro
+    networks:
+      - perf_test_network
+    
   # Sysbench testing container
   sysbench:
     image: severalnines/sysbench:latest
@@ -40,6 +59,7 @@ services:
     depends_on:
       - mysql
       - percona
+      - mariadb
     volumes:
       - ./scripts:/scripts:ro
       - ./performance_reports:/reports
@@ -92,6 +112,19 @@ services:
     networks:
       - perf_test_network
       
+  # MySQL exporter for MariaDB metrics  
+  mariadb-exporter:
+    image: prom/mysqld-exporter:latest
+    container_name: mariadb_exporter
+    ports:
+      - "9106:9104"
+    environment:
+      DATA_SOURCE_NAME: "testuser:testpass@(mariadb:3306)/performance_test"
+    depends_on:
+      - mariadb
+    networks:
+      - perf_test_network
+      
   # Grafana for visualization
   grafana:
     image: grafana/grafana:latest
@@ -110,6 +143,7 @@ services:
 volumes:
   mysql_data:
   percona_data:
+  mariadb_data:
   prometheus_data:
   grafana_data:
 
