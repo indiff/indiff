@@ -1,0 +1,274 @@
+version: '3.8'
+
+# 数据库性能测试环境
+# Database Performance Testing Environment
+# 
+# 包含 MySQL, PostgreSQL 和 Oracle 数据库
+# 用于性能对比测试
+
+services:
+  # MySQL 8.0 服务
+  mysql:
+    image: mysql:8.0
+    container_name: mysql_performance
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: benchmark_test
+      MYSQL_USER: testuser
+      MYSQL_PASSWORD: testpass
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./mysql_performance.cnf:/etc/mysql/conf.d/performance.cnf:ro
+      - ./sql_scripts:/docker-entrypoint-initdb.d:ro
+    command: >
+      --default-authentication-plugin=mysql_native_password
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+      --max-connections=1000
+      --innodb-buffer-pool-size=2G
+    networks:
+      - db_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-ppassword"]
+      timeout: 20s
+      retries: 10
+
+  # PostgreSQL 16 服务
+  postgresql:
+    image: postgres:16
+    container_name: postgresql_performance
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: benchmark_test
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --data-checksums"
+    volumes:
+      - postgresql_data:/var/lib/postgresql/data
+      - ./postgresql_performance.conf:/etc/postgresql/postgresql.conf:ro
+      - ./sql_scripts:/docker-entrypoint-initdb.d:ro
+    command: >
+      postgres 
+      -c config_file=/etc/postgresql/postgresql.conf
+      -c shared_buffers=1GB
+      -c effective_cache_size=3GB
+      -c maintenance_work_mem=256MB
+      -c checkpoint_completion_target=0.9
+      -c wal_buffers=16MB
+      -c default_statistics_target=100
+      -c random_page_cost=1.1
+      -c effective_io_concurrency=200
+      -c work_mem=64MB
+      -c min_wal_size=1GB
+      -c max_wal_size=4GB
+    networks:
+      - db_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Oracle Database 23c Free (如果可用)
+  # 注意: Oracle 官方镜像需要接受许可协议
+  oracle:
+    image: gvenzl/oracle-free:23.5-slim
+    container_name: oracle_performance
+    ports:
+      - "1521:1521"
+      - "5500:5500"  # Oracle Enterprise Manager
+    environment:
+      ORACLE_PASSWORD: password
+      ORACLE_DATABASE: benchmark_test
+      ORACLE_CHARACTERSET: AL32UTF8
+    volumes:
+      - oracle_data:/opt/oracle/oradata
+      - ./sql_scripts:/docker-entrypoint-initdb.d:ro
+    networks:
+      - db_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "healthcheck.sh"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    # Oracle 需要更多内存
+    shm_size: 2gb
+
+  # Redis (用于缓存性能对比)
+  redis:
+    image: redis:7.2-alpine
+    container_name: redis_performance
+    ports:
+      - "6379:6379"
+    command: >
+      redis-server
+      --maxmemory 1gb
+      --maxmemory-policy allkeys-lru
+      --appendonly yes
+      --save 900 1
+      --save 300 10
+      --save 60 10000
+    volumes:
+      - redis_data:/data
+    networks:
+      - db_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+  # 性能监控服务 - Prometheus
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus_monitoring
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    networks:
+      - db_network
+    restart: unless-stopped
+
+  # 性能监控服务 - Grafana
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana_monitoring
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_USERS_ALLOW_SIGN_UP: false
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+    networks:
+      - db_network
+    restart: unless-stopped
+    depends_on:
+      - prometheus
+
+  # MySQL Exporter (用于 Prometheus 监控)
+  mysql_exporter:
+    image: prom/mysqld-exporter:latest
+    container_name: mysql_exporter
+    ports:
+      - "9104:9104"
+    environment:
+      DATA_SOURCE_NAME: "root:password@(mysql:3306)/"
+    networks:
+      - db_network
+    restart: unless-stopped
+    depends_on:
+      - mysql
+
+  # PostgreSQL Exporter (用于 Prometheus 监控)
+  postgres_exporter:
+    image: prometheuscommunity/postgres-exporter:latest
+    container_name: postgres_exporter
+    ports:
+      - "9187:9187"
+    environment:
+      DATA_SOURCE_NAME: "postgresql://postgres:password@postgresql:5432/benchmark_test?sslmode=disable"
+    networks:
+      - db_network
+    restart: unless-stopped
+    depends_on:
+      - postgresql
+
+  # 基准测试工具容器
+  benchmark_tools:
+    image: ubuntu:22.04
+    container_name: benchmark_tools
+    volumes:
+      - .:/workspace
+      - benchmark_results:/results
+    working_dir: /workspace
+    networks:
+      - db_network
+    command: >
+      bash -c "
+      apt-get update && 
+      apt-get install -y sysbench mysql-client postgresql-client curl wget gnuplot &&
+      echo '基准测试工具已安装，容器保持运行状态' &&
+      echo '使用命令: docker exec -it benchmark_tools bash' &&
+      echo '然后运行: ./database_benchmark.sh' &&
+      tail -f /dev/null"
+    depends_on:
+      - mysql
+      - postgresql
+    restart: unless-stopped
+
+# 网络配置
+networks:
+  db_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+# 数据卷配置
+volumes:
+  mysql_data:
+    driver: local
+  postgresql_data:
+    driver: local
+  oracle_data:
+    driver: local
+  redis_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+  benchmark_results:
+    driver: local
+
+# 使用说明:
+# 
+# 1. 启动所有服务:
+#    docker-compose up -d
+# 
+# 2. 查看服务状态:
+#    docker-compose ps
+# 
+# 3. 查看日志:
+#    docker-compose logs -f [service_name]
+# 
+# 4. 进入基准测试容器:
+#    docker exec -it benchmark_tools bash
+# 
+# 5. 运行性能测试:
+#    ./database_benchmark.sh
+# 
+# 6. 访问监控界面:
+#    Grafana: http://localhost:3000 (admin/admin)
+#    Prometheus: http://localhost:9090
+# 
+# 7. 停止所有服务:
+#    docker-compose down
+# 
+# 8. 清理所有数据:
+#    docker-compose down -v
+# 
+# 注意事项:
+# - Oracle 镜像较大，首次启动可能需要较长时间
+# - 建议系统至少有 8GB 内存
+# - 如果 Oracle 镜像拉取失败，可以注释掉 oracle 服务
+# - 性能测试结果会保存在 benchmark_results 卷中
