@@ -643,14 +643,13 @@ jobs:
           # yum install libevent-devel      # libevent 开发库（高性能事件通知库，网络组件常用）
           # yum install bzip2-devel         # bzip2 开发库（压缩算法支持）
           # $VCPKG_ROOT/vcpkg install boost
-
+          # openssl
           $VCPKG_ROOT/vcpkg install \
-            curl \
+            curl[ssl] \
             zlib \
             lz4 \
             zstd \
             snappy \
-            openssl \
             bzip2 \
             lzo \
             libxml2 \
@@ -718,6 +717,7 @@ jobs:
             -DCMAKE_MODULE_LINKER_FLAGS="-L/usr/lib64 -L/opt/gcc-indiff/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--no-as-needed -ldl" \
             -DWITH_BOOST=boost -DDOWNLOAD_BOOST=1 -DWITH_BOOST=../boost \
             -DWITH_ROCKSDB=ON \
+            -DWITH_CURL=system \
             -DWITH_LZ4=system -DWITH_ZSTD=system -DWITH_SNAPPY=system -DWITH_JEMALLOC=system \
             -DWITH_SSL=system -DOPENSSL_ROOT_DIR="$DEPS_DST" \
             -DWITH_PROTOBUF=bundled \
