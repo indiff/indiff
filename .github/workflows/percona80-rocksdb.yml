@@ -642,7 +642,7 @@ jobs:
           # $VCPKG_ROOT/vcpkg install boost
           # openssl
           $VCPKG_ROOT/vcpkg install \
-            curl[core,non-http,ssl,openssl,zstd] \
+            curl[core,non-http,ssl,openssl] \
             zlib \
             lz4 \
             zstd \
