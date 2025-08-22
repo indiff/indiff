@@ -640,7 +640,7 @@ jobs:
           # $VCPKG_ROOT/vcpkg install boost
           # openssl
           $VCPKG_ROOT/vcpkg install \
-            curl[ssl] \
+            curl[core,non-http,ssl,openssl,zstd] \
             zlib \
             lz4 \
             zstd \
@@ -659,7 +659,6 @@ jobs:
           git submodule update --init --recursive
           cd ..
 
-          TRIPLET=x64-linux
           DEPS_SRC="$VCPKG_ROOT/installed/$TRIPLET"
           DEPS_DST="/opt/mariadb"
           mkdir -p "$DEPS_DST"/{include,lib,lib64}
@@ -684,6 +683,9 @@ jobs:
             [[ -d "$DEPS_DST/$d/pkgconfig" ]] || mkdir -p "$DEPS_DST/$d/pkgconfig"
             rsync -a "$DEPS_SRC/$d/pkgconfig/" "$DEPS_DST/$d/pkgconfig/" 2>/dev/null || true
           done
+
+          # 显示一下目录接口查看是否存在相关的 lib 和 include
+          tree "$DEPS_DST" | tee /workspace/deps_dst_tree.txt
 
           # build persona mysql
           mkdir -p server/build server/boost
