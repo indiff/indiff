@@ -551,25 +551,21 @@ jobs:
           yum -y install \
             zip unzip rsync cmake3 ninja-build \
             jemalloc jemalloc-devel \
-            libaio-devel \
             ncurses-devel \
-            openssl-devel \
             gflags-devel \
             numactl-devel \
             openldap-devel \
-            curl libcurl-devel \
             bison \
             systemd-devel \
             krb5-devel \
             readline-devel \
-            lz4 lz4-devel \
             libedit-devel \
-            libevent-devel \
             cyrus-sasl cyrus-sasl-devel cyrus-sasl-gssapi \
             libicu-devel \
             cyrus-sasl-devel cyrus-sasl-scram \
             libatomic \
             libtirpc libtirpc-devel
+
           # yum install git                 # Git 版本控制工具，用于克隆/管理源码
           # yum -y install gcc                 # GCC C 编译器，编译 C 源码
           # yum -y install gcc-c++             # G++ C++ 编译器，编译 C++ 源码
@@ -625,7 +621,8 @@ jobs:
           ./vcpkg/bootstrap-vcpkg.sh
           export VCPKG_ROOT=$(pwd)/vcpkg
 
-          TRIPLET=x64-linux
+          # TRIPLET=x64-linux
+          TRIPLET=x64-linux-dynamic
 
           # 用 vcpkg 安装第三方库（确认需的端口名，必要时用 --overlay-ports)
           # curl => 替代 libcurl-devel
