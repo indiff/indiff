@@ -616,7 +616,7 @@ jobs:
           #cd ..
           #ninja --version  # should be 1.12.1
           
-
+          export VCPKG_BUILD_TYPE=release
           git clone --filter=blob:none --depth 1 https://github.com/microsoft/vcpkg.git
           ./vcpkg/bootstrap-vcpkg.sh
           export VCPKG_ROOT=$(pwd)/vcpkg
@@ -642,14 +642,13 @@ jobs:
           # $VCPKG_ROOT/vcpkg install boost
           # openssl
 
-          # 用 vcpkg 安装动态 curl（会生成 libcurl.so 并自动依赖 libssl/libcrypto）
-          $VCPKG_ROOT/vcpkg install curl[core,non-http,ssl,openssl,zstd]:x64-linux-dynamic
+          # 用 vcpkg 安装动态 curl （会生成 libcurl.so 并自动依赖 libssl/libcrypto)
+          $VCPKG_ROOT/vcpkg install curl[core,non-http,ssl,openssl,zstd] snappy --triplet x64-linux-dynamic --clean-after-build
           $VCPKG_ROOT/vcpkg install \
             openssl \
             zlib \
             lz4 \
             zstd \
-            snappy \
             bzip2 \
             lzo \
             libxml2 \
@@ -657,7 +656,7 @@ jobs:
             pcre2 \
             ncurses \
             libaio  \
-            --triplet $TRIPLET	
+            --triplet $TRIPLET --clean-after-build	
 
           git clone --filter=blob:none --depth 1 https://github.com/MariaDB/server.git
           cd server
