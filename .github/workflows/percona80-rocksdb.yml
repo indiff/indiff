@@ -641,8 +641,11 @@ jobs:
           # yum install bzip2-devel         # bzip2 开发库（压缩算法支持）
           # $VCPKG_ROOT/vcpkg install boost
           # openssl
+
+          # 用 vcpkg 安装动态 curl（会生成 libcurl.so 并自动依赖 libssl/libcrypto）
+          $VCPKG_ROOT/vcpkg install curl[core,non-http,ssl,openssl,zstd]:x64-linux-dynamic
           $VCPKG_ROOT/vcpkg install \
-            curl[core,non-http,ssl,openssl] \
+            openssl \
             zlib \
             lz4 \
             zstd \
@@ -666,6 +669,12 @@ jobs:
           mkdir -p "$DEPS_DST"/{include,lib,lib64}
 
           # 2) 复制头文件与动态库（.so 与 .so.*）及 pkgconfig
+          rsync -a "$DEPS_SRC/include/" "$DEPS_DST/include/"
+          rsync -a "$DEPS_SRC/lib/"      "$DEPS_DST/lib/"      || true
+          rsync -a "$DEPS_SRC/lib64/"    "$DEPS_DST/lib64/"    || true
+
+          DEPS_SRC="$VCPKG_ROOT/installed/x64-linux-dynamic"
+
           rsync -a "$DEPS_SRC/include/" "$DEPS_DST/include/"
           rsync -a "$DEPS_SRC/lib/"      "$DEPS_DST/lib/"      || true
           rsync -a "$DEPS_SRC/lib64/"    "$DEPS_DST/lib64/"    || true
