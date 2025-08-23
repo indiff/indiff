@@ -176,7 +176,7 @@ jobs:
       - name: Upload prebuild git package
         uses: actions/upload-artifact@v4
         with:
-          name: percona80-ubuntu
+          name: mysql-percona80-ubuntu
           path: |
             ${{ github.workspace }}/*.xz
             ${{ github.workspace }}/*.zip
@@ -447,7 +447,7 @@ jobs:
       - name: Upload percona80 package
         uses: actions/upload-artifact@v4
         with:
-          name: percona80-centos7
+          name: mysql-percona80-centos7
           path: |
             ${{ github.workspace }}/*.xz
             ${{ github.workspace }}/*.zip
@@ -782,7 +782,7 @@ jobs:
       - name: Upload mariadb package
         uses: actions/upload-artifact@v4
         with:
-          name: mariadb-centos7
+          name: mysql-mariadb-centos7
           path: |
             ${{ github.workspace }}/*.xz
             ${{ github.workspace }}/*.zip
@@ -805,7 +805,7 @@ jobs:
           uses: actions/download-artifact@main
           with:
             path: artifacts
-            pattern: percona*-*
+            pattern: mysql*-*
             merge-multiple: false
           
         - name: Release Tag
@@ -820,7 +820,7 @@ jobs:
             sudo systemctl start chrony
             sudo timedatectl set-timezone Asia/Shanghai
             timedatectl status
-            echo "TAG_NAME=$(date +'%Y%m%d_%H%M')_percona80" >> $GITHUB_ENV
+            echo "TAG_NAME=$(date +'%Y%m%d_%H%M')_mysql" >> $GITHUB_ENV
 
         - name: Create Release
           run: |
@@ -842,20 +842,32 @@ jobs:
             cat <<'EOF' >> hello.md
             Proxy download:
             ```bash         
-            curl -#Lo /opt/percona80.zip "https://ghproxy.cfd/https://github.com/indiff/indiff/releases/download/${{ env.TAG_NAME }}/shitshitcentos7"
-            curl -#Lo /opt/percona80.zip "https://ghproxy.cfd/https://github.com/indiff/indiff/releases/download/${{ env.TAG_NAME }}/shitshitubuntu"
+            curl -#Lo /opt/percona80.zip "https://ghproxy.cfd/https://github.com/indiff/indiff/releases/download/${{ env.TAG_NAME }}/shit1centos7"
             ```
+            ```bash         
+            curl -#Lo /opt/mariadb.zip "https://ghproxy.cfd/https://github.com/indiff/indiff/releases/download/${{ env.TAG_NAME }}/shit2centos7"
+            ```
+            ```bash         
+            curl -#Lo /opt/percona80.zip "https://ghproxy.cfd/https://github.com/indiff/indiff/releases/download/${{ env.TAG_NAME }}/shit3ubuntu"
+            ```            
             
             Direct download:
             ```bash         
-            curl -#Lo /opt/percona80.zip "https://github.com/indiff/indiff/releases/download/${{ env.TAG_NAME }}/shitshitcentos7"
-            curl -#Lo /opt/percona80.zip "https://github.com/indiff/indiff/releases/download/${{ env.TAG_NAME }}/shitshitubuntu"
+            curl -#Lo /opt/percona80.zip "https://github.com/indiff/indiff/releases/download/${{ env.TAG_NAME }}/shit1centos7"
+            ```
+             ```bash         
+            curl -#Lo /opt/mariadb.zip "https://github.com/indiff/indiff/releases/download/${{ env.TAG_NAME }}/shit2centos7"
+            ```
+             ```bash         
+            curl -#Lo /opt/percona80.zip "https://github.com/indiff/indiff/releases/download/${{ env.TAG_NAME }}/shit3ubuntu"
             ```
             EOF
-            centos7_bname="$(basename artifacts/*percona*/*centos7*.xz)"
-            ubuntu_bname="$(basename artifacts/*percona*/*ubuntu*.xz)"
-            sed -i "s/shitshitcentos7/${centos7_bname}/g" hello.md
-            sed -i "s/shitshitubuntu/${ubuntu_bname}/g" hello.md
-            gh release create ${{ env.TAG_NAME }} -F hello.md "artifacts/*percona*/*.xz"
+            centos7_percona_bname="$(basename artifacts/*mysql*/*percona*centos7*.xz)"
+            centos7_mariadb_bname="$(basename artifacts/*mysql*/*mariadb*centos7*.xz)"
+            ubuntu_percona_bname="$(basename artifacts/*mysql*/*percona*ubuntu*.xz)"
+            sed -i "s/shit1centos7/${centos7_percona_bname}/g" hello.md
+            sed -i "s/shit2centos7/${centos7_mariadb_bname}/g" hello.md
+            sed -i "s/shit3ubuntu/${ubuntu_percona_bname}/g" hello.md
+            gh release create ${{ env.TAG_NAME }} -F hello.md "artifacts/*mysql*/*.xz"
           env:
             GITHUB_TOKEN: ${{ github.token }}
