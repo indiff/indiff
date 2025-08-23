@@ -14,6 +14,7 @@ I'm A software developer .
 - [qttabbar](https://github.com/indiff/qttabbar)
 - [DBCHM](https://github.com/indiff/DBCHM)
 - [Jutils](https://github.com/indiff/Jutils_Plugin)
+- [数据库性能对比分析](数据库性能对比分析.md) - MySQL vs PostgreSQL vs Oracle 综合性能测试报告
 
 🌱 I’m currently learning:
 
@@ -30,5 +31,37 @@ I'm A software developer .
 📫 How to reach me: indiff@126.com
 - qq: 531299332
 - wechat: adgmtt
+
+## 🔍 数据库性能对比项目
+
+最新添加了 MySQL、PostgreSQL 和 Oracle 数据库的详细性能对比分析：
+
+### 📊 主要内容
+- **[数据库性能对比分析](数据库性能对比分析.md)** - 全面的中文性能测试报告
+- **[性能测试脚本](database_benchmark.sh)** - 自动化基准测试工具
+- **[环境搭建指南](DATABASE_SETUP_GUIDE.md)** - 详细的安装配置指南
+- **[Docker 环境](docker-compose.yml)** - 一键部署测试环境
+
+### 🚀 快速开始
+```bash
+# 克隆仓库
+git clone https://github.com/indiff/indiff.git
+cd indiff
+
+# 使用 Docker 快速启动测试环境
+docker-compose up -d
+
+# 运行性能测试
+docker exec -it benchmark_tools bash
+./database_benchmark.sh
+```
+
+### 📈 测试结果预览
+- **OLTP 性能**: Oracle > MySQL > PostgreSQL
+- **复杂查询**: PostgreSQL > Oracle > MySQL  
+- **并发处理**: Oracle > MySQL > PostgreSQL
+- **成本效益**: PostgreSQL > MySQL > Oracle
+
+详细的测试数据和分析请参考 [完整报告](数据库性能对比分析.md)。
 
 
