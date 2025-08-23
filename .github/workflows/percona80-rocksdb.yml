@@ -761,7 +761,7 @@ jobs:
           rm -f $DEPS_DST/bin/mysqltest
           rm -f $DEPS_DST/bin/mysqlxtest
           rm -f $DEPS_DST/bin/mytap
-          zip -r -q -9 /workspace/maria-centos7-x86_64-$(date +'%Y%m%d_%H%M').xz .
+          zip -r -q -9 /workspace/mariadb-centos7-x86_64-$(date +'%Y%m%d_%H%M').xz .
 
           # free memory
           free -h
