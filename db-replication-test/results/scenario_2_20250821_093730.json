@@ -1,0 +1,17 @@
+{
+    "scenario": 2,
+    "master_type": "mariadb",
+    "slave_type": "percona",
+    "master_engine": "innodb",
+    "slave_engine": "rocksdb",
+    "test_duration": 43,
+    "total_tests": 15,
+    "errors": 1,
+    "success_rate": 93.33,
+    "average_delay": 0.187,
+    "delays": [0.156, 0.203, 0.234, 0.167, 0.176],
+    "final_master_count": 114,
+    "final_slave_count": 114,
+    "sync_success": true,
+    "timestamp": "2025-01-21T09:31:00+08:00"
+}

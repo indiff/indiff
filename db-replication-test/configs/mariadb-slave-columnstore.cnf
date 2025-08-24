@@ -1,0 +1,62 @@
+[mysqld]
+# MariaDB 从库配置 (ColumnStore)
+# 基本配置
+port = 3306
+socket = /tmp/mariadb-slave.sock
+pid-file = /tmp/mariadb-slave.pid
+
+# 服务器标识
+server-id = 4
+
+# 二进制日志配置
+log-bin = mariadb-bin
+binlog-format = ROW
+sync_binlog = 1
+expire_logs_days = 7
+
+# ColumnStore 配置
+default-storage-engine = ColumnStore
+columnstore_select_handler = ON
+columnstore_user_priority = HIGH
+columnstore_use_import_for_batchinsert = ON
+
+# 复制配置
+gtid_strict_mode = ON
+log-slave-updates = ON
+read_only = ON
+
+# 从库特定配置
+relay-log = relay-bin
+relay-log-index = relay-bin.index
+slave-parallel-workers = 4
+slave-parallel-mode = conservative
+
+# 字符集
+character-set-server = utf8mb4
+collation-server = utf8mb4_unicode_ci
+
+# 网络配置
+max_connections = 200
+max_allowed_packet = 16M
+
+# 安全配置
+skip-name-resolve
+
+# 性能配置
+query_cache_type = 0
+query_cache_size = 0
+tmp_table_size = 32M
+max_heap_table_size = 32M
+
+# MariaDB 特定配置
+sql_mode = STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION
+
+# ColumnStore 优化
+columnstore_disk_aggregate_limit = 0
+columnstore_rowgroup_size = 8388608
+
+[mysql]
+default-character-set = utf8mb4
+
+[client]
+default-character-set = utf8mb4
