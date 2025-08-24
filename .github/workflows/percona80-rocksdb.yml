@@ -1,24 +1,136 @@
-name: Build MySQL with RocksDB Engine
+name: Build MySQL with RocksDB Engine (Enhanced)
 
 on:
-  # push:
-  #   branches:
-  #     - main
-  #   paths:
-  #     - '**/mysql-rocksdb.yml'  
-  # pull_request:
-  #   branches:
-  #     - main
+  push:
+    branches:
+      - main
+    paths:
+      - '**/percona80-rocksdb.yml'  
+  pull_request:
+    branches:
+      - main
   workflow_dispatch:
+    inputs:
+      auto_fix_errors:
+        description: 'Enable automatic error fixing and recompilation'
+        type: boolean
+        default: true
+        required: false
+      force_latest_deps:
+        description: 'Force update to latest dependency versions'
+        type: boolean
+        default: true
+        required: false
   schedule:
     #- cron: '07 10 * * *' # 每天凌晨2点（UTC），对应每天上午10点（CST）, 这里对应的是中国时区的是 18 点
     - cron: '3 7 * * *' # UTC 时间 1:00 对应中国时间 9:00          
 env:
   gcc_indiff_ubuntu_url: "https://github.com/indiff/gcc-build/releases/download/20250416_1126/gcc-indiff-ubuntu-x86_64-20250416_1125.xz"
   gcc_indiff_centos7_url: "https://github.com/indiff/gcc-build/releases/download/20250818_1113_16.0.0/gcc-indiff-centos7-16.0.0-x86_64-20250818_1111.xz"
+  
 jobs:
+  # Function for automatic error detection and fixing
+  error-fixing-utils:
+    runs-on: ubuntu-latest
+    outputs:
+      auto_fix_script: ${{ steps.create-script.outputs.script }}
+    steps:
+      - name: Create Auto-Fix Script
+        id: create-script
+        run: |
+          cat << 'EOFSCRIPT' > auto_fix_errors.sh
+          #!/bin/bash
+          
+          auto_fix_compilation_errors() {
+            local log_file="$1"
+            local max_retries="${2:-3}"
+            local retry_count=0
+            
+            echo "=== Checking for compilation errors in $log_file ==="
+            
+            while [ $retry_count -lt $max_retries ]; do
+              if [ ! -f "$log_file" ]; then
+                echo "Log file not found: $log_file"
+                return 1
+              fi
+              
+              if grep -qi "error:" "$log_file" || grep -qi "undefined reference" "$log_file" || grep -qi "cannot find" "$log_file"; then
+                echo "=== Compilation errors detected, attempting auto-fix (attempt $((retry_count + 1))/$max_retries) ==="
+                
+                # Fix 1: jemalloc linking issues
+                if grep -qi "undefined reference to.*jemalloc" "$log_file" || grep -qi "cannot find -ljemalloc" "$log_file"; then
+                  echo "Fixing jemalloc linking issues..."
+                  export LDFLAGS="$LDFLAGS -ljemalloc -L/usr/lib64 -L/lib64"
+                  export CMAKE_EXE_LINKER_FLAGS="$CMAKE_EXE_LINKER_FLAGS -ljemalloc -L/usr/lib64 -L/lib64"
+                  export CMAKE_SHARED_LINKER_FLAGS="$CMAKE_SHARED_LINKER_FLAGS -ljemalloc -L/usr/lib64 -L/lib64"
+                  ldconfig
+                fi
+                
+                # Fix 2: Missing header files
+                if grep -qi "fatal error.*no such file or directory" "$log_file" || grep -qi "file not found" "$log_file"; then
+                  echo "Fixing missing header issues..."
+                  find /usr/include /opt -name "*.h" 2>/dev/null | grep -E "(rocksdb|snappy|lz4|zstd|jemalloc)" | xargs dirname | sort -u | while read dir; do
+                    export CPPFLAGS="$CPPFLAGS -I$dir"
+                    export CMAKE_C_FLAGS="$CMAKE_C_FLAGS -I$dir"
+                    export CMAKE_CXX_FLAGS="$CMAKE_CXX_FLAGS -I$dir"
+                  done
+                fi
+                
+                # Fix 3: Library path issues
+                if grep -qi "library not found" "$log_file" || grep -qi "cannot find -l" "$log_file"; then
+                  echo "Fixing library path issues..."
+                  ldconfig
+                  find /usr/lib* /opt -name "*.so*" 2>/dev/null | grep -E "(rocksdb|snappy|lz4|zstd|jemalloc)" | xargs dirname | sort -u | while read dir; do
+                    export LIBRARY_PATH="$dir:$LIBRARY_PATH"
+                    export LD_LIBRARY_PATH="$dir:$LD_LIBRARY_PATH"
+                    export CMAKE_LIBRARY_PATH="$dir:$CMAKE_LIBRARY_PATH"
+                  done
+                fi
+                
+                # Fix 4: Protobuf version conflicts
+                if grep -qi "protobuf" "$log_file" && grep -qi "version" "$log_file"; then
+                  echo "Fixing protobuf version conflicts..."
+                  export CMAKE_C_FLAGS="$CMAKE_C_FLAGS -DWITH_PROTOBUF=bundled"
+                  export CMAKE_CXX_FLAGS="$CMAKE_CXX_FLAGS -DWITH_PROTOBUF=bundled"
+                  unset PROTOC
+                fi
+                
+                # Fix 5: C++ standard issues
+                if grep -qi "c++.*standard" "$log_file" || grep -qi "std::" "$log_file" | grep -qi "error"; then
+                  echo "Fixing C++ standard issues..."
+                  export CMAKE_CXX_FLAGS="$CMAKE_CXX_FLAGS -std=c++17"
+                fi
+                
+                # Fix 6: Memory issues
+                if grep -qi "virtual memory exhausted" "$log_file" || grep -qi "out of memory" "$log_file"; then
+                  echo "Fixing memory issues by reducing parallelism..."
+                  export MAKEFLAGS="-j$(($(nproc)/2))"
+                fi
+                
+                retry_count=$((retry_count + 1))
+                return 1  # Signal to retry
+              else
+                echo "No compilation errors detected"
+                return 0  # Success
+              fi
+            done
+            
+            echo "=== Max retries ($max_retries) reached, compilation failed ==="
+            cat "$log_file" | tail -100
+            return 1
+          }
+          EOFSCRIPT
+          
+          echo "script=$(cat auto_fix_errors.sh | base64 -w 0)" >> $GITHUB_OUTPUT
+
+      - name: Upload Auto-Fix Script
+        uses: actions/upload-artifact@v4
+        with:
+          name: auto-fix-script
+          path: auto_fix_errors.sh
   build-percona-in-ubuntu:
     runs-on: ubuntu-latest
+    needs: error-fixing-utils
 
     steps:
       - name: Free Disk-Space
