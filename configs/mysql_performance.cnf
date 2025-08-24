@@ -59,6 +59,20 @@ innodb_rollback_on_timeout = ON
 innodb_monitor_enable = all
 innodb_print_all_deadlocks = ON
 
+# RocksDB 存储引擎配置
+rocksdb_default_cf_options = write_buffer_size=128m;target_file_size_base=32m;max_bytes_for_level_base=512m;level0_file_num_compaction_trigger=4;level0_slowdown_writes_trigger=10;level0_stop_writes_trigger=15;max_write_buffer_number=4;compression_per_level=kNoCompression:kNoCompression:kLZ4Compression:kLZ4Compression:kLZ4Compression:kZSTD:kZSTD
+rocksdb_max_open_files = 4000
+rocksdb_max_background_jobs = 8
+rocksdb_max_total_wal_size = 4G
+rocksdb_block_cache_size = 2G
+rocksdb_table_cache_numshardbits = 6
+
+# ColumnStore 存储引擎配置
+columnstore_use_import_for_batchinsert = ALWAYS
+columnstore_diskjoin_smallsidelimit = 0
+columnstore_diskjoin_bucketsize = 100
+columnstore_diskjoin_largesidelimit = 0
+
 # 二进制日志
 log-bin = mysql-bin
 binlog_format = ROW
@@ -144,3 +158,28 @@ default-character-set = utf8mb4
 # 内存存储引擎优化
 # max_heap_table_size = 2G
 # tmp_table_size = 2G
+
+# RocksDB 存储引擎优化建议
+# 高写入负载优化
+# rocksdb_default_cf_options = write_buffer_size=256m;max_write_buffer_number=8;level0_file_num_compaction_trigger=8
+# rocksdb_max_background_jobs = 16
+
+# 高读取负载优化  
+# rocksdb_block_cache_size = 4G
+# rocksdb_table_cache_numshardbits = 8
+
+# ColumnStore 存储引擎优化建议
+# 大数据分析优化
+# columnstore_diskjoin_smallsidelimit = 0
+# columnstore_diskjoin_largesidelimit = 0
+# columnstore_use_import_for_batchinsert = ALWAYS
+
+# 文件系统优化建议
+# XFS 文件系统 (推荐用于数据库)
+# 挂载选项: noatime,largeio,inode64,swalloc
+
+# EXT4 文件系统
+# 挂载选项: noatime,data=writeback,barrier=0,nobh
+
+# BTRFS 文件系统 (适合快照和压缩)
+# 挂载选项: noatime,compress=lzo,space_cache,autodefrag

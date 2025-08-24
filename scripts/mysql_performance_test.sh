@@ -50,13 +50,24 @@ check_dependencies() {
         missing_tools+=("unzip")
     fi
     
+    # 检查fio (可选，用于文件系统测试)
+    if ! command -v fio &> /dev/null; then
+        log_warning "fio工具未安装，文件系统随机读写测试将被跳过"
+    fi
+    
     if [ ${#missing_tools[@]} -ne 0 ]; then
-        log_error "缺少以下工具: ${missing_tools[*]}"
+        log_error "缺少以下必需工具: ${missing_tools[*]}"
         log_info "请安装缺少的工具后重新运行脚本"
+        log_info ""
+        log_info "Ubuntu/Debian安装命令:"
+        log_info "sudo apt update && sudo apt install sysbench mysql-client unzip fio"
+        log_info ""
+        log_info "CentOS/RHEL安装命令:"
+        log_info "sudo yum install epel-release && sudo yum install sysbench mysql unzip fio"
         exit 1
     fi
     
-    log_success "所有依赖工具检查通过"
+    log_success "所有必需依赖工具检查通过"
 }
 
 # 下载MySQL版本
@@ -206,6 +217,42 @@ setup_test_database() {
         ) ENGINE=Memory;
     "
     
+    # 尝试创建RocksDB表（如果支持）
+    if mysql -h"$mysql_host" -P"$mysql_port" -u"$mysql_user" -p"$mysql_password" -e "SHOW ENGINES" | grep -q "ROCKSDB"; then
+        log_info "创建RocksDB测试表..."
+        mysql -h"$mysql_host" -P"$mysql_port" -u"$mysql_user" -p"$mysql_password" performance_test -e "
+            CREATE TABLE test_table_rocksdb (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                name VARCHAR(100),
+                email VARCHAR(100),
+                data TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                INDEX idx_name (name),
+                INDEX idx_email (email)
+            ) ENGINE=RocksDB;
+        "
+    else
+        log_warning "RocksDB存储引擎不可用，跳过创建RocksDB测试表"
+    fi
+    
+    # 尝试创建ColumnStore表（如果支持）
+    if mysql -h"$mysql_host" -P"$mysql_port" -u"$mysql_user" -p"$mysql_password" -e "SHOW ENGINES" | grep -i -q "columnstore"; then
+        log_info "创建ColumnStore测试表..."
+        mysql -h"$mysql_host" -P"$mysql_port" -u"$mysql_user" -p"$mysql_password" performance_test -e "
+            CREATE TABLE test_table_columnstore (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                name VARCHAR(100),
+                email VARCHAR(100),
+                data TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                INDEX idx_name (name),
+                INDEX idx_email (email)
+            ) ENGINE=ColumnStore;
+        "
+    else
+        log_warning "ColumnStore存储引擎不可用，跳过创建ColumnStore测试表"
+    fi
+    
     log_success "测试数据库设置完成"
 }
 
@@ -304,13 +351,195 @@ EOF
     log_success "性能测试报告生成完成: $report_file"
 }
 
+# 检测文件系统类型
+detect_filesystem() {
+    local path=$1
+    df -T "$path" | tail -1 | awk '{print $2}'
+}
+
+# 文件系统性能测试
+test_filesystem_performance() {
+    log_info "开始文件系统性能测试..."
+    
+    local test_dir="/tmp/filesystem_test"
+    local result_file="/tmp/mysql_test_results/filesystem_performance_$(date +%Y%m%d_%H%M%S).log"
+    
+    mkdir -p "$test_dir"
+    mkdir -p /tmp/mysql_test_results
+    
+    echo "文件系统性能测试报告" > "$result_file"
+    echo "测试时间: $(date)" >> "$result_file"
+    echo "测试目录: $test_dir" >> "$result_file"
+    echo "文件系统类型: $(detect_filesystem $test_dir)" >> "$result_file"
+    echo "" >> "$result_file"
+    
+    # 磁盘写入性能测试
+    log_info "测试磁盘写入性能..."
+    echo "=== 磁盘写入性能测试 ===" >> "$result_file"
+    dd if=/dev/zero of="$test_dir/test_write.dat" bs=1M count=1024 conv=fdatasync 2>&1 | \
+        grep -E "(copied|MB/s|GB/s)" >> "$result_file"
+    echo "" >> "$result_file"
+    
+    # 磁盘读取性能测试
+    log_info "测试磁盘读取性能..."
+    echo "=== 磁盘读取性能测试 ===" >> "$result_file"
+    # 清除缓存
+    sync && echo 3 > /proc/sys/vm/drop_caches 2>/dev/null || true
+    dd if="$test_dir/test_write.dat" of=/dev/null bs=1M 2>&1 | \
+        grep -E "(copied|MB/s|GB/s)" >> "$result_file"
+    echo "" >> "$result_file"
+    
+    # 随机读写性能测试 (使用fio如果可用)
+    if command -v fio &> /dev/null; then
+        log_info "使用fio进行随机读写性能测试..."
+        echo "=== FIO随机读写性能测试 ===" >> "$result_file"
+        
+        # 随机写测试
+        fio --name=random_write \
+            --ioengine=libaio \
+            --iodepth=16 \
+            --rw=randwrite \
+            --bs=4k \
+            --direct=1 \
+            --size=512M \
+            --numjobs=1 \
+            --runtime=60 \
+            --group_reporting \
+            --filename="$test_dir/fio_test.dat" 2>&1 | \
+            grep -E "(IOPS|BW|lat)" >> "$result_file"
+        
+        echo "" >> "$result_file"
+        
+        # 随机读测试
+        fio --name=random_read \
+            --ioengine=libaio \
+            --iodepth=16 \
+            --rw=randread \
+            --bs=4k \
+            --direct=1 \
+            --size=512M \
+            --numjobs=1 \
+            --runtime=60 \
+            --group_reporting \
+            --filename="$test_dir/fio_test.dat" 2>&1 | \
+            grep -E "(IOPS|BW|lat)" >> "$result_file"
+            
+        echo "" >> "$result_file"
+    else
+        log_warning "fio工具未安装，跳过随机读写测试"
+        echo "fio工具未安装，跳过随机读写测试" >> "$result_file"
+    fi
+    
+    # 文件系统元数据性能测试
+    log_info "测试文件系统元数据性能..."
+    echo "=== 文件系统元数据性能测试 ===" >> "$result_file"
+    
+    local metadata_test_dir="$test_dir/metadata_test"
+    mkdir -p "$metadata_test_dir"
+    
+    # 创建文件测试
+    time_result=$(time (for i in $(seq 1 1000); do touch "$metadata_test_dir/file_$i"; done) 2>&1)
+    echo "创建1000个小文件耗时: $time_result" >> "$result_file"
+    
+    # 删除文件测试
+    time_result=$(time (rm -f "$metadata_test_dir"/*) 2>&1)
+    echo "删除1000个小文件耗时: $time_result" >> "$result_file"
+    
+    echo "" >> "$result_file"
+    
+    # 清理测试文件
+    rm -rf "$test_dir"
+    
+    log_success "文件系统性能测试完成，结果保存到: $result_file"
+}
+
+# 运行全套存储引擎测试
+run_all_engine_tests() {
+    local mysql_host=$1
+    local mysql_port=$2
+    local mysql_user=$3
+    local mysql_password=$4
+    
+    log_info "开始全套存储引擎性能测试..."
+    
+    # 测试InnoDB
+    run_sysbench_test "$mysql_host" "$mysql_port" "$mysql_user" "$mysql_password" "test_table_innodb" "InnoDB"
+    
+    # 测试MyISAM
+    run_sysbench_test "$mysql_host" "$mysql_port" "$mysql_user" "$mysql_password" "test_table_myisam" "MyISAM"
+    
+    # 测试Memory
+    run_sysbench_test "$mysql_host" "$mysql_port" "$mysql_user" "$mysql_password" "test_table_memory" "Memory"
+    
+    # 测试RocksDB (如果支持)
+    if mysql -h"$mysql_host" -P"$mysql_port" -u"$mysql_user" -p"$mysql_password" -e "SHOW ENGINES" | grep -q "ROCKSDB"; then
+        log_info "检测到RocksDB存储引擎支持"
+        run_sysbench_test "$mysql_host" "$mysql_port" "$mysql_user" "$mysql_password" "test_table_rocksdb" "RocksDB"
+    else
+        log_warning "RocksDB存储引擎不可用，跳过测试"
+    fi
+    
+    # 测试ColumnStore (如果支持)
+    if mysql -h"$mysql_host" -P"$mysql_port" -u"$mysql_user" -p"$mysql_password" -e "SHOW ENGINES" | grep -i -q "columnstore"; then
+        log_info "检测到ColumnStore存储引擎支持"
+        run_sysbench_test "$mysql_host" "$mysql_port" "$mysql_user" "$mysql_password" "test_table_columnstore" "ColumnStore"
+    else
+        log_warning "ColumnStore存储引擎不可用，跳过测试"
+    fi
+    
+    log_success "全套存储引擎性能测试完成"
+}
+
 # 主函数
 main() {
+    # 解析命令行参数
+    local test_filesystem=false
+    local run_full_test=false
+    
+    while [[ $# -gt 0 ]]; do
+        case $1 in
+            --test-filesystem)
+                test_filesystem=true
+                shift
+                ;;
+            --full-test)
+                run_full_test=true
+                shift
+                ;;
+            --help|-h)
+                echo "MySQL性能测试脚本"
+                echo ""
+                echo "用法: $0 [选项]"
+                echo ""
+                echo "选项:"
+                echo "  --test-filesystem    运行文件系统性能测试"
+                echo "  --full-test         运行完整的存储引擎测试"
+                echo "  --help, -h          显示此帮助信息"
+                echo ""
+                echo "示例:"
+                echo "  $0                           # 仅下载和准备MySQL版本"
+                echo "  $0 --test-filesystem        # 额外运行文件系统测试"
+                echo "  $0 --full-test              # 运行完整测试套件"
+                exit 0
+                ;;
+            *)
+                log_error "未知选项: $1"
+                echo "使用 --help 查看可用选项"
+                exit 1
+                ;;
+        esac
+    done
+    
     log_info "开始MySQL性能测试..."
     log_info "测试基于GitHub Release: 20250823_2217_mysql"
     
     # 检查依赖
     check_dependencies
+    
+    # 运行文件系统测试（如果请求）
+    if [ "$test_filesystem" = true ]; then
+        test_filesystem_performance
+    fi
     
     # 下载MySQL版本
     download_mysql_versions
@@ -322,16 +551,29 @@ main() {
     extract_files
     
     log_info "文件下载和解压完成。"
-    log_info "请手动启动各个MySQL实例，然后运行以下命令进行性能测试："
-    log_info ""
-    log_info "1. 设置测试数据库:"
-    log_info "   setup_test_database <host> <port> <user> <password>"
-    log_info ""
-    log_info "2. 运行性能测试:"
-    log_info "   run_sysbench_test <host> <port> <user> <password> <table_name> <engine_name>"
-    log_info ""
-    log_info "3. 生成报告:"
-    log_info "   generate_performance_report"
+    
+    if [ "$run_full_test" = true ]; then
+        log_info "运行完整测试套件需要手动启动MySQL实例"
+        log_info "请确保已启动MySQL实例，然后使用以下函数进行测试："
+        log_info "run_all_engine_tests <host> <port> <user> <password>"
+    else
+        log_info "请手动启动各个MySQL实例，然后运行以下命令进行性能测试："
+        log_info ""
+        log_info "1. 设置测试数据库:"
+        log_info "   setup_test_database <host> <port> <user> <password>"
+        log_info ""
+        log_info "2. 运行单个存储引擎测试:"
+        log_info "   run_sysbench_test <host> <port> <user> <password> <table_name> <engine_name>"
+        log_info ""
+        log_info "3. 运行全套存储引擎测试:"
+        log_info "   run_all_engine_tests <host> <port> <user> <password>"
+        log_info ""
+        log_info "4. 运行文件系统性能测试:"
+        log_info "   test_filesystem_performance"
+        log_info ""
+        log_info "5. 生成报告:"
+        log_info "   generate_performance_report"
+    fi
     
     log_success "MySQL性能测试准备工作完成！"
 }
