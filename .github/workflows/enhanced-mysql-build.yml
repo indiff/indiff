@@ -1,0 +1,494 @@
+name: Enhanced MySQL/RocksDB with ColumnStore
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '**/enhanced-mysql-build.yml'  
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      auto_fix_errors:
+        description: 'Enable automatic error fixing'
+        type: boolean
+        default: true
+        required: false
+      force_latest_deps:
+        description: 'Force latest dependency versions'
+        type: boolean
+        default: true
+        required: false
+  schedule:
+    - cron: '0 3 * * 1' # Weekly on Monday at 3 AM UTC
+
+env:
+  gcc_indiff_centos7_url: "https://github.com/indiff/gcc-build/releases/download/20250818_1113_16.0.0/gcc-indiff-centos7-16.0.0-x86_64-20250818_1111.xz"
+
+jobs:
+  build-enhanced-mysql-centos7:
+    runs-on: ubuntu-latest
+    timeout-minutes: 600 # 10 hours
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: "MySQL 8.4 with RocksDB"
+            repo: "https://github.com/mysql/mysql-server.git"
+            branch: "8.4"
+            prefix: "mysql84"
+          - name: "Percona Server 8.0 with RocksDB"  
+            repo: "https://github.com/percona/percona-server.git"
+            branch: "8.0"
+            prefix: "percona80"
+          - name: "MariaDB with ColumnStore"
+            repo: "https://github.com/MariaDB/server.git"
+            branch: "11.5"
+            prefix: "mariadb115"
+
+    steps:
+      - name: Free Disk Space
+        run: |
+          df -h
+          sudo apt-get clean
+          docker system prune -a -f
+          sudo rm -rf /opt/ghc /usr/local/.ghcup /usr/local/lib/android /usr/local/share/powershell /usr/share/dotnet /usr/local/julia*
+          df -h && free -h
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Create Enhanced Build Script
+        run: |
+          cat << 'EOFSCRIPT' > enhanced-build.sh
+          #!/bin/bash
+          set -e
+
+          # Enhanced auto-fix function with more comprehensive error handling
+          auto_fix_and_retry() {
+            local cmd="$1"
+            local log_file="$2"
+            local max_retries="${3:-3}"
+            local retry_count=0
+            
+            while [ $retry_count -lt $max_retries ]; do
+              echo "=== Attempt $((retry_count + 1))/$max_retries ==="
+              
+              if eval "$cmd" > "$log_file" 2>&1; then
+                echo "Command succeeded!"
+                return 0
+              fi
+              
+              echo "Command failed, analyzing errors..."
+              
+              # Enhanced error detection and fixing
+              if grep -qi "jemalloc" "$log_file" && grep -qi "undefined\|not found" "$log_file"; then
+                echo "Fixing jemalloc issues..."
+                export LDFLAGS="$LDFLAGS -ljemalloc -L/usr/lib64 -L/lib64"
+                export CMAKE_EXE_LINKER_FLAGS="$CMAKE_EXE_LINKER_FLAGS -ljemalloc"
+                export CMAKE_SHARED_LINKER_FLAGS="$CMAKE_SHARED_LINKER_FLAGS -ljemalloc"
+                ldconfig
+              fi
+              
+              if grep -qi "rocksdb" "$log_file" && grep -qi "not found\|no such file" "$log_file"; then
+                echo "Fixing RocksDB path issues..."
+                find /usr /opt -name "*rocksdb*" -type d 2>/dev/null | while read dir; do
+                  export CMAKE_PREFIX_PATH="$dir:$CMAKE_PREFIX_PATH"
+                  if [ -d "$dir/include" ]; then
+                    export CMAKE_INCLUDE_PATH="$dir/include:$CMAKE_INCLUDE_PATH"
+                  fi
+                  if [ -d "$dir/lib" ]; then
+                    export CMAKE_LIBRARY_PATH="$dir/lib:$CMAKE_LIBRARY_PATH"
+                  fi
+                done
+              fi
+              
+              if grep -qi "memory\|virtual.*exhausted" "$log_file"; then
+                echo "Reducing build parallelism due to memory issues..."
+                export MAKEFLAGS="-j$(($(nproc)/4))"
+                echo 3 > /proc/sys/vm/drop_caches 2>/dev/null || true
+              fi
+              
+              if grep -qi "protobuf.*version\|protobuf.*conflict" "$log_file"; then
+                echo "Fixing protobuf conflicts..."
+                unset PROTOC
+                export CMAKE_ARGS="$CMAKE_ARGS -DWITH_PROTOBUF=bundled"
+              fi
+              
+              if grep -qi "c++.*standard\|std::" "$log_file" && grep -qi "error" "$log_file"; then
+                echo "Fixing C++ standard issues..."
+                export CMAKE_CXX_FLAGS="$CMAKE_CXX_FLAGS -std=c++17"
+              fi
+              
+              retry_count=$((retry_count + 1))
+              
+              if [ $retry_count -lt $max_retries ]; then
+                echo "Retrying with fixes applied..."
+                sleep 5
+              fi
+            done
+            
+            echo "=== All retry attempts failed ==="
+            echo "Last 50 lines of log:"
+            tail -50 "$log_file"
+            return 1
+          }
+
+          # Environment setup
+          echo 'LANG=zh_CN.UTF-8' >> /etc/environment
+
+          # Find fastest mirror
+          MIRRORS=(
+              "http://mirror.rackspace.com/centos-vault/7.9.2009"
+              "https://mirror.nsc.liu.se/centos-store/7.9.2009" 
+              "https://linuxsoft.cern.ch/centos-vault/7.9.2009"
+              "https://archive.kernel.org/centos-vault/7.9.2009"
+              "https://vault.centos.org/7.9.2009"
+          )
+
+          FASTEST_MIRROR="${MIRRORS[0]}"  # Default
+          FASTEST_TIME=99999
+
+          for MIRROR in "${MIRRORS[@]}"; do
+              TIME=$(curl -o /dev/null -s -w "%{time_total}\n" "$MIRROR" 2>/dev/null || echo "99999")
+              if (( $(echo "$TIME < $FASTEST_TIME" | bc -l 2>/dev/null || echo "0") )); then
+                  FASTEST_TIME=$TIME
+                  FASTEST_MIRROR=$MIRROR
+              fi
+          done
+
+          echo "Using fastest mirror: $FASTEST_MIRROR"
+
+          # Setup repositories
+          cat > /etc/yum.repos.d/CentOS-Base.repo << EOF
+          [base]
+          name=CentOS-Base
+          baseurl=${FASTEST_MIRROR}/os/\$basearch/
+          gpgcheck=0
+          enabled=1
+          [updates]
+          name=CentOS-updates
+          baseurl=${FASTEST_MIRROR}/updates/\$basearch/
+          gpgcheck=0
+          enabled=1
+          [extras]
+          name=CentOS-extras
+          baseurl=${FASTEST_MIRROR}/extras/\$basearch/
+          gpgcheck=0
+          enabled=1
+          EOF
+
+          yum clean all
+          yum makecache fast
+          yum install -y https://dl.fedoraproject.org/pub/archive/epel/7/x86_64/Packages/e/epel-release-7-14.noarch.rpm
+
+          # Install system packages
+          yum -y install tzdata
+          ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+
+          yum update -y
+          yum install -y \
+            git wget curl unzip tar gzip \
+            make cmake3 ninja-build bc \
+            gcc gcc-c++ \
+            glibc-devel tree python3 \
+            openssl-devel zlib-devel \
+            ncurses-devel readline-devel \
+            libaio-devel numactl-devel \
+            bison flex \
+            jemalloc-devel \
+            lz4-devel zstd \
+            snappy snappy-devel \
+            boost-devel \
+            systemd-devel pam-devel \
+            krb5-devel \
+            openldap-devel \
+            cyrus-sasl-devel \
+            libicu-devel \
+            libtirpc-devel \
+            libatomic \
+            rpm-build checkpolicy policycoreutils-python
+
+          # Update Git
+          yum -y remove git || true
+          yum -y install https://packages.endpointdev.com/rhel/7/os/x86_64/endpoint-repo.x86_64.rpm
+          yum -y install git
+          git --version
+
+          # Install modern compiler
+          curl -sLo /opt/gcc-indiff.zip ${{ env.gcc_indiff_centos7_url }}
+          unzip /opt/gcc-indiff.zip -d /opt/gcc-indiff
+
+          export PATH=/opt/gcc-indiff/bin:/usr/local/bin:/opt/cmake/bin:$PATH
+          export CC=/opt/gcc-indiff/bin/gcc
+          export CXX=/opt/gcc-indiff/bin/g++
+          export VCPKG_FORCE_SYSTEM_BINARIES=1
+
+          # Install latest CMake
+          curl -sLo cmake.tar.gz https://github.com/Kitware/CMake/releases/download/v3.31.8/cmake-3.31.8-linux-x86_64.tar.gz
+          tar -xzf cmake.tar.gz
+          mv cmake-3.31.8-linux-x86_64 /opt/cmake
+          ln -sf /opt/cmake/bin/cmake /usr/bin/cmake
+          cmake --version
+
+          # Setup vcpkg with latest packages
+          git clone --depth 1 https://github.com/Microsoft/vcpkg.git
+          cd vcpkg
+          ./bootstrap-vcpkg.sh
+          export VCPKG_ROOT=$(pwd)
+
+          echo "Installing latest dependencies via vcpkg..."
+          if [ "${{ github.event.inputs.force_latest_deps || 'true' }}" = "true" ]; then
+            ./vcpkg update
+          fi
+
+          # Install comprehensive dependency set
+          ./vcpkg install \
+            rocksdb \
+            openssl \
+            zlib \
+            lz4 \
+            zstd \
+            snappy \
+            jemalloc \
+            bzip2 \
+            gflags \
+            boost \
+            curl \
+            protobuf \
+            --triplet x64-linux \
+            --clean-after-build
+          
+          cd ..
+
+          # Clone source
+          REPO_URL="${{ matrix.repo }}"
+          BRANCH="${{ matrix.branch }}"
+          
+          echo "Cloning $REPO_URL branch $BRANCH..."
+          git clone --depth 1 -b "$BRANCH" "$REPO_URL" source-code
+          cd source-code
+          git submodule update --init --recursive
+          
+          # Special handling for MariaDB ColumnStore
+          if [[ "${{ matrix.name }}" == *"MariaDB"* ]]; then
+            echo "Setting up MariaDB ColumnStore..."
+            git clone --depth 1 https://github.com/mariadb-corporation/mariadb-columnstore-engine.git storage/columnstore
+          fi
+          
+          cd ..
+
+          # Setup dependency paths
+          DEPS_SRC="$VCPKG_ROOT/installed/x64-linux"
+          DEPS_DST="/opt/build-deps"
+          mkdir -p "$DEPS_DST"/{include,lib,lib64}
+
+          rsync -a "$DEPS_SRC/include/" "$DEPS_DST/include/" || true
+          rsync -a "$DEPS_SRC/lib/" "$DEPS_DST/lib/" || true
+          rsync -a "/opt/gcc-indiff/include/" "$DEPS_DST/include/" || true
+          rsync -a "/opt/gcc-indiff/lib64/" "$DEPS_DST/lib64/" || true
+
+          # System libraries
+          find /usr/lib64 /lib64 -name "libjemalloc.so*" -exec cp {} "$DEPS_DST/lib64/" \; 2>/dev/null || true
+
+          # Environment variables
+          export CMAKE_PREFIX_PATH="$DEPS_DST:/opt/gcc-indiff"
+          export CMAKE_LIBRARY_PATH="$DEPS_DST/lib:$DEPS_DST/lib64:/usr/lib64"
+          export CMAKE_INCLUDE_PATH="$DEPS_DST/include"
+          export PKG_CONFIG_PATH="$DEPS_DST/lib/pkgconfig:$DEPS_DST/lib64/pkgconfig:/usr/lib64/pkgconfig"
+          export LIBRARY_PATH="/opt/gcc-indiff/lib64:$DEPS_DST/lib:$DEPS_DST/lib64:/usr/lib64"
+          export LD_LIBRARY_PATH="/opt/gcc-indiff/lib64:$DEPS_DST/lib:$DEPS_DST/lib64:/usr/lib64"
+
+          # Build configuration
+          cd source-code
+          mkdir -p build boost
+          cd build
+
+          INSTALL_PREFIX="/opt/${{ matrix.prefix }}"
+          
+          # Configure build based on type
+          if [[ "${{ matrix.name }}" == *"MariaDB"* ]]; then
+            CMAKE_ARGS=(
+              -DCMAKE_INSTALL_PREFIX="$INSTALL_PREFIX"
+              -DCMAKE_BUILD_TYPE=Release
+              -DWITH_ROCKSDB=ON
+              -DWITH_COLUMNSTORE=ON
+              -DPLUGIN_COLUMNSTORE=YES
+              -DWITH_SSL=system
+              -DWITH_ZLIB=system
+              -DOPENSSL_ROOT_DIR="$DEPS_DST"
+              -DCMAKE_PREFIX_PATH="$DEPS_DST"
+              -DWITH_UNIT_TESTS=OFF
+              -DWITH_TESTS=OFF
+              -DWITH_DOCS=OFF
+            )
+          else
+            CMAKE_ARGS=(
+              -DCMAKE_INSTALL_PREFIX="$INSTALL_PREFIX"
+              -DCMAKE_BUILD_TYPE=Release
+              -DWITH_BOOST=../boost -DDOWNLOAD_BOOST=1
+              -DWITH_ROCKSDB=ON
+              -DWITH_SSL=system
+              -DWITH_ZLIB=system
+              -DWITH_LZ4=system
+              -DWITH_ZSTD=system
+              -DWITH_SNAPPY=system
+              -DWITH_JEMALLOC=system
+              -DOPENSSL_ROOT_DIR="$DEPS_DST"
+              -DWITH_PROTOBUF=bundled
+              -DCMAKE_PREFIX_PATH="$DEPS_DST"
+              -DWITH_UNIT_TESTS=OFF
+              -DWITH_TESTS=OFF
+              -DWITH_DOCS=OFF
+            )
+          fi
+
+          # Add common flags
+          CMAKE_ARGS+=(
+            -G Ninja
+            -DCMAKE_EXE_LINKER_FLAGS="-L$DEPS_DST/lib -L$DEPS_DST/lib64 -L/usr/lib64"
+            -DCMAKE_SHARED_LINKER_FLAGS="-L$DEPS_DST/lib -L$DEPS_DST/lib64 -L/usr/lib64"
+            -DCMAKE_INSTALL_RPATH='$ORIGIN/../lib:$ORIGIN/../lib64'
+            -DCMAKE_BUILD_RPATH="/opt/gcc-indiff/lib64:$DEPS_DST/lib:$DEPS_DST/lib64"
+            -DCMAKE_INSTALL_RPATH_USE_LINK_PATH=ON
+          )
+
+          echo "Starting build with auto-fix enabled: ${{ github.event.inputs.auto_fix_errors || 'true' }}"
+
+          # Configure and build with auto-fix
+          BUILD_LOG="/workspace/build-${{ matrix.prefix }}.log"
+          
+          if [ "${{ github.event.inputs.auto_fix_errors || 'true' }}" = "true" ]; then
+            auto_fix_and_retry "cmake .. \${CMAKE_ARGS[@]}" "$BUILD_LOG.config" 3
+            auto_fix_and_retry "cmake --build . -j\$(nproc) --target install" "$BUILD_LOG.build" 3
+          else
+            cmake .. "${CMAKE_ARGS[@]}" 2>&1 | tee "$BUILD_LOG.config"
+            cmake --build . -j"$(nproc)" --target install 2>&1 | tee "$BUILD_LOG.build"
+          fi
+
+          # Package
+          cd "$INSTALL_PREFIX"
+          
+          # Clean up unnecessary files
+          rm -rf man mysql-test share/mysql-test 2>/dev/null || true
+          rm -f bin/mysqld-debug sbin/mysqld-debug 2>/dev/null || true
+          rm -f bin/mysqltest* bin/ps_* bin/mytap 2>/dev/null || true
+
+          # Create package
+          PACKAGE_NAME="${{ matrix.prefix }}-enhanced-centos7-$(date +'%Y%m%d_%H%M').xz"
+          zip -r -9 "/workspace/$PACKAGE_NAME" .
+
+          echo "Build completed: $PACKAGE_NAME"
+          EOFSCRIPT
+          
+          chmod +x enhanced-build.sh
+
+      - name: Build in CentOS 7 Container
+        env:
+          MATRIX_NAME: ${{ matrix.name }}
+          MATRIX_REPO: ${{ matrix.repo }}
+          MATRIX_BRANCH: ${{ matrix.branch }}
+          MATRIX_PREFIX: ${{ matrix.prefix }}
+        run: |
+          sudo timedatectl set-timezone Asia/Shanghai
+          docker run --cpus="$(nproc)" --privileged -u root --rm \
+            -v ${{ github.workspace }}:/workspace \
+            -w /workspace \
+            -e MATRIX_NAME="$MATRIX_NAME" \
+            -e MATRIX_REPO="$MATRIX_REPO" \
+            -e MATRIX_BRANCH="$MATRIX_BRANCH" \
+            -e MATRIX_PREFIX="$MATRIX_PREFIX" \
+            centos:7 \
+            /bin/bash -c "./enhanced-build.sh"
+
+      - name: Upload Package
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.prefix }}-enhanced-centos7
+          path: ${{ github.workspace }}/*.xz
+
+      - name: Upload Build Logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-logs-${{ matrix.prefix }}
+          path: ${{ github.workspace }}/*.log
+
+  publish-enhanced-release:
+    needs: [build-enhanced-mysql-centos7]
+    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request'
+
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Download All Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: false
+          
+      - name: Create Release
+        run: |
+          sudo apt install -y tree
+          sudo timedatectl set-timezone Asia/Shanghai
+          
+          echo "TAG_NAME=$(date +'%Y%m%d_%H%M')_enhanced_mysql_rocksdb_columnstore" >> $GITHUB_ENV
+          
+          # Get commit info from relevant repos
+          mysql_commit=$(curl -s https://api.github.com/repos/mysql/mysql-server/commits | jq -r '.[0] | "\(.commit.author.name) \(.commit.message) \(.commit.author.date)"' 2>/dev/null || echo "N/A")
+          percona_commit=$(curl -s https://api.github.com/repos/percona/percona-server/commits | jq -r '.[0] | "\(.commit.author.name) \(.commit.message) \(.commit.author.date)"' 2>/dev/null || echo "N/A")
+          mariadb_commit=$(curl -s https://api.github.com/repos/MariaDB/server/commits | jq -r '.[0] | "\(.commit.author.name) \(.commit.message) \(.commit.author.date)"' 2>/dev/null || echo "N/A")
+          rocksdb_commit=$(curl -s https://api.github.com/repos/facebook/rocksdb/commits | jq -r '.[0] | "\(.commit.author.name) \(.commit.message) \(.commit.author.date)"' 2>/dev/null || echo "N/A")
+          
+          cat > release_notes.md << EOF
+          ## 增强版 MySQL/RocksDB/ColumnStore 预编译包 $(date)
+          
+          ### 🚀 新增功能
+          - **自动错误修复**: 编译失败时自动检测并修复常见问题，重新编译
+          - **最新依赖版本**: 使用 vcpkg 管理，确保所有依赖库为最新版本
+          - **全面支持**: MySQL 8.4 + Percona 8.0 + MariaDB 11.5 (带 ColumnStore 引擎)
+          - **CentOS 7 优化**: 专为 CentOS 7 环境优化，最大兼容性
+          
+          ### 📦 包含组件
+          - **MySQL 8.4** with RocksDB Storage Engine
+          - **Percona Server 8.0** with RocksDB Storage Engine  
+          - **MariaDB 11.5** with ColumnStore + RocksDB Storage Engines
+          
+          ### 📋 技术特性
+          - 使用最新 GCC 编译器
+          - vcpkg 依赖管理 (OpenSSL, ZLIB, LZ4, ZSTD, Snappy, Jemalloc等)
+          - 自动错误检测和修复机制
+          - 优化的链接配置和运行时路径
+          
+          ### 🔄 最新提交信息
+          **MySQL**: $mysql_commit
+          **Percona**: $percona_commit  
+          **MariaDB**: $mariadb_commit
+          **RocksDB**: $rocksdb_commit
+          
+          ### 💾 安装方式
+          \`\`\`bash
+          # 下载并解压到 /opt
+          cd /opt
+          curl -L "https://github.com/indiff/indiff/releases/download/${{ env.TAG_NAME }}/[包名]" -o package.xz
+          unzip package.xz
+          # 或使用代理下载
+          curl -L "https://ghproxy.cfd/https://github.com/indiff/indiff/releases/download/${{ env.TAG_NAME }}/[包名]" -o package.xz
+          \`\`\`
+          
+          ### 🔧 配置说明
+          安装后请根据需要修改配置文件并初始化数据目录。
+          EOF
+          
+          tree artifacts
+          
+          # Create release with all artifacts
+          gh release create ${{ env.TAG_NAME }} \
+            -F release_notes.md \
+            --title "增强版 MySQL/RocksDB/ColumnStore 预编译包 $(date +'%Y-%m-%d')" \
+            artifacts/*/*.xz
+        env:
+          GITHUB_TOKEN: ${{ github.token }}

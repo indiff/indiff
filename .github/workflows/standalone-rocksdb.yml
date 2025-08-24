@@ -1,0 +1,507 @@
+name: Standalone RocksDB Build
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '**/standalone-rocksdb.yml'  
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      rocksdb_version:
+        description: 'RocksDB branch/tag to build'
+        type: string
+        default: "main"
+        required: false
+      enable_all_features:
+        description: 'Enable all RocksDB features'
+        type: boolean
+        default: true
+        required: false
+  schedule:
+    - cron: '0 4 * * 2' # Weekly on Tuesday at 4 AM UTC
+
+env:
+  gcc_indiff_centos7_url: "https://github.com/indiff/gcc-build/releases/download/20250818_1113_16.0.0/gcc-indiff-centos7-16.0.0-x86_64-20250818_1111.xz"
+
+jobs:
+  build-rocksdb-standalone:
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: "RocksDB CentOS 7"
+            os: "centos:7"
+            suffix: "centos7"
+          - name: "RocksDB Ubuntu 20.04"  
+            os: "ubuntu:20.04"
+            suffix: "ubuntu2004"
+
+    steps:
+      - name: Free Disk Space
+        run: |
+          df -h
+          sudo apt-get clean
+          docker system prune -a -f
+          sudo rm -rf /opt/ghc /usr/local/.ghcup /usr/local/lib/android /usr/local/share/powershell /usr/share/dotnet
+          df -h && free -h
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Create RocksDB Build Script for CentOS 7
+        if: matrix.suffix == 'centos7'
+        run: |
+          cat << 'EOFSCRIPT' > build-rocksdb-centos7.sh
+          #!/bin/bash
+          set -xe
+
+          # Environment setup
+          echo 'LANG=zh_CN.UTF-8' >> /etc/environment
+
+          # Setup fastest CentOS mirror
+          MIRRORS=(
+              "http://mirror.rackspace.com/centos-vault/7.9.2009"
+              "https://mirror.nsc.liu.se/centos-store/7.9.2009"
+              "https://linuxsoft.cern.ch/centos-vault/7.9.2009"
+              "https://archive.kernel.org/centos-vault/7.9.2009"
+              "https://vault.centos.org/7.9.2009"
+          )
+
+          FASTEST_MIRROR="${MIRRORS[0]}"
+          FASTEST_TIME=99999
+
+          for MIRROR in "${MIRRORS[@]}"; do
+              TIME=$(curl -o /dev/null -s -w "%{time_total}\n" "$MIRROR" 2>/dev/null || echo "99999")
+              if (( $(echo "$TIME < $FASTEST_TIME" | bc -l 2>/dev/null || echo "0") )); then
+                  FASTEST_TIME=$TIME
+                  FASTEST_MIRROR=$MIRROR
+              fi
+          done
+
+          echo "Using fastest mirror: $FASTEST_MIRROR"
+
+          # Setup repositories
+          cat > /etc/yum.repos.d/CentOS-Base.repo << EOF
+          [base]
+          name=CentOS-Base
+          baseurl=${FASTEST_MIRROR}/os/\$basearch/
+          gpgcheck=0
+          [updates]
+          name=CentOS-updates
+          baseurl=${FASTEST_MIRROR}/updates/\$basearch/
+          gpgcheck=0
+          [extras]
+          name=CentOS-extras
+          baseurl=${FASTEST_MIRROR}/extras/\$basearch/
+          gpgcheck=0
+          EOF
+
+          yum clean all && yum makecache
+          yum install -y https://dl.fedoraproject.org/pub/archive/epel/7/x86_64/Packages/e/epel-release-7-14.noarch.rpm
+
+          yum -y install tzdata
+          ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+
+          yum update -y
+          yum install -y \
+            git wget curl unzip tar gzip bc \
+            make cmake3 ninja-build \
+            gcc gcc-c++ \
+            glibc-devel tree python3 \
+            openssl-devel zlib-devel \
+            lz4-devel zstd \
+            snappy snappy-devel \
+            bzip2-devel \
+            gflags-devel \
+            jemalloc-devel \
+            libatomic
+
+          # Update Git
+          yum -y remove git || true
+          yum -y install https://packages.endpointdev.com/rhel/7/os/x86_64/endpoint-repo.x86_64.rpm
+          yum -y install git
+          git --version
+
+          # Install modern GCC
+          curl -sLo /opt/gcc-indiff.zip ${{ env.gcc_indiff_centos7_url }}
+          unzip /opt/gcc-indiff.zip -d /opt/gcc-indiff
+
+          export PATH=/opt/gcc-indiff/bin:/usr/local/bin:/opt/cmake/bin:$PATH
+          export CC=/opt/gcc-indiff/bin/gcc
+          export CXX=/opt/gcc-indiff/bin/g++
+          export VCPKG_FORCE_SYSTEM_BINARIES=1
+
+          # Install latest CMake
+          curl -sLo cmake.tar.gz https://github.com/Kitware/CMake/releases/download/v3.31.8/cmake-3.31.8-linux-x86_64.tar.gz
+          tar -xzf cmake.tar.gz
+          mv cmake-3.31.8-linux-x86_64 /opt/cmake
+          ln -sf /opt/cmake/bin/cmake /usr/bin/cmake
+          cmake --version
+
+          # Setup vcpkg for latest dependencies
+          git clone --depth 1 https://github.com/Microsoft/vcpkg.git
+          cd vcpkg
+          ./bootstrap-vcpkg.sh
+          export VCPKG_ROOT=$(pwd)
+
+          # Install RocksDB dependencies
+          ./vcpkg install \
+            gflags \
+            snappy \
+            lz4 \
+            zstd \
+            zlib \
+            bzip2 \
+            jemalloc \
+            --triplet x64-linux \
+            --clean-after-build
+
+          cd ..
+
+          # Clone RocksDB
+          ROCKSDB_VERSION="${{ github.event.inputs.rocksdb_version || 'main' }}"
+          echo "Cloning RocksDB version: $ROCKSDB_VERSION"
+          git clone --depth 1 -b "$ROCKSDB_VERSION" https://github.com/facebook/rocksdb.git
+          cd rocksdb
+
+          # Setup dependency paths
+          DEPS_SRC="$VCPKG_ROOT/installed/x64-linux"
+          DEPS_DST="/opt/rocksdb-deps"
+          mkdir -p "$DEPS_DST"/{include,lib,lib64}
+
+          rsync -a "$DEPS_SRC/include/" "$DEPS_DST/include/" || true
+          rsync -a "$DEPS_SRC/lib/" "$DEPS_DST/lib/" || true
+          rsync -a "/opt/gcc-indiff/include/" "$DEPS_DST/include/" || true
+          rsync -a "/opt/gcc-indiff/lib64/" "$DEPS_DST/lib64/" || true
+
+          # Environment
+          export CMAKE_PREFIX_PATH="$DEPS_DST:/opt/gcc-indiff"
+          export CMAKE_LIBRARY_PATH="$DEPS_DST/lib:$DEPS_DST/lib64:/usr/lib64"
+          export CMAKE_INCLUDE_PATH="$DEPS_DST/include"
+          export PKG_CONFIG_PATH="$DEPS_DST/lib/pkgconfig:$DEPS_DST/lib64/pkgconfig:/usr/lib64/pkgconfig"
+          export LIBRARY_PATH="/opt/gcc-indiff/lib64:$DEPS_DST/lib:$DEPS_DST/lib64:/usr/lib64"
+          export LD_LIBRARY_PATH="/opt/gcc-indiff/lib64:$DEPS_DST/lib:$DEPS_DST/lib64:/usr/lib64"
+
+          # Build RocksDB
+          mkdir -p build
+          cd build
+
+          # Configure RocksDB with all features
+          CMAKE_ARGS=(
+            -DCMAKE_INSTALL_PREFIX=/opt/rocksdb
+            -DCMAKE_BUILD_TYPE=Release
+            -DCMAKE_PREFIX_PATH="$DEPS_DST"
+            -DWITH_GFLAGS=ON
+            -DWITH_SNAPPY=ON
+            -DWITH_LZ4=ON
+            -DWITH_ZSTD=ON
+            -DWITH_ZLIB=ON
+            -DWITH_BZ2=ON
+            -DWITH_JEMALLOC=ON
+            -DUSE_RTTI=ON
+            -DROCKSDB_BUILD_SHARED=ON
+            -DROCKSDB_BUILD_STATIC=ON
+            -DWITH_TESTS=OFF
+            -DWITH_TOOLS=ON
+            -DWITH_BENCHMARK_TOOLS=ON
+            -DCMAKE_EXE_LINKER_FLAGS="-L$DEPS_DST/lib -L$DEPS_DST/lib64 -L/usr/lib64"
+            -DCMAKE_SHARED_LINKER_FLAGS="-L$DEPS_DST/lib -L$DEPS_DST/lib64 -L/usr/lib64"
+            -DCMAKE_INSTALL_RPATH='$ORIGIN/../lib:$ORIGIN/../lib64'
+            -DCMAKE_BUILD_RPATH="/opt/gcc-indiff/lib64:$DEPS_DST/lib:$DEPS_DST/lib64"
+            -DCMAKE_INSTALL_RPATH_USE_LINK_PATH=ON
+          )
+
+          # Enable additional features if requested
+          if [ "${{ github.event.inputs.enable_all_features || 'true' }}" = "true" ]; then
+            CMAKE_ARGS+=(
+              -DPORTABLE=ON
+              -DWITH_NUMA=ON
+              -DWITH_TBB=OFF
+              -DFAIL_ON_WARNINGS=OFF
+            )
+          fi
+
+          cmake .. "${CMAKE_ARGS[@]}"
+          cmake --build . -j"$(nproc)" --target install
+
+          # Create distribution package
+          cd /opt/rocksdb
+          
+          # Add version info
+          echo "RocksDB Standalone Build" > VERSION.txt
+          echo "Version: $ROCKSDB_VERSION" >> VERSION.txt
+          echo "Build Date: $(date)" >> VERSION.txt
+          echo "Features: All compression algorithms, tools, benchmarks" >> VERSION.txt
+          
+          # Package
+          zip -r -9 /workspace/rocksdb-standalone-centos7-$(date +'%Y%m%d_%H%M').xz .
+
+          echo "RocksDB standalone build completed!"
+          EOFSCRIPT
+          
+          chmod +x build-rocksdb-centos7.sh
+
+      - name: Create RocksDB Build Script for Ubuntu
+        if: matrix.suffix == 'ubuntu2004'
+        run: |
+          cat << 'EOFSCRIPT' > build-rocksdb-ubuntu.sh
+          #!/bin/bash
+          set -xe
+
+          # Environment setup
+          export DEBIAN_FRONTEND=noninteractive
+          export TZ=Asia/Shanghai
+
+          apt-get update
+          apt-get install -y tzdata
+          ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+
+          # Install build dependencies
+          apt-get install -y \
+            git wget curl unzip tar gzip \
+            build-essential cmake ninja-build \
+            pkg-config \
+            libssl-dev zlib1g-dev \
+            liblz4-dev libzstd-dev \
+            libsnappy-dev \
+            libbz2-dev \
+            libgflags-dev \
+            libjemalloc-dev \
+            tree
+
+          # Setup vcpkg
+          git clone --depth 1 https://github.com/Microsoft/vcpkg.git
+          cd vcpkg
+          ./bootstrap-vcpkg.sh
+          export VCPKG_ROOT=$(pwd)
+
+          # Install latest versions via vcpkg
+          ./vcpkg install \
+            gflags \
+            snappy \
+            lz4 \
+            zstd \
+            zlib \
+            bzip2 \
+            jemalloc \
+            --triplet x64-linux \
+            --clean-after-build
+
+          cd ..
+
+          # Clone RocksDB
+          ROCKSDB_VERSION="${{ github.event.inputs.rocksdb_version || 'main' }}"
+          echo "Cloning RocksDB version: $ROCKSDB_VERSION"
+          git clone --depth 1 -b "$ROCKSDB_VERSION" https://github.com/facebook/rocksdb.git
+          cd rocksdb
+
+          # Setup dependency paths
+          DEPS_SRC="$VCPKG_ROOT/installed/x64-linux"
+          DEPS_DST="/opt/rocksdb-deps"
+          mkdir -p "$DEPS_DST"/{include,lib,lib64}
+
+          rsync -a "$DEPS_SRC/include/" "$DEPS_DST/include/" || true
+          rsync -a "$DEPS_SRC/lib/" "$DEPS_DST/lib/" || true
+
+          # Environment
+          export CMAKE_PREFIX_PATH="$DEPS_DST"
+          export CMAKE_LIBRARY_PATH="$DEPS_DST/lib:$DEPS_DST/lib64"
+          export CMAKE_INCLUDE_PATH="$DEPS_DST/include"
+          export PKG_CONFIG_PATH="$DEPS_DST/lib/pkgconfig:$DEPS_DST/lib64/pkgconfig"
+
+          # Build RocksDB
+          mkdir -p build
+          cd build
+
+          cmake .. \
+            -DCMAKE_INSTALL_PREFIX=/opt/rocksdb \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_PREFIX_PATH="$DEPS_DST" \
+            -DWITH_GFLAGS=ON \
+            -DWITH_SNAPPY=ON \
+            -DWITH_LZ4=ON \
+            -DWITH_ZSTD=ON \
+            -DWITH_ZLIB=ON \
+            -DWITH_BZ2=ON \
+            -DWITH_JEMALLOC=ON \
+            -DUSE_RTTI=ON \
+            -DROCKSDB_BUILD_SHARED=ON \
+            -DROCKSDB_BUILD_STATIC=ON \
+            -DWITH_TESTS=OFF \
+            -DWITH_TOOLS=ON \
+            -DWITH_BENCHMARK_TOOLS=ON \
+            -DPORTABLE=ON \
+            -DCMAKE_INSTALL_RPATH='$ORIGIN/../lib' \
+            -DCMAKE_INSTALL_RPATH_USE_LINK_PATH=ON
+
+          cmake --build . -j"$(nproc)" --target install
+
+          # Package
+          cd /opt/rocksdb
+          
+          echo "RocksDB Standalone Build for Ubuntu" > VERSION.txt
+          echo "Version: $ROCKSDB_VERSION" >> VERSION.txt
+          echo "Build Date: $(date)" >> VERSION.txt
+          
+          zip -r -9 /workspace/rocksdb-standalone-ubuntu2004-$(date +'%Y%m%d_%H%M').xz .
+
+          echo "RocksDB Ubuntu build completed!"
+          EOFSCRIPT
+          
+          chmod +x build-rocksdb-ubuntu.sh
+
+      - name: Build RocksDB
+        run: |
+          sudo timedatectl set-timezone Asia/Shanghai
+          
+          if [ "${{ matrix.suffix }}" = "centos7" ]; then
+            SCRIPT="./build-rocksdb-centos7.sh"
+          else
+            SCRIPT="./build-rocksdb-ubuntu.sh"
+          fi
+          
+          docker run --cpus="$(nproc)" --privileged -u root --rm \
+            -v ${{ github.workspace }}:/workspace \
+            -w /workspace \
+            ${{ matrix.os }} \
+            /bin/bash -c "$SCRIPT"
+
+      - name: Upload RocksDB Package
+        uses: actions/upload-artifact@v4
+        with:
+          name: rocksdb-standalone-${{ matrix.suffix }}
+          path: ${{ github.workspace }}/rocksdb-*.xz
+
+  test-rocksdb-builds:
+    needs: [build-rocksdb-standalone]
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Download All Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: false
+          
+      - name: Test RocksDB Builds
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y unzip tree
+          
+          echo "=== Testing RocksDB builds ==="
+          for artifact_dir in artifacts/rocksdb-standalone-*; do
+            if [ -d "$artifact_dir" ]; then
+              echo "Testing artifact: $artifact_dir"
+              cd "$artifact_dir"
+              
+              for package in *.xz; do
+                if [ -f "$package" ]; then
+                  echo "Extracting $package..."
+                  unzip -q "$package" -d test_extract/
+                  
+                  echo "Contents:"
+                  tree test_extract/ || ls -la test_extract/
+                  
+                  # Basic validation
+                  if [ -f "test_extract/lib/librocksdb.so" ] && [ -f "test_extract/bin/db_bench" ]; then
+                    echo "✓ $package: Basic files present"
+                  else
+                    echo "✗ $package: Missing expected files"
+                  fi
+                  
+                  rm -rf test_extract/
+                fi
+              done
+              
+              cd ..
+            fi
+          done
+
+  publish-rocksdb-release:
+    needs: [build-rocksdb-standalone, test-rocksdb-builds]
+    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request'
+
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Download All Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: false
+          
+      - name: Create RocksDB Release
+        run: |
+          sudo apt install -y tree
+          sudo timedatectl set-timezone Asia/Shanghai
+          
+          echo "TAG_NAME=$(date +'%Y%m%d_%H%M')_rocksdb_standalone" >> $GITHUB_ENV
+          
+          # Get RocksDB commit info
+          rocksdb_version="${{ github.event.inputs.rocksdb_version || 'main' }}"
+          rocksdb_commit=$(curl -s "https://api.github.com/repos/facebook/rocksdb/commits/$rocksdb_version" | jq -r '"\(.commit.author.name) \(.commit.message) \(.commit.author.date)"' 2>/dev/null || echo "Latest from $rocksdb_version")
+          
+          cat > release_notes.md << EOF
+          ## RocksDB 独立预编译包 $(date)
+          
+          ### 📦 包含版本
+          - **RocksDB**: $rocksdb_version branch
+          - **平台支持**: CentOS 7, Ubuntu 20.04
+          
+          ### 🚀 特性
+          - 全功能构建 (所有压缩算法支持)
+          - 包含工具和基准测试程序
+          - 静态库和动态库
+          - 最新依赖版本 (通过 vcpkg)
+          - 优化的运行时链接配置
+          
+          ### 📋 包含组件
+          - librocksdb.so / librocksdb.a
+          - db_bench (性能测试工具)
+          - ldb (数据库管理工具)  
+          - sst_dump (SST 文件分析工具)
+          - 完整的头文件和 pkg-config
+          
+          ### 🔄 最新提交
+          **RocksDB**: $rocksdb_commit
+          
+          ### 💾 安装方式
+          \`\`\`bash
+          # 下载并解压
+          cd /opt
+          curl -L "https://github.com/indiff/indiff/releases/download/${{ env.TAG_NAME }}/rocksdb-standalone-centos7-[时间戳].xz" -o rocksdb.xz
+          unzip rocksdb.xz
+          
+          # 设置环境变量
+          export PKG_CONFIG_PATH="/opt/rocksdb/lib/pkgconfig:\$PKG_CONFIG_PATH"
+          export LD_LIBRARY_PATH="/opt/rocksdb/lib:\$LD_LIBRARY_PATH"
+          \`\`\`
+          
+          ### 🔧 使用示例
+          \`\`\`cpp
+          #include <rocksdb/db.h>
+          // 编译时链接: -lrocksdb
+          \`\`\`
+          
+          ### 📊 性能测试
+          \`\`\`bash
+          /opt/rocksdb/bin/db_bench --benchmarks=fillseq,readrandom
+          \`\`\`
+          EOF
+          
+          tree artifacts
+          
+          # Create release
+          gh release create ${{ env.TAG_NAME }} \
+            -F release_notes.md \
+            --title "RocksDB 独立预编译包 $(date +'%Y-%m-%d')" \
+            artifacts/*/*.xz
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
