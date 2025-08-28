@@ -839,6 +839,13 @@ jobs:
             # 输出变量
             echo "Commit Info: $commit_info"
             echo -e "## 你好$(date) percona \n > $commit_info\n" > hello.md
+
+            commit_info=$(curl -s -H "Authorization: Bearer $GITHUB_TOKEN" \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://api.github.com/repos/mariadb/server/commits \
+            | jq -r '.[0] | "\(.commit.author.name) \(.commit.message) \(.commit.author.date)"')
+
+            echo -e "## mariadb \n > $commit_info\n" >> hello.md
             cat <<'EOF' >> hello.md
             Proxy download:
             ```bash         
