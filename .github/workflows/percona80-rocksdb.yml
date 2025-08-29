@@ -751,7 +751,9 @@ jobs:
           cmake --install .
 
           cd $DEPS_DST
+          rm -rf $DEPS_DST/sql-bench
           rm -rf $DEPS_DST/man
+          rm -rf $DEPS_DST/mariadb-test
           rm -rf $DEPS_DST/mysql-test
           rm -rf $DEPS_DST/bin/mysqld-debug
           rm -rf $DEPS_DST/sbin/mysqld-debug
