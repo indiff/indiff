@@ -990,6 +990,12 @@ jobs:
             mecab  \
             --triplet $TRIPLET --clean-after-build	
 
+
+          wget https://archives.boost.io/release/1.89.0/source/boost_1_89_0.tar.bz2
+          mkdir -p /tmp/boost
+          tar -xjf boost_1_89_0.tar.bz2 -C /tmp/boost --strip-components=1
+
+
           git clone --filter=blob:none --depth 1 https://github.com/facebook/mysql-5.6.git server
           cd server
           git submodule update --init --recursive
@@ -1058,6 +1064,7 @@ jobs:
             -DCMAKE_MODULE_LINKER_FLAGS="-L/usr/lib64 -L/opt/gcc-indiff/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--no-as-needed -ldl" \
             -DDEFAULT_CHARSET="utf8mb4" \
             -DDEFAULT_COLLATION="utf8mb4_bin" \
+            -DWITH_BOOST="/tmp/boost" \
             -DWITH_TESTS=0 \
             -DWITH_BENCHMARK_TOOLS=0 \
             -DWITH_GFLAGS=0 \
