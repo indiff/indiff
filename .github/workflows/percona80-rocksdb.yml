@@ -1280,10 +1280,10 @@ jobs:
           # 仅构建 release ，减少构建时间与磁盘占用  不生成 dbg
           export VCPKG_BUILD_TYPE=release
 
-          # install cmake3 v4.1.0
-          curl -sLo cmake3.tar.gz https://github.com/Kitware/CMake/releases/download/v3.31.8/cmake-3.31.8-linux-x86_64.tar.gz
+          # install cmake3 v4.1.1
+          curl -sLo cmake3.tar.gz https://github.com/Kitware/CMake/releases/download/v4.1.1/cmake-4.1.1-linux-x86_64.tar.gz
           tar -xzf cmake3.tar.gz
-          mv cmake-3.31.8-linux-x86_64 /opt/cmake
+          mv cmake-4.1.1-linux-x86_64 /opt/cmake
           rm -f /usr/bin/cmake
           ln -sf /opt/cmake/bin/cmake /usr/bin/cmake
           
@@ -1314,7 +1314,7 @@ jobs:
           # openssl
 
           # 用 vcpkg 安装动态 curl （会生成 libcurl.so 并自动依赖 libssl/libcrypto)
-          $VCPKG_ROOT/vcpkg install curl[core,non-http,ssl,openssl,zstd] --triplet x64-linux-dynamic --clean-after-build
+          $VCPKG_ROOT/vcpkg install curl[core,non-http,ssl,openssl,zstd] snappy --triplet x64-linux-dynamic --clean-after-build
           $VCPKG_ROOT/vcpkg install \
             openssl \
             zlib \
@@ -1324,17 +1324,22 @@ jobs:
             libxml2 \
             libevent \
             pcre2 \
+            ncurses \
+            libpq[icu] \
             libaio  \
             --triplet $TRIPLET --clean-after-build	
 
           git clone --filter=blob:none --depth 1 https://github.com/mysql/mysql-server.git server
           cd server
-          wget https://archives.boost.io/release/1.89.0/source/boost_1_89_0.tar.bz2
-          cp boost_1_89_0.tar.bz2 extra/boost/
+          # wget https://archives.boost.io/release/1.89.0/source/boost_1_89_0.tar.bz2
+          # cp boost_1_89_0.tar.bz2 extra/boost/
+          grep -n 'BOOST_PACKAGE_NAME' cmake/boost.cmake || true
+          sed -i 's/^SET(BOOST_PACKAGE_NAME.*)$/SET(BOOST_PACKAGE_NAME "boost_1_89_0")/' cmake/boost.cmake
+          grep -n 'BOOST_PACKAGE_NAME' cmake/boost.cmake
           cd ..
 
           DEPS_SRC="$VCPKG_ROOT/installed/$TRIPLET"
-          DEPS_DST="/opt/fbmysql"
+          DEPS_DST="/opt/mysql"
           mkdir -p "$DEPS_DST"/{include,lib,lib64}
 
           # 2) 复制头文件与动态库（.so 与 .so.*）及 pkgconfig
@@ -1389,8 +1394,8 @@ jobs:
           unset PROTOC
           cmake .. -G Ninja \
             -DCMAKE_INSTALL_PREFIX=$DEPS_DST \
-            -DCMAKE_C_FLAGS="-I$DEPS_DST/include -O3 -pipe -fPIC -DPIC " \
-            -DCMAKE_CXX_FLAGS="-I$DEPS_DST/include -O3 -pipe -fPIC -DPIC " \
+            -DCMAKE_C_FLAGS="-I/opt/gcc-indiff/include -I$DEPS_DST/include -O3 -g -pipe -fPIC -DPIC " \
+            -DCMAKE_CXX_FLAGS="-I/opt/gcc-indiff/include -I$DEPS_DST/include -O3 -g -pipe -fPIC -DPIC " \
             -DCMAKE_EXE_LINKER_FLAGS="-L/usr/lib64 -L/opt/gcc-indiff/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--no-as-needed -ldl" \
             -DCMAKE_SHARED_LINKER_FLAGS="-L/usr/lib64 -L/opt/gcc-indiff/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--no-as-needed -ldl" \
             -DCMAKE_MODULE_LINKER_FLAGS="-L/usr/lib64 -L/opt/gcc-indiff/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--no-as-needed -ldl" \
@@ -1403,19 +1408,44 @@ jobs:
             -DWITH_TOOLS=OFF \
             -DWITH_BENCHMARK_TOOLS=OFF \
             -DWITH_CORE_TOOLS=OFF \
-            -DWITH_UNIT_TESTS=OFF \
+            -DWITH_MYISAM_STORAGE_ENGINE=1 \
             -DWITH_ARCHIVE_STORAGE_ENGINE=OFF \
             -DWITH_BLACKHOLE_STORAGE_ENGINE=OFF \
             -DWITH_FEDERATED_STORAGE_ENGINE=OFF \
             -DWITH_EXAMPLE_STORAGE_ENGINE=ON \
             -DWITH_INNODB_MEMCACHED=ON \
             -DWITH_ROUTER=OFF \
-            -DWITH_BOOST="../extra/boost/boost_1_89_0.tar.bz2" \
-            -DWITH_ZLIB=system -DWITH_ZSTD=system \
+            -DWITH_BOOST="/tmp/my_boost" \
+            -DDISABLE_PSI_COND=1 \
+            -DDISABLE_PSI_DATA_LOCK=1 \
+            -DDISABLE_PSI_ERROR=1 \
+            -DDISABLE_PSI_FILE=1 \
+            -DDISABLE_PSI_IDLE=1 \
+            -DDISABLE_PSI_MEMORY=1 \
+            -DDISABLE_PSI_METADATA=1 \
+            -DDISABLE_PSI_MUTEX=1 \
+            -DDISABLE_PSI_PS=1 \
+            -DDISABLE_PSI_RWLOCK=1 \
+            -DDISABLE_PSI_SOCKET=1 \
+            -DDISABLE_PSI_SP=1 \
+            -DDISABLE_PSI_STAGE=0 \
+            -DDISABLE_PSI_STATEMENT=1 \
+            -DDISABLE_PSI_STATEMENT_DIGEST=1 \
+            -DDISABLE_PSI_TABLE=1 \
+            -DDISABLE_PSI_THREAD=0 \
+            -DDISABLE_PSI_TRANSACTION=1 \
+            -DWITH_MYSQLX=OFF \
+            -DWITH_NDB=OFF \
+            -DWITH_LTO=ON \
+            -DWITH_MYSQLX=0 \
+            -DWITH_NDB_JAVA=0 \
+            -DWITH_RAPID=0 \
+            -DWITH_ROUTER=0 \
+            -DWITH_UNIT_TESTS=0 \
+            -DWITH_EDITLINE=system -DWITH_LIBEVENT=system -DWITH_LZ4=system -DWITH_ZLIB=system -DWITH_ZSTD=system \
             -DCMAKE_INSTALL_RPATH='$ORIGIN/../lib64:$ORIGIN/../lib' \
             -DCMAKE_BUILD_RPATH='$ORIGIN/../lib64:$ORIGIN/../lib' \
             -DWITH_DOCS=OFF -DWITH_MAN_PAGES=OFF
-  
 
           cmake .. -LH | tee /workspace/cmake-cache-vars-omysql-centos7.txt
 
