@@ -1471,7 +1471,7 @@ jobs:
             -DWITH_RAPID=0 \
             -DWITH_ROUTER=0 \
             -DWITH_UNIT_TESTS=0 \
-            -DWITH_EDITLINE=system -DWITH_LIBEVENT=system -DWITH_LZ4=system -DWITH_ZLIB=system -DWITH_ZSTD=system \
+            -DWITH_LIBEVENT=system -DWITH_LZ4=system -DWITH_ZLIB=system -DWITH_ZSTD=system \
             -DCMAKE_INSTALL_RPATH='$ORIGIN/../lib64:$ORIGIN/../lib' \
             -DCMAKE_BUILD_RPATH='$ORIGIN/../lib64:$ORIGIN/../lib' \
             -DWITH_DOCS=OFF -DWITH_MAN_PAGES=OFF
