@@ -1261,7 +1261,7 @@ jobs:
           yum -y install galera.x86_64       # Galera 集群库（二进制包），用于多主复制/同步（如果需要 Galera 多主集群）
           yum -y install boost               # Boost C++ 库集合（通用 C++ 库，构建时常用；在某些发行版为 boost-devel）
           yum -y install gdb
-          yum -y install autoconf automake autoconf-archive icu
+          yum -y install autoconf automake autoconf-archive icu wget
 
           # update git
           yum -y remove git
