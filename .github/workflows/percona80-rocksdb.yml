@@ -978,7 +978,6 @@ jobs:
             lz4 \
             zstd \
             bzip2 \
-            gflags \
             readline \
             lzo \
             libxml2 \
@@ -1057,12 +1056,36 @@ jobs:
             -DCMAKE_EXE_LINKER_FLAGS="-L/usr/lib64 -L/opt/gcc-indiff/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--no-as-needed -ldl" \
             -DCMAKE_SHARED_LINKER_FLAGS="-L/usr/lib64 -L/opt/gcc-indiff/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--no-as-needed -ldl" \
             -DCMAKE_MODULE_LINKER_FLAGS="-L/usr/lib64 -L/opt/gcc-indiff/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--no-as-needed -ldl" \
-            -DENABLE_DOWNLOADS=1 -DDOWNLOAD_BOOST=1 -DWITH_BOOST=../boost \
             -DDEFAULT_CHARSET="utf8mb4" \
             -DDEFAULT_COLLATION="utf8mb4_bin" \
             -DWITH_TESTS=0 \
-            -DWITH_BENCHMARK_TOOLS=0 \  
-            -DWITH_GFLAGS=1 \  
+            -DWITH_BENCHMARK_TOOLS=0 \
+            -DWITH_GFLAGS=0 \
+            -DDISABLE_PSI_COND=1 \
+            -DDISABLE_PSI_DATA_LOCK=1 \
+            -DDISABLE_PSI_ERROR=1 \
+            -DDISABLE_PSI_FILE=1 \
+            -DDISABLE_PSI_IDLE=1 \
+            -DDISABLE_PSI_MEMORY=1 \
+            -DDISABLE_PSI_METADATA=1 \
+            -DDISABLE_PSI_MUTEX=1 \
+            -DDISABLE_PSI_PS=1 \
+            -DDISABLE_PSI_RWLOCK=1 \
+            -DDISABLE_PSI_SOCKET=1 \
+            -DDISABLE_PSI_SP=1 \
+            -DDISABLE_PSI_STAGE=0 \
+            -DDISABLE_PSI_STATEMENT=1 \
+            -DDISABLE_PSI_STATEMENT_DIGEST=1 \
+            -DDISABLE_PSI_TABLE=1 \
+            -DDISABLE_PSI_THREAD=0 \
+            -DDISABLE_PSI_TRANSACTION=1 \
+            -DWITH_NDB=OFF \
+            -DWITH_LTO=ON \
+            -DWITH_MYSQLX=0 \
+            -DWITH_NDB_JAVA=0 \
+            -DWITH_RAPID=0 \
+            -DWITH_ROUTER=0 \
+            -DWITH_UNIT_TESTS=0 \
             -DWITH_ROCKSDB=ON \
             -DWITH_INNODB_MEMCACHED=ON \
             -DWITH_CURL=system \
@@ -1071,8 +1094,6 @@ jobs:
             -DWITH_SSL=system -DOPENSSL_ROOT_DIR="$DEPS_DST" \
             -DWITH_FIDO=system \
             -DWITH_MECAB=system \
-            -DWITH_ROUTER=OFF \
-            -DWITH_UNIT_TESTS=OFF \
             -DWITH_NUMA=OFF \
             -DWITH_ARCHIVE_STORAGE_ENGINE=OFF \
             -DWITH_BLACKHOLE_STORAGE_ENGINE=OFF \
@@ -1325,8 +1346,10 @@ jobs:
             libevent \
             pcre2 \
             ncurses \
-            libpq[icu] \
+            readline \
             libaio  \
+            libedit  \
+            pkgconf  \
             --triplet $TRIPLET --clean-after-build	
 
           git clone --filter=blob:none --depth 1 https://github.com/mysql/mysql-server.git server
