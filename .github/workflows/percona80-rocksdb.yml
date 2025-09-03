@@ -1355,7 +1355,6 @@ jobs:
             ncurses \
             readline \
             libaio  \
-            libedit  \
             pkgconf  \
             --triplet $TRIPLET --clean-after-build	
 
