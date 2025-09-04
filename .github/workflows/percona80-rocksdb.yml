@@ -991,10 +991,12 @@ jobs:
             --triplet $TRIPLET --clean-after-build	
 
 
-          wget https://archives.boost.io/release/1.89.0/source/boost_1_89_0.tar.bz2
+          # wget https://archives.boost.io/release/1.89.0/source/boost_1_89_0.tar.bz2
+          # mkdir -p /tmp/boost
+          # tar -xjf boost_1_89_0.tar.bz2 -C /tmp/boost --strip-components=1
+          wget  https://boostorg.jfrog.io/artifactory/main/release/1.77.0/source/boost_1_77_0.tar.bz2
           mkdir -p /tmp/boost
-          tar -xjf boost_1_89_0.tar.bz2 -C /tmp/boost --strip-components=1
-
+          tar -xjf boost_1_77_0.tar.bz2 -C /tmp/boost --strip-components=1
 
           git clone --filter=blob:none --depth 1 https://github.com/facebook/mysql-5.6.git server
           cd server
