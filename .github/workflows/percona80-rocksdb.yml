@@ -918,7 +918,7 @@ jobs:
           yum -y install galera.x86_64       # Galera 集群库（二进制包），用于多主复制/同步（如果需要 Galera 多主集群）
           yum -y install boost               # Boost C++ 库集合（通用 C++ 库，构建时常用；在某些发行版为 boost-devel）
           yum -y install gdb
-          yum -y install autoconf automake autoconf-archive icu
+          yum -y install autoconf automake autoconf-archive icu wget
 
           # update git
           yum -y remove git
@@ -1252,7 +1252,7 @@ jobs:
           ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
           echo 'Asia/Shanghai' > /etc/timezone
           yum update -y
-          yum install -y glibc-devel tree python3
+          yum install -y glibc-devel tree
           yum -y install make kernel-headers kernel-devel pkgconfig perl-IPC-Cmd perl-Test-Simple perl-FindBin perl-IPC-Cmd perl-Text-Template perl-File-Compare perl-File-Copy perl-Data-Dumper
           yum -y install \
             zip unzip rsync cmake3 ninja-build \
@@ -1290,6 +1290,14 @@ jobs:
           yum -y install boost               # Boost C++ 库集合（通用 C++ 库，构建时常用；在某些发行版为 boost-devel）
           yum -y install gdb
           yum -y install autoconf autoconf-archive icu wget automake libtool m4 pkgconfig
+
+          # install python 38
+          yum -y install centos-release-scl
+          yum -y install rh-python38 rh-python38-python-devel
+          scl enable rh-python38 bash
+          ln -s /opt/rh/rh-python38/root/usr/bin/python3 /usr/bin/python3
+          ln -s /opt/rh/rh-python38/root/usr/bin/pip3 /usr/bin/pip3
+          python3 --version
 
           # update git
           yum -y remove git
