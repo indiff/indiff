@@ -1360,7 +1360,7 @@ jobs:
           # 用 vcpkg 安装动态 curl （会生成 libcurl.so 并自动依赖 libssl/libcrypto)
           $VCPKG_ROOT/vcpkg install curl[core,non-http,ssl,openssl,zstd] snappy --triplet x64-linux-dynamic --clean-after-build
           $VCPKG_ROOT/vcpkg install \
-            openssl \
+            openssl cyrus-sasl \
             zlib \
             lz4 \
             zstd \
