@@ -15,7 +15,7 @@ on:
     - cron: '3 7 * * *' # UTC 时间 1:00 对应中国时间 9:00          
 env:
   gcc_indiff_ubuntu_url: "https://github.com/indiff/gcc-build/releases/download/20250416_1126/gcc-indiff-ubuntu-x86_64-20250416_1125.xz"
-  gcc_indiff_centos7_url: "https://github.com/indiff/gcc-build/releases/download/20250818_1113_16.0.0/gcc-indiff-centos7-16.0.0-x86_64-20250818_1111.xz"
+  gcc_indiff_centos7_url: "https://github.com/indiff/gcc-build/releases/download/20250908_0934_16.0.0/gcc-indiff-centos7-16.0.0-x86_64-20250908_0931.xz"
 jobs:
   build-percona-in-ubuntu:
     runs-on: ubuntu-latest
