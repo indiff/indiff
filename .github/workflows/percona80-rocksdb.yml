@@ -1100,7 +1100,7 @@ jobs:
             -DWITH_INNODB_MEMCACHED=ON \
             -DWITH_CURL=system \
             -DWITH_LZ4=system -DWITH_ZSTD=system -DWITH_SNAPPY=system -DWITH_JEMALLOC=system \
-            -DWITH_PROTOBUF=system \
+            -DWITH_PROTOBUF=bundled  \
             -DWITH_SSL=system -DOPENSSL_ROOT_DIR="$DEPS_DST" \
             -DWITH_FIDO=system \
             -DWITH_MECAB=system \
@@ -1358,7 +1358,8 @@ jobs:
           # openssl
 
           # 用 vcpkg 安装动态 curl （会生成 libcurl.so 并自动依赖 libssl/libcrypto)
-          $VCPKG_ROOT/vcpkg install curl[core,non-http,ssl,openssl,zstd] snappy cyrus-sasl --triplet x64-linux-dynamic --clean-after-build
+          # cyrus-sasl
+          $VCPKG_ROOT/vcpkg install curl[core,non-http,ssl,openssl,zstd] snappy --triplet x64-linux-dynamic --clean-after-build
           $VCPKG_ROOT/vcpkg install \
             openssl \
             zlib \
