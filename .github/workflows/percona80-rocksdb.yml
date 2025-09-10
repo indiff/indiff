@@ -988,7 +988,6 @@ jobs:
             libfido2  \
             protobuf  \
             mecab  \
-            libunwind \
             --triplet $TRIPLET --clean-after-build	
 
 
@@ -1105,6 +1104,7 @@ jobs:
             -DWITH_SSL=system -DOPENSSL_ROOT_DIR="$DEPS_DST" \
             -DWITH_FIDO=system \
             -DWITH_MECAB=OFF \
+            -DWITH_EXT_BACKTRACE=OFF \
             -DWITH_NUMA=OFF \
             -DWITH_ARCHIVE_STORAGE_ENGINE=OFF \
             -DWITH_BLACKHOLE_STORAGE_ENGINE=OFF \
@@ -1264,7 +1264,6 @@ jobs:
             ncurses-devel \
             gflags-devel \
             numactl-devel \
-            bison \
             systemd-devel \
             readline-devel \
             libedit-devel \
@@ -1370,7 +1369,6 @@ jobs:
             readline \
             libaio  \
             pkgconf  \
-            openldap[cyrus-sasl] \
             --triplet $TRIPLET --clean-after-build	
 
           git clone --filter=blob:none --depth 1 https://github.com/mysql/mysql-server.git server
@@ -1481,9 +1479,10 @@ jobs:
             -DWITH_MYSQLX=OFF \
             -DWITH_NDB=OFF \
             -DWITH_CNO=OFF \
+            -DWITH_AUTHENTICATION_LDAP=OFF \
             -DWITH_LTO=ON \
             -DWITH_MYSQLX=0 -DWITH_NDBCLUSTER_STORAGE_ENGINE=OFF -DWITH_NDBMTD=OFF \
-            -DWITH_LDAP=none -DWITH_SASL=OFF -DWITH_KERBEROS=none -DWITH_FIDO=none \
+            -DWITH_LDAP=OFF -DWITH_SASL=OFF -DWITH_KERBEROS=OFF -DWITH_FIDO=OFF \
             -DWITH_EXT_BACKTRACE=OFF \
             -DWITH_LSAN=OFF -DWITH_ASAN=OFF -DWITH_TSAN=OFF -DWITH_UBSAN=OFF -DWITH_DEBUG=OFF -DWITH_LOCK_ORDER=OFF -DENABLED_PROFILING=OFF -DWITH_NUMA=OFF \
             -DWITH_NDB_JAVA=0 \
