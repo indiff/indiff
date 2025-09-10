@@ -1099,7 +1099,7 @@ jobs:
             -DWITH_ROCKSDB=ON \
             -DWITH_INNODB_MEMCACHED=ON \
             -DWITH_CURL=system \
-            -DWITH_LZ4=system -DWITH_ZSTD=system -DWITH_SNAPPY=system -DWITH_JEMALLOC=system \
+            -DWITH_LZ4=system -DWITH_ZSTD=system -DWITH_SNAPPY=system \
             -DWITH_PROTOBUF=bundled  \
             -DWITH_SSL=system -DOPENSSL_ROOT_DIR="$DEPS_DST" \
             -DWITH_FIDO=system \
@@ -1479,12 +1479,15 @@ jobs:
             -DWITH_MYSQLX=OFF \
             -DWITH_NDB=OFF \
             -DWITH_CNO=OFF \
+            -DMSVC_CPPCHECK=OFF \
+            -DMAX_INDEXES=128 \
             -DWITH_AUTHENTICATION_LDAP=OFF \
             -DWITH_LTO=ON \
             -DWITH_MYSQLX=0 -DWITH_NDBCLUSTER_STORAGE_ENGINE=OFF -DWITH_NDBMTD=OFF \
-            -DWITH_LDAP=OFF -DWITH_SASL=OFF -DWITH_KERBEROS=OFF -DWITH_FIDO=OFF \
+            -DWITH_LDAP=OFF -DWITH_SASL=OFF -DWITH_FIDO=OFF \
             -DWITH_EXT_BACKTRACE=OFF \
             -DWITH_LSAN=OFF -DWITH_ASAN=OFF -DWITH_TSAN=OFF -DWITH_UBSAN=OFF -DWITH_DEBUG=OFF -DWITH_LOCK_ORDER=OFF -DENABLED_PROFILING=OFF -DWITH_NUMA=OFF \
+            -DWITH_KERBEROS=none \
             -DWITH_NDB_JAVA=0 \
             -DWITH_RAPID=0 \
             -DWITH_ROUTER=0 \
