@@ -1105,8 +1105,9 @@ jobs:
             -DWITH_ROCKSDB=ON \
             -DWITH_INNODB_MEMCACHED=ON \
             -DWITH_CURL=system \
-            -DWITH_LZ4=system -DWITH_ZSTD=system -DWITH_SNAPPY=system \
-            -DWITH_PROTOBUF=bundled  \
+            -DWITH_ZLIB=system -DWITH_LZ4=system -DWITH_ZSTD=system -DWITH_SNAPPY=system \
+            -DWITH_PROTOBUF=system  \
+            -DWITH_ICU=system  \
             -DWITH_SSL=system -DOPENSSL_ROOT_DIR="$DEPS_DST" \
             -DWITH_FIDO=system \
             -DWITH_MECAB=OFF \
@@ -1444,8 +1445,10 @@ jobs:
           unset PROTOC
           cmake .. -G Ninja \
             -DCMAKE_INSTALL_PREFIX=$DEPS_DST \
-            -DCMAKE_C_FLAGS="-I/opt/gcc-indiff/include -I$DEPS_DST/include -O3 -g -pipe -fPIC -DPIC " \
-            -DCMAKE_CXX_FLAGS="-I/opt/gcc-indiff/include -I$DEPS_DST/include -O3 -g -pipe -fPIC -DPIC -march=native " \
+            -DCMAKE_C_FLAGS="-I$DEPS_DST/include -O3 -g -pipe -fPIC -DPIC " \
+            -DCMAKE_CXX_FLAGS="-I$DEPS_DST/include -O3 -g -pipe -fPIC -DPIC -march=native -std=gnu++17 " \
+            -DCMAKE_CXX_STANDARD=17 \
+            -DCMAKE_CXX_EXTENSIONS=OFF \
             -DCMAKE_EXE_LINKER_FLAGS="-L/usr/lib64 -L/opt/gcc-indiff/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--no-as-needed -ldl" \
             -DCMAKE_SHARED_LINKER_FLAGS="-L/usr/lib64 -L/opt/gcc-indiff/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--no-as-needed -ldl" \
             -DCMAKE_MODULE_LINKER_FLAGS="-L/usr/lib64 -L/opt/gcc-indiff/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--no-as-needed -ldl" \
