@@ -897,7 +897,6 @@ jobs:
             readline-devel \
             libedit-devel \
             cyrus-sasl cyrus-sasl-devel cyrus-sasl-gssapi \
-            libicu-devel \
             cyrus-sasl-devel cyrus-sasl-scram \
             libatomic \
             libtirpc libtirpc-devel
@@ -1011,6 +1010,17 @@ jobs:
           DEPS_SRC="$VCPKG_ROOT/installed/$TRIPLET"
           DEPS_DST="/opt/fbmysql"
           mkdir -p "$DEPS_DST"/{include,lib,lib64}
+
+          # install icu for 
+          wget https://github.com/unicode-org/icu/releases/download/release-68-2/icu4c-68_2-src.tgz
+          tar -xzf icu4c-68_2-src.tgz
+          cd icu/source
+          ./configure --prefix=/usr/local/icu68
+          make -j$(nproc)
+          make install
+          rsync -a "/usr/local/icu68/include/" "$DEPS_DST/include/"
+          rsync -a "/usr/local/icu68/lib/"    "$DEPS_DST/lib64/"    || true
+          cd ../..
 
           # 2) 复制头文件与动态库（.so 与 .so.*）及 pkgconfig
           rsync -a "$DEPS_SRC/include/" "$DEPS_DST/include/"
@@ -1274,7 +1284,6 @@ jobs:
             systemd-devel \
             readline-devel \
             libedit-devel \
-            libicu-devel \
             libatomic \
             libtirpc libtirpc-devel
 
@@ -1388,12 +1397,23 @@ jobs:
           grep -n 'BOOST_PACKAGE_NAME' cmake/boost.cmake
           sed -i '/^[[:space:]]*#include[[:space:]]*<vector>[[:space:]]*$/a #include <cstdint>' extra/libcno/cno_huffman_generator.cc
           # patch fix /workspace/server/strings/collations_internal.cc:553:22: error: no matching function for call t
-          sed -i 's/hash\.find(\s*\(key\)\s*)/hash.find(std::string(\1))/g' /workspace/server/strings/collations_internal.cc
+          sed -i 's/hash\.find(\s*\(key\)\s*)/hash.find(std::to_string(\1))/g' /workspace/server/strings/collations_internal.cc
           cd ..
 
           DEPS_SRC="$VCPKG_ROOT/installed/$TRIPLET"
           DEPS_DST="/opt/mysql"
           mkdir -p "$DEPS_DST"/{include,lib,lib64}
+
+          # install icu for 
+          wget https://github.com/unicode-org/icu/releases/download/release-68-2/icu4c-68_2-src.tgz
+          tar -xzf icu4c-68_2-src.tgz
+          cd icu/source
+          ./configure --prefix=/usr/local/icu68
+          make -j$(nproc)
+          make install
+          rsync -a "/usr/local/icu68/include/" "$DEPS_DST/include/"
+          rsync -a "/usr/local/icu68/lib/"    "$DEPS_DST/lib64/"    || true
+          cd ../..
 
           # 2) 复制头文件与动态库（.so 与 .so.*）及 pkgconfig
           rsync -a "$DEPS_SRC/include/" "$DEPS_DST/include/"
@@ -1507,6 +1527,7 @@ jobs:
             -DWITH_RAPID=0 \
             -DWITH_ROUTER=0 \
             -DWITH_UNIT_TESTS=0 \
+            -DWITH_ICU=system \
             -DWITH_LIBEVENT=system -DWITH_LZ4=system -DWITH_ZLIB=system -DWITH_ZSTD=system \
             -DCMAKE_INSTALL_RPATH='$ORIGIN/../lib64:$ORIGIN/../lib' \
             -DCMAKE_BUILD_RPATH='$ORIGIN/../lib64:$ORIGIN/../lib' \
