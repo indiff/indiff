@@ -1012,14 +1012,14 @@ jobs:
           mkdir -p "$DEPS_DST"/{include,lib,lib64}
 
           # install icu for 
-          wget https://github.com/unicode-org/icu/releases/download/release-68-2/icu4c-68_2-src.tgz
-          tar -xzf icu4c-68_2-src.tgz
+          wget https://github.com/unicode-org/icu/releases/download/release-55-2/icu4c-55_2-src.tgz
+          tar -xzf icu4c-55_2-src.tgz
           cd icu/source
-          ./configure --prefix=/usr/local/icu68
+          ./configure --prefix=/usr/local/icu55
           make -j$(nproc)
           make install
-          rsync -a "/usr/local/icu68/include/" "$DEPS_DST/include/"
-          rsync -a "/usr/local/icu68/lib/"    "$DEPS_DST/lib64/"    || true
+          rsync -a "/usr/local/icu55/include/" "$DEPS_DST/include/"
+          rsync -a "/usr/local/icu55/lib/"    "$DEPS_DST/lib64/"    || true
           cd ../..
 
           # 2) 复制头文件与动态库（.so 与 .so.*）及 pkgconfig
@@ -1405,14 +1405,14 @@ jobs:
           mkdir -p "$DEPS_DST"/{include,lib,lib64}
 
           # install icu for 
-          wget https://github.com/unicode-org/icu/releases/download/release-68-2/icu4c-68_2-src.tgz
-          tar -xzf icu4c-68_2-src.tgz
+          wget https://github.com/unicode-org/icu/releases/download/release-55-2/icu4c-55_2-src.tgz
+          tar -xzf icu4c-55_2-src.tgz
           cd icu/source
-          ./configure --prefix=/usr/local/icu68
+          ./configure --prefix=/usr/local/icu55
           make -j$(nproc)
           make install
-          rsync -a "/usr/local/icu68/include/" "$DEPS_DST/include/"
-          rsync -a "/usr/local/icu68/lib/"    "$DEPS_DST/lib64/"    || true
+          rsync -a "/usr/local/icu55/include/" "$DEPS_DST/include/"
+          rsync -a "/usr/local/icu55/lib/"    "$DEPS_DST/lib64/"    || true
           cd ../..
 
           # 2) 复制头文件与动态库（.so 与 .so.*）及 pkgconfig
