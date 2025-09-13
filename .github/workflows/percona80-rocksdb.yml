@@ -1022,7 +1022,7 @@ jobs:
           rsync -a "/usr/local/icu68/include/" "$DEPS_DST/include/"
           rsync -a "/usr/local/icu68/lib/"    "$DEPS_DST/lib64/"    || true
           cd ../..
-          
+
           # 2) 复制头文件与动态库（.so 与 .so.*）及 pkgconfig
           rsync -a "$DEPS_SRC/include/" "$DEPS_DST/include/"
           rsync -a "$DEPS_SRC/lib/"      "$DEPS_DST/lib/"      || true
@@ -1385,7 +1385,8 @@ jobs:
             ncurses \
             readline \
             libaio  \
-            pkgconf  \
+            protobuf  \
+            pkgconf \
             --triplet $TRIPLET --clean-after-build	
 
           git clone --filter=blob:none --depth 1 https://github.com/mysql/mysql-server.git server
@@ -1530,6 +1531,7 @@ jobs:
             -DWITH_ROUTER=0 \
             -DWITH_UNIT_TESTS=0 \
             -DWITH_ICU=system \
+            -DWITH_PROTOBUF=system  \
             -DWITH_LIBEVENT=system -DWITH_LZ4=system -DWITH_ZLIB=system -DWITH_ZSTD=system \
             -DCMAKE_INSTALL_RPATH='$ORIGIN/../lib64:$ORIGIN/../lib' \
             -DCMAKE_BUILD_RPATH='$ORIGIN/../lib64:$ORIGIN/../lib' \
