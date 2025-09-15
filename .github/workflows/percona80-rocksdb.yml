@@ -1027,12 +1027,14 @@ jobs:
           rsync -a "$DEPS_SRC/include/" "$DEPS_DST/include/"
           rsync -a "$DEPS_SRC/lib/"      "$DEPS_DST/lib/"      || true
           rsync -a "$DEPS_SRC/lib64/"    "$DEPS_DST/lib64/"    || true
+          rsync -a "$DEPS_SRC/tools/"    "$DEPS_DST/tools/"    || true
 
           DEPS_SRC="$VCPKG_ROOT/installed/x64-linux-dynamic"
 
           rsync -a "$DEPS_SRC/include/" "$DEPS_DST/include/"
           rsync -a "$DEPS_SRC/lib/"      "$DEPS_DST/lib/"      || true
           rsync -a "$DEPS_SRC/lib64/"    "$DEPS_DST/lib64/"    || true
+          rsync -a "$DEPS_SRC/tools/"    "$DEPS_DST/tools/"    || true
                     
           rsync -a "/opt/gcc-indiff/include/" "$DEPS_DST/include/"
           rsync -a "/opt/gcc-indiff/lib64/"    "$DEPS_DST/lib64/"    || true
@@ -1118,6 +1120,8 @@ jobs:
             -DWITH_CURL=system \
             -DWITH_ZLIB=system -DWITH_LZ4=system -DWITH_ZSTD=system -DWITH_SNAPPY=system \
             -DWITH_PROTOBUF=system  \
+            -DPROTOBUF_PROTOC_LIBRARY="$DEPS_DST/lib/libprotobuf.a"  \
+            -DPROTOBUF_PROTOC_EXECUTABLE="$DEPS_DST/tools/protoc"  \
             -DWITH_ICU=system  \
             -DWITH_SSL=system -DOPENSSL_ROOT_DIR="$DEPS_DST" \
             -DWITH_FIDO=system \
@@ -1422,12 +1426,14 @@ jobs:
           rsync -a "$DEPS_SRC/include/" "$DEPS_DST/include/"
           rsync -a "$DEPS_SRC/lib/"      "$DEPS_DST/lib/"      || true
           rsync -a "$DEPS_SRC/lib64/"    "$DEPS_DST/lib64/"    || true
+          rsync -a "$DEPS_SRC/tools/"    "$DEPS_DST/tools/"    || true
 
           DEPS_SRC="$VCPKG_ROOT/installed/x64-linux-dynamic"
 
           rsync -a "$DEPS_SRC/include/" "$DEPS_DST/include/"
           rsync -a "$DEPS_SRC/lib/"      "$DEPS_DST/lib/"      || true
           rsync -a "$DEPS_SRC/lib64/"    "$DEPS_DST/lib64/"    || true
+          rsync -a "$DEPS_SRC/tools/"    "$DEPS_DST/tools/"    || true
                     
           rsync -a "/opt/gcc-indiff/include/" "$DEPS_DST/include/"
           rsync -a "/opt/gcc-indiff/lib64/"    "$DEPS_DST/lib64/"    || true
@@ -1532,6 +1538,8 @@ jobs:
             -DWITH_UNIT_TESTS=0 \
             -DWITH_ICU=system \
             -DWITH_PROTOBUF=system  \
+            -DPROTOBUF_PROTOC_LIBRARY="$DEPS_DST/lib/libprotobuf.a"  \
+            -DPROTOBUF_PROTOC_EXECUTABLE="$DEPS_DST/tools/protoc"  \
             -DWITH_LIBEVENT=system -DWITH_LZ4=system -DWITH_ZLIB=system -DWITH_ZSTD=system \
             -DCMAKE_INSTALL_RPATH='$ORIGIN/../lib64:$ORIGIN/../lib' \
             -DCMAKE_BUILD_RPATH='$ORIGIN/../lib64:$ORIGIN/../lib' \
