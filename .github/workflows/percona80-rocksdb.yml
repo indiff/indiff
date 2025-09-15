@@ -990,7 +990,7 @@ jobs:
             mecab  \
             --triplet $TRIPLET --clean-after-build	
 
-
+          chmod +x $VCPKG_ROOT/installed/x64-linux/tools/protobuf/*
           # wget https://archives.boost.io/release/1.89.0/source/boost_1_89_0.tar.bz2
           # mkdir -p /tmp/boost
           # tar -xjf boost_1_89_0.tar.bz2 -C /tmp/boost --strip-components=1
@@ -1009,7 +1009,7 @@ jobs:
 
           DEPS_SRC="$VCPKG_ROOT/installed/$TRIPLET"
           DEPS_DST="/opt/fbmysql"
-          mkdir -p "$DEPS_DST"/{include,lib,lib64}
+          mkdir -p "$DEPS_DST"/{include,lib,lib64,tools}
 
           # install icu  
           wget https://github.com/unicode-org/icu/releases/download/release-68-2/icu4c-68_2-src.tgz
@@ -1027,14 +1027,14 @@ jobs:
           rsync -a "$DEPS_SRC/include/" "$DEPS_DST/include/"
           rsync -a "$DEPS_SRC/lib/"      "$DEPS_DST/lib/"      || true
           rsync -a "$DEPS_SRC/lib64/"    "$DEPS_DST/lib64/"    || true
-          rsync -a --copy-links "$DEPS_SRC/tools/"    "$DEPS_DST/tools/"    || true
+          rsync -a --copy-links "$DEPS_SRC/tools/protobuf/"    "$DEPS_DST/tools/"    || true
 
           DEPS_SRC="$VCPKG_ROOT/installed/x64-linux-dynamic"
 
           rsync -a "$DEPS_SRC/include/" "$DEPS_DST/include/"
           rsync -a "$DEPS_SRC/lib/"      "$DEPS_DST/lib/"      || true
           rsync -a "$DEPS_SRC/lib64/"    "$DEPS_DST/lib64/"    || true
-          rsync -a --copy-links "$DEPS_SRC/tools/"    "$DEPS_DST/tools/"    || true
+          rsync -a --copy-links "$DEPS_SRC/tools/protobuf/"    "$DEPS_DST/tools/"    || true
                     
           rsync -a "/opt/gcc-indiff/include/" "$DEPS_DST/include/"
           rsync -a "/opt/gcc-indiff/lib64/"    "$DEPS_DST/lib64/"    || true
@@ -1121,7 +1121,7 @@ jobs:
             -DWITH_ZLIB=system -DWITH_LZ4=system -DWITH_ZSTD=system -DWITH_SNAPPY=system \
             -DWITH_PROTOBUF=system  \
             -DPROTOBUF_PROTOC_LIBRARY="$DEPS_DST/lib/libprotobuf.a"  \
-            -DPROTOBUF_PROTOC_EXECUTABLE="$DEPS_DST/tools/protoc"  \
+            -DPROTOBUF_PROTOC_EXECUTABLE="$VCPKG_ROOT/installed/x64-linux/tools/protoc"  \
             -DWITH_ICU=system  \
             -DWITH_SSL=system -DOPENSSL_ROOT_DIR="$DEPS_DST" \
             -DWITH_FIDO=system \
@@ -1393,6 +1393,8 @@ jobs:
             pkgconf \
             --triplet $TRIPLET --clean-after-build	
 
+
+          chmod +x $VCPKG_ROOT/installed/x64-linux/tools/protobuf/*
           git clone --filter=blob:none --depth 1 https://github.com/mysql/mysql-server.git server
           cd server
           # git submodule update --init --recursive
@@ -1408,7 +1410,7 @@ jobs:
 
           DEPS_SRC="$VCPKG_ROOT/installed/$TRIPLET"
           DEPS_DST="/opt/mysql"
-          mkdir -p "$DEPS_DST"/{include,lib,lib64}
+          mkdir -p "$DEPS_DST"/{include,lib,lib64,tools}
 
           # install icu  
           wget https://github.com/unicode-org/icu/releases/download/release-68-2/icu4c-68_2-src.tgz
@@ -1426,14 +1428,14 @@ jobs:
           rsync -a "$DEPS_SRC/include/" "$DEPS_DST/include/"
           rsync -a "$DEPS_SRC/lib/"      "$DEPS_DST/lib/"      || true
           rsync -a "$DEPS_SRC/lib64/"    "$DEPS_DST/lib64/"    || true
-          rsync -a --copy-links "$DEPS_SRC/tools/"    "$DEPS_DST/tools/"    || true
+          rsync -a --copy-links "$DEPS_SRC/tools/protobuf/"    "$DEPS_DST/tools/"    || true
 
           DEPS_SRC="$VCPKG_ROOT/installed/x64-linux-dynamic"
 
           rsync -a "$DEPS_SRC/include/" "$DEPS_DST/include/"
           rsync -a "$DEPS_SRC/lib/"      "$DEPS_DST/lib/"      || true
           rsync -a "$DEPS_SRC/lib64/"    "$DEPS_DST/lib64/"    || true
-          rsync -a --copy-links "$DEPS_SRC/tools/"    "$DEPS_DST/tools/"    || true
+          rsync -a --copy-links "$DEPS_SRC/tools/protobuf/"    "$DEPS_DST/tools/"    || true
                     
           rsync -a "/opt/gcc-indiff/include/" "$DEPS_DST/include/"
           rsync -a "/opt/gcc-indiff/lib64/"    "$DEPS_DST/lib64/"    || true
@@ -1539,7 +1541,7 @@ jobs:
             -DWITH_ICU=system \
             -DWITH_PROTOBUF=system  \
             -DPROTOBUF_PROTOC_LIBRARY="$DEPS_DST/lib/libprotobuf.a"  \
-            -DPROTOBUF_PROTOC_EXECUTABLE="$DEPS_DST/tools/protoc"  \
+            -DPROTOBUF_PROTOC_EXECUTABLE="$VCPKG_ROOT/installed/x64-linux/tools/protoc"  \
             -DWITH_LIBEVENT=system -DWITH_LZ4=system -DWITH_ZLIB=system -DWITH_ZSTD=system \
             -DCMAKE_INSTALL_RPATH='$ORIGIN/../lib64:$ORIGIN/../lib' \
             -DCMAKE_BUILD_RPATH='$ORIGIN/../lib64:$ORIGIN/../lib' \
