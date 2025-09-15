@@ -990,7 +990,8 @@ jobs:
             mecab  \
             --triplet $TRIPLET --clean-after-build	
 
-          chmod +x $VCPKG_ROOT/installed/x64-linux/tools/protobuf/*
+          PROTOC_BASENAME=$(basename $VCPKG_ROOT/installed/x64-linux/tools/protobuf/protoc-*)
+          chmod +x "$VCPKG_ROOT/installed/x64-linux/tools/protobuf/$PROTOC_BASENAME"
           # wget https://archives.boost.io/release/1.89.0/source/boost_1_89_0.tar.bz2
           # mkdir -p /tmp/boost
           # tar -xjf boost_1_89_0.tar.bz2 -C /tmp/boost --strip-components=1
@@ -1121,7 +1122,7 @@ jobs:
             -DWITH_ZLIB=system -DWITH_LZ4=system -DWITH_ZSTD=system -DWITH_SNAPPY=system \
             -DWITH_PROTOBUF=system  \
             -DPROTOBUF_PROTOC_LIBRARY="$DEPS_DST/lib/libprotobuf.a"  \
-            -DPROTOBUF_PROTOC_EXECUTABLE="$VCPKG_ROOT/installed/x64-linux/tools/protoc"  \
+            -DPROTOBUF_PROTOC_EXECUTABLE="$VCPKG_ROOT/installed/x64-linux/tools/protobuf/$PROTOC_BASENAME"  \
             -DWITH_ICU=system  \
             -DWITH_SSL=system -DOPENSSL_ROOT_DIR="$DEPS_DST" \
             -DWITH_FIDO=system \
@@ -1393,8 +1394,8 @@ jobs:
             pkgconf \
             --triplet $TRIPLET --clean-after-build	
 
-
-          chmod +x $VCPKG_ROOT/installed/x64-linux/tools/protobuf/*
+          PROTOC_BASENAME=$(basename $VCPKG_ROOT/installed/x64-linux/tools/protobuf/protoc-*)
+          chmod +x $VCPKG_ROOT/installed/x64-linux/tools/protobuf/$PROTOC_BASENAME
           git clone --filter=blob:none --depth 1 https://github.com/mysql/mysql-server.git server
           cd server
           # git submodule update --init --recursive
@@ -1541,7 +1542,7 @@ jobs:
             -DWITH_ICU=system \
             -DWITH_PROTOBUF=system  \
             -DPROTOBUF_PROTOC_LIBRARY="$DEPS_DST/lib/libprotobuf.a"  \
-            -DPROTOBUF_PROTOC_EXECUTABLE="$VCPKG_ROOT/installed/x64-linux/tools/protoc"  \
+            -DPROTOBUF_PROTOC_EXECUTABLE="$VCPKG_ROOT/installed/x64-linux/tools/protobuf/$PROTOC_BASENAME"  \
             -DWITH_LIBEVENT=system -DWITH_LZ4=system -DWITH_ZLIB=system -DWITH_ZSTD=system \
             -DCMAKE_INSTALL_RPATH='$ORIGIN/../lib64:$ORIGIN/../lib' \
             -DCMAKE_BUILD_RPATH='$ORIGIN/../lib64:$ORIGIN/../lib' \
