@@ -1027,14 +1027,14 @@ jobs:
           rsync -a "$DEPS_SRC/include/" "$DEPS_DST/include/"
           rsync -a "$DEPS_SRC/lib/"      "$DEPS_DST/lib/"      || true
           rsync -a "$DEPS_SRC/lib64/"    "$DEPS_DST/lib64/"    || true
-          rsync -a "$DEPS_SRC/tools/"    "$DEPS_DST/tools/"    || true
+          rsync -a --copy-links "$DEPS_SRC/tools/"    "$DEPS_DST/tools/"    || true
 
           DEPS_SRC="$VCPKG_ROOT/installed/x64-linux-dynamic"
 
           rsync -a "$DEPS_SRC/include/" "$DEPS_DST/include/"
           rsync -a "$DEPS_SRC/lib/"      "$DEPS_DST/lib/"      || true
           rsync -a "$DEPS_SRC/lib64/"    "$DEPS_DST/lib64/"    || true
-          rsync -a "$DEPS_SRC/tools/"    "$DEPS_DST/tools/"    || true
+          rsync -a --copy-links "$DEPS_SRC/tools/"    "$DEPS_DST/tools/"    || true
                     
           rsync -a "/opt/gcc-indiff/include/" "$DEPS_DST/include/"
           rsync -a "/opt/gcc-indiff/lib64/"    "$DEPS_DST/lib64/"    || true
@@ -1426,14 +1426,14 @@ jobs:
           rsync -a "$DEPS_SRC/include/" "$DEPS_DST/include/"
           rsync -a "$DEPS_SRC/lib/"      "$DEPS_DST/lib/"      || true
           rsync -a "$DEPS_SRC/lib64/"    "$DEPS_DST/lib64/"    || true
-          rsync -a "$DEPS_SRC/tools/"    "$DEPS_DST/tools/"    || true
+          rsync -a --copy-links "$DEPS_SRC/tools/"    "$DEPS_DST/tools/"    || true
 
           DEPS_SRC="$VCPKG_ROOT/installed/x64-linux-dynamic"
 
           rsync -a "$DEPS_SRC/include/" "$DEPS_DST/include/"
           rsync -a "$DEPS_SRC/lib/"      "$DEPS_DST/lib/"      || true
           rsync -a "$DEPS_SRC/lib64/"    "$DEPS_DST/lib64/"    || true
-          rsync -a "$DEPS_SRC/tools/"    "$DEPS_DST/tools/"    || true
+          rsync -a --copy-links "$DEPS_SRC/tools/"    "$DEPS_DST/tools/"    || true
                     
           rsync -a "/opt/gcc-indiff/include/" "$DEPS_DST/include/"
           rsync -a "/opt/gcc-indiff/lib64/"    "$DEPS_DST/lib64/"    || true
