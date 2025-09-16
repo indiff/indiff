@@ -1003,6 +1003,12 @@ jobs:
           git clone --filter=blob:none --depth 1 https://github.com/facebook/mysql-5.6.git server
           cd server
           git submodule update --init --recursive
+          # switch main branch
+          cd rocksdb
+          git fetch
+          git checkout main
+          git pull origin main
+          cd ..
 
           # patch zlib.h
           sed -i '1i#ifndef Z_ARG\n#define Z_ARG(args) args\n#endif\n' extra/zlib/zlib-1.2.13/zlib.h || true
@@ -1406,7 +1412,7 @@ jobs:
           grep -n 'BOOST_PACKAGE_NAME' cmake/boost.cmake
           sed -i '/^[[:space:]]*#include[[:space:]]*<vector>[[:space:]]*$/a #include <cstdint>' extra/libcno/cno_huffman_generator.cc
           # patch fix /workspace/server/strings/collations_internal.cc:553:22: error: no matching function for call t
-          sed -i 's/hash\.find(\s*\(key\)\s*)/hash.find(std::to_string(\1))/g' /workspace/server/strings/collations_internal.cc
+          # sed -i 's/hash\.find(\s*\(key\)\s*)/hash.find(std::to_string(\1))/g' /workspace/server/strings/collations_internal.cc
           cd ..
 
           DEPS_SRC="$VCPKG_ROOT/installed/$TRIPLET"
