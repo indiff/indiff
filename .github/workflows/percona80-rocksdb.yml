@@ -1085,8 +1085,8 @@ jobs:
           cmake .. -G Ninja \
             -DCMAKE_INSTALL_PREFIX=$DEPS_DST \
             -DCMAKE_C_FLAGS="-I$DEPS_DST/include -O3 -pipe -fPIC -DPIC " \
-            -DCMAKE_CXX_FLAGS="-I$DEPS_DST/include -O3 -pipe -fPIC -DPIC -std=gnu++17" \
-            -DCMAKE_CXX_STANDARD=17 \
+            -DCMAKE_CXX_FLAGS="-I$DEPS_DST/include -O3 -pipe -fPIC -DPIC -std=gnu++20" \
+            -DCMAKE_CXX_STANDARD=20 \
             -DCMAKE_CXX_EXTENSIONS=OFF \
             -DCMAKE_EXE_LINKER_FLAGS="-L/usr/lib64 -L/opt/gcc-indiff/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--no-as-needed -ldl" \
             -DCMAKE_SHARED_LINKER_FLAGS="-L/usr/lib64 -L/opt/gcc-indiff/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--no-as-needed -ldl" \
@@ -1125,6 +1125,7 @@ jobs:
             -DWITH_ROCKSDB=ON \
             -DWITH_INNODB_MEMCACHED=ON \
             -DWITH_CURL=system \
+            -DWITH_LIBEVENT=system \
             -DWITH_ZLIB=system -DWITH_LZ4=system -DWITH_ZSTD=system -DWITH_SNAPPY=system \
             -DWITH_PROTOBUF=system  \
             -DPROTOBUF_PROTOC_LIBRARY="$DEPS_DST/lib/libprotobuf.a"  \
@@ -1413,6 +1414,7 @@ jobs:
           sed -i '/^[[:space:]]*#include[[:space:]]*<vector>[[:space:]]*$/a #include <cstdint>' extra/libcno/cno_huffman_generator.cc
           # patch fix /workspace/server/strings/collations_internal.cc:553:22: error: no matching function for call t
           # sed -i 's/hash\.find(\s*\(key\)\s*)/hash.find(std::to_string(\1))/g' /workspace/server/strings/collations_internal.cc
+          sed -i 's/enum class Gtid_format : uint8_t {/enum Gtid_format {/g' /workspace/server/libs/mysql/gtid/gtid_format.h
           cd ..
 
           DEPS_SRC="$VCPKG_ROOT/installed/$TRIPLET"
