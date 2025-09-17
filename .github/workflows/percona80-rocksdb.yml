@@ -971,7 +971,7 @@ jobs:
           # openssl
 
           # 用 vcpkg 安装动态 curl （会生成 libcurl.so 并自动依赖 libssl/libcrypto)
-          $VCPKG_ROOT/vcpkg install curl[core,non-http,ssl,openssl,zstd] snappy --triplet x64-linux-dynamic --clean-after-build
+          $VCPKG_ROOT/vcpkg install curl[core,non-http,ssl,openssl,zstd] snappy protobuf --triplet x64-linux-dynamic --clean-after-build
           $VCPKG_ROOT/vcpkg install \
             openssl \
             zlib \
@@ -981,17 +981,16 @@ jobs:
             readline \
             lzo \
             libxml2 \
-            libevent \
+            libevent[openssl] \
             pcre2 \
             ncurses \
             libaio  \
             libfido2  \
-            protobuf  \
             mecab  \
             --triplet $TRIPLET --clean-after-build	
 
-          PROTOC_BASENAME=$(basename $VCPKG_ROOT/installed/x64-linux/tools/protobuf/protoc-*)
-          chmod +x "$VCPKG_ROOT/installed/x64-linux/tools/protobuf/$PROTOC_BASENAME"
+          PROTOC_BASENAME=$(basename $VCPKG_ROOT/installed/x64-linux-dynamic/tools/protobuf/protoc-*)
+          chmod +x "$VCPKG_ROOT/installed/x64-linux-dynamic/tools/protobuf/$PROTOC_BASENAME"
           # wget https://archives.boost.io/release/1.89.0/source/boost_1_89_0.tar.bz2
           # mkdir -p /tmp/boost
           # tar -xjf boost_1_89_0.tar.bz2 -C /tmp/boost --strip-components=1
@@ -1129,7 +1128,7 @@ jobs:
             -DWITH_ZLIB=system -DWITH_LZ4=system -DWITH_ZSTD=system -DWITH_SNAPPY=system \
             -DWITH_PROTOBUF=system  \
             -DPROTOBUF_PROTOC_LIBRARY="$DEPS_DST/lib/libprotobuf.a"  \
-            -DPROTOBUF_PROTOC_EXECUTABLE="$VCPKG_ROOT/installed/x64-linux/tools/protobuf/$PROTOC_BASENAME"  \
+            -DPROTOBUF_PROTOC_EXECUTABLE="$VCPKG_ROOT/installed/x64-linux-dynamic/tools/protobuf/$PROTOC_BASENAME"  \
             -DWITH_ICU=system  \
             -DWITH_SSL=system -DOPENSSL_ROOT_DIR="$DEPS_DST" \
             -DWITH_FIDO=system \
@@ -1384,7 +1383,7 @@ jobs:
 
           # 用 vcpkg 安装动态 curl （会生成 libcurl.so 并自动依赖 libssl/libcrypto)
           # cyrus-sasl
-          $VCPKG_ROOT/vcpkg install curl[core,non-http,ssl,openssl,zstd] snappy --triplet x64-linux-dynamic --clean-after-build
+          $VCPKG_ROOT/vcpkg install curl[core,non-http,ssl,openssl,zstd] snappy protobuf --triplet x64-linux-dynamic --clean-after-build
           $VCPKG_ROOT/vcpkg install \
             openssl \
             zlib \
@@ -1392,17 +1391,16 @@ jobs:
             zstd \
             bzip2 \
             libxml2 \
-            libevent \
+            libevent[openssl] \
             pcre2 \
             ncurses \
             readline \
             libaio  \
-            protobuf  \
             pkgconf \
             --triplet $TRIPLET --clean-after-build	
 
-          PROTOC_BASENAME=$(basename $VCPKG_ROOT/installed/x64-linux/tools/protobuf/protoc-*)
-          chmod +x $VCPKG_ROOT/installed/x64-linux/tools/protobuf/$PROTOC_BASENAME
+          PROTOC_BASENAME=$(basename $VCPKG_ROOT/installed/x64-linux-dynamic/tools/protobuf/protoc-*)
+          chmod +x $VCPKG_ROOT/installed/x64-linux-dynamic/tools/protobuf/$PROTOC_BASENAME
           git clone --filter=blob:none --depth 1 https://github.com/mysql/mysql-server.git server
           cd server
           # git submodule update --init --recursive
@@ -1550,7 +1548,7 @@ jobs:
             -DWITH_ICU=system \
             -DWITH_PROTOBUF=system  \
             -DPROTOBUF_PROTOC_LIBRARY="$DEPS_DST/lib/libprotobuf.a"  \
-            -DPROTOBUF_PROTOC_EXECUTABLE="$VCPKG_ROOT/installed/x64-linux/tools/protobuf/$PROTOC_BASENAME"  \
+            -DPROTOBUF_PROTOC_EXECUTABLE="$VCPKG_ROOT/installed/x64-linux-dynamic/tools/protobuf/$PROTOC_BASENAME"  \
             -DWITH_LIBEVENT=system -DWITH_LZ4=system -DWITH_ZLIB=system -DWITH_ZSTD=system \
             -DCMAKE_INSTALL_RPATH='$ORIGIN/../lib64:$ORIGIN/../lib' \
             -DCMAKE_BUILD_RPATH='$ORIGIN/../lib64:$ORIGIN/../lib' \
