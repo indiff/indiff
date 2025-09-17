@@ -991,7 +991,6 @@ jobs:
 
           PROTOC_BASENAME=$(basename $VCPKG_ROOT/installed/x64-linux-dynamic/tools/protobuf/protoc-*)
           PROTOC_LIB_BASENAME=$(basename $VCPKG_ROOT/installed/x64-linux-dynamic/lib/libprotoc.so.*)
-          libprotoc.so.29.5.0
           chmod +x "$VCPKG_ROOT/installed/x64-linux-dynamic/tools/protobuf/$PROTOC_BASENAME"
           # wget https://archives.boost.io/release/1.89.0/source/boost_1_89_0.tar.bz2
           # mkdir -p /tmp/boost
@@ -1409,9 +1408,10 @@ jobs:
           # git submodule update --init --recursive
           # wget https://archives.boost.io/release/1.89.0/source/boost_1_89_0.tar.bz2
           # cp boost_1_89_0.tar.bz2 extra/boost/
-          grep -n 'BOOST_PACKAGE_NAME' cmake/boost.cmake || true
-          sed -i 's/^SET(BOOST_PACKAGE_NAME.*)$/SET(BOOST_PACKAGE_NAME "boost_1_89_0")/' cmake/boost.cmake
-          grep -n 'BOOST_PACKAGE_NAME' cmake/boost.cmake
+          # grep -n 'BOOST_PACKAGE_NAME' cmake/boost.cmake || true
+          # sed -i 's/^SET(BOOST_PACKAGE_NAME.*)$/SET(BOOST_PACKAGE_NAME "boost_1_89_0")/' cmake/boost.cmake
+          # grep -n 'BOOST_PACKAGE_NAME' cmake/boost.cmake
+          
           sed -i '/^[[:space:]]*#include[[:space:]]*<vector>[[:space:]]*$/a #include <cstdint>' extra/libcno/cno_huffman_generator.cc
           # patch fix /workspace/server/strings/collations_internal.cc:553:22: error: no matching function for call t
           # sed -i 's/hash\.find(\s*\(key\)\s*)/hash.find(std::to_string(\1))/g' /workspace/server/strings/collations_internal.cc
@@ -1512,7 +1512,7 @@ jobs:
             -DWITH_EXAMPLE_STORAGE_ENGINE=ON \
             -DWITH_INNODB_MEMCACHED=ON \
             -DWITH_ROUTER=OFF \
-            -DWITH_BOOST="/tmp/my_boost" \
+            -DWITH_BOOST="/workspace/server/extra/boost/boost_1_87_0" \
             -DDISABLE_PSI_COND=1 \
             -DDISABLE_PSI_DATA_LOCK=1 \
             -DDISABLE_PSI_ERROR=1 \
