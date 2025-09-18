@@ -1085,12 +1085,12 @@ jobs:
           cmake .. -G Ninja \
             -DCMAKE_INSTALL_PREFIX=$DEPS_DST \
             -DCMAKE_C_FLAGS="-I$DEPS_DST/include -O3 -pipe -fPIC -DPIC " \
-            -DCMAKE_CXX_FLAGS="-I$DEPS_DST/include -O3 -pipe -fPIC -DPIC -std=gnu++20" \
+            -DCMAKE_CXX_FLAGS="-include cstdint -include cstddef -I$DEPS_DST/include -O3 -pipe -fPIC -DPIC -std=gnu++20" \
             -DCMAKE_CXX_STANDARD=20 \
             -DCMAKE_CXX_EXTENSIONS=OFF \
-            -DCMAKE_EXE_LINKER_FLAGS="-L/usr/lib64 -L/opt/gcc-indiff/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--no-as-needed -ldl" \
-            -DCMAKE_SHARED_LINKER_FLAGS="-L/usr/lib64 -L/opt/gcc-indiff/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--no-as-needed -ldl" \
-            -DCMAKE_MODULE_LINKER_FLAGS="-L/usr/lib64 -L/opt/gcc-indiff/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--no-as-needed -ldl" \
+            -DCMAKE_EXE_LINKER_FLAGS="-L/usr/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--no-as-needed -ldl" \
+            -DCMAKE_SHARED_LINKER_FLAGS="-L/usr/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--no-as-needed -ldl" \
+            -DCMAKE_MODULE_LINKER_FLAGS="-L/usr/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--no-as-needed -ldl" \
             -DDEFAULT_CHARSET="utf8mb4" \
             -DDEFAULT_COLLATION="utf8mb4_bin" \
             -DWITH_BOOST="/tmp/boost" \
@@ -1411,7 +1411,7 @@ jobs:
           # grep -n 'BOOST_PACKAGE_NAME' cmake/boost.cmake || true
           # sed -i 's/^SET(BOOST_PACKAGE_NAME.*)$/SET(BOOST_PACKAGE_NAME "boost_1_89_0")/' cmake/boost.cmake
           # grep -n 'BOOST_PACKAGE_NAME' cmake/boost.cmake
-          
+
           sed -i '/^[[:space:]]*#include[[:space:]]*<vector>[[:space:]]*$/a #include <cstdint>' extra/libcno/cno_huffman_generator.cc
           # patch fix /workspace/server/strings/collations_internal.cc:553:22: error: no matching function for call t
           # sed -i 's/hash\.find(\s*\(key\)\s*)/hash.find(std::to_string(\1))/g' /workspace/server/strings/collations_internal.cc
@@ -1489,11 +1489,11 @@ jobs:
           cmake .. -G Ninja \
             -DCMAKE_INSTALL_PREFIX=$DEPS_DST \
             -DCMAKE_C_FLAGS="-I$DEPS_DST/include -O3 -g -pipe -fPIC -DPIC " \
-            -DCMAKE_CXX_FLAGS="-I$DEPS_DST/include -O3 -g -pipe -fPIC -DPIC -march=native " \
+            -DCMAKE_CXX_FLAGS="-include cstdint -include cstddef -I$DEPS_DST/include -O3 -g -pipe -fPIC -DPIC -march=native " \
             -DCMAKE_CXX_EXTENSIONS=OFF \
-            -DCMAKE_EXE_LINKER_FLAGS="-L/usr/lib64 -L/opt/gcc-indiff/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--no-as-needed -ldl" \
-            -DCMAKE_SHARED_LINKER_FLAGS="-L/usr/lib64 -L/opt/gcc-indiff/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--no-as-needed -ldl" \
-            -DCMAKE_MODULE_LINKER_FLAGS="-L/usr/lib64 -L/opt/gcc-indiff/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--no-as-needed -ldl" \
+            -DCMAKE_EXE_LINKER_FLAGS="-L/usr/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--no-as-needed -ldl" \
+            -DCMAKE_SHARED_LINKER_FLAGS="-L/usr/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--no-as-needed -ldl" \
+            -DCMAKE_MODULE_LINKER_FLAGS="-L/usr/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--no-as-needed -ldl" \
             -DDEFAULT_CHARSET="utf8mb4" \
             -DDEFAULT_COLLATION="utf8mb4_bin" \
             -DFORCE_INSOURCE_BUILD=ON \
