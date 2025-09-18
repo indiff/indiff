@@ -1004,11 +1004,11 @@ jobs:
           cd server
           git submodule update --init --recursive
           # switch main branch
-          cd rocksdb
-          git fetch
-          git checkout main
-          git pull origin main
-          cd ..
+          # cd rocksdb
+          # git fetch
+          # git checkout main
+          # git pull origin main
+          # cd ..
 
           # patch zlib.h
           sed -i '1i#ifndef Z_ARG\n#define Z_ARG(args) args\n#endif\n' extra/zlib/zlib-1.2.13/zlib.h || true
