@@ -1081,13 +1081,15 @@ jobs:
           # -DWITH_UNIT_TESTS=OFF 
           # -DCMAKE_BUILD_TYPE=Debug 
           # -DWITHOUT_DYNAMIC_PLUGIN=ON -DWITH_SAFEMALLOC=OFF -DWITH_SSL=bundled -DMYSQL_MAINTAINER_MODE=OFF -G Ninja
+          # -DCMAKE_CXX_STANDARD=20
+          # -std=gnu++20
           unset PROTOC
           cmake .. -G Ninja \
             -DCMAKE_INSTALL_PREFIX=$DEPS_DST \
-            -DCMAKE_C_FLAGS="-I$DEPS_DST/include -O3 -pipe -fPIC -DPIC " \
-            -DCMAKE_CXX_FLAGS="-include cstdint -include cstddef -I$DEPS_DST/include -O3 -pipe -fPIC -DPIC -std=gnu++20" \
-            -DCMAKE_CXX_STANDARD=20 \
+            -DCMAKE_C_FLAGS="-I$DEPS_DST/include -O3 -pipe -fPIC -DPIC -Wno-implicit-fallthrough -Wno-int-in-bool-context -Wno-shift-negative-value -Wno-misleading-indentation -Wno-format-overflow -Wno-nonnull -Wno-unused-function " \
+            -DCMAKE_CXX_FLAGS="-include cstdint -include cstddef -I$DEPS_DST/include -O3 -pipe -fPIC -DPIC -march=native -Wno-aligned-new -Wno-implicit-fallthrough -Wno-int-in-bool-context -Wno-shift-negative-value -Wno-misleading-indentation -Wno-format-overflow -Wno-nonnull -Wno-unused-function " \
             -DCMAKE_CXX_EXTENSIONS=OFF \
+            -DENABLE_DTRACE=0 \
             -DCMAKE_EXE_LINKER_FLAGS="-L/usr/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--no-as-needed -ldl" \
             -DCMAKE_SHARED_LINKER_FLAGS="-L/usr/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--no-as-needed -ldl" \
             -DCMAKE_MODULE_LINKER_FLAGS="-L/usr/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--no-as-needed -ldl" \
