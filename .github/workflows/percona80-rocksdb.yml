@@ -339,7 +339,9 @@ jobs:
           export VCPKG_ROOT=$(pwd)/vcpkg
 
           # jemalloc 
-          $VCPKG_ROOT/vcpkg install lz4 zstd snappy openssl zlib --triplet x64-linux
+          $VCPKG_ROOT/vcpkg install lz4 zstd snappy openssl zlib --triplet x64-linux \
+            || cat /workspace/vcpkg/installed/vcpkg/issue_body.md
+            
           git clone --filter=blob:none --depth 1 https://github.com/percona/percona-server.git -b 8.0
           cd percona-server
           git submodule update --init --recursive
@@ -643,7 +645,8 @@ jobs:
           # openssl
 
           # 用 vcpkg 安装动态 curl （会生成 libcurl.so 并自动依赖 libssl/libcrypto)
-          $VCPKG_ROOT/vcpkg install curl[core,non-http,ssl,openssl,zstd] snappy --triplet x64-linux-dynamic --clean-after-build
+          $VCPKG_ROOT/vcpkg install curl[core,non-http,ssl,openssl,zstd] snappy --triplet x64-linux-dynamic --clean-after-build \
+            || cat /workspace/vcpkg/installed/vcpkg/issue_body.md
           $VCPKG_ROOT/vcpkg install \
             openssl \
             zlib \
@@ -656,7 +659,8 @@ jobs:
             pcre2 \
             ncurses \
             libaio  \
-            --triplet $TRIPLET --clean-after-build	
+            --triplet $TRIPLET --clean-after-build	\
+            || cat /workspace/vcpkg/installed/vcpkg/issue_body.md
 
           git clone --filter=blob:none --depth 1 https://github.com/MariaDB/server.git
           cd server
