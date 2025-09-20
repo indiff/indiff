@@ -971,7 +971,8 @@ jobs:
           # openssl
 
           # 用 vcpkg 安装动态 curl （会生成 libcurl.so 并自动依赖 libssl/libcrypto)
-          $VCPKG_ROOT/vcpkg install curl[core,non-http,ssl,openssl,zstd] snappy protobuf --triplet x64-linux-dynamic --clean-after-build
+          $VCPKG_ROOT/vcpkg install curl[core,non-http,ssl,openssl,zstd] snappy protobuf --triplet x64-linux-dynamic --clean-after-build \
+          || cat /workspace/vcpkg/installed/vcpkg/issue_body.md
           $VCPKG_ROOT/vcpkg install \
             openssl \
             zlib \
@@ -987,7 +988,8 @@ jobs:
             libaio  \
             libfido2  \
             mecab  \
-            --triplet $TRIPLET --clean-after-build	
+            --triplet $TRIPLET --clean-after-build \
+            || cat /workspace/vcpkg/installed/vcpkg/issue_body.md
 
           PROTOC_BASENAME=$(basename $VCPKG_ROOT/installed/x64-linux-dynamic/tools/protobuf/protoc-*)
           PROTOC_LIB_BASENAME=$(basename $VCPKG_ROOT/installed/x64-linux-dynamic/lib/libprotoc.so.*)
