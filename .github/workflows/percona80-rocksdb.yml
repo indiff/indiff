@@ -275,7 +275,7 @@ jobs:
           yum update -y
           yum install -y flex bison ncurses-dev texinfo gcc gperf patch libtool automake g++ libncurses5-dev gawk subversion expat libexpat1-dev binutils-dev bc libcap-dev autoconf libgmp-dev build-essential pkg-config libmpc-dev libmpfr-dev autopoint gettext txt2man liblzma-dev libssl-dev libz-dev mercurial wget tar cmake zstd ninja-build lz4 liblz4-tool liblz4-dev lzma libc6-dev-i386 ncurses-devel expat-devel binutils-devel gmp-devel make pkgconfig mpfr-devel gettext-devel zlib-devel lz4-devel xz xz-devel glibc-devel.i686 which lld bzip2 glibc glibc-devel
           yum install -y pcre-devel zlib-devel make git wget sed perl-IPC-Cmd GeoIP GeoIP-devel zip systemd autoconf automake libtool zstd-devel
-          yum install -y perl-Test-Simple perl-FindBin perl-IPC-Cmd perl-Text-Template perl-File-Compare perl-File-Copy perl-Data-Dumper
+          yum install -y perl-Test-Simple perl-FindBin perl-IPC-Cmd perl-Text-Template perl-File-Compare perl-File-Copy perl-Data-Dumper perl-Time-Piece
           yum install -y llvm llvm-devel clang clang-devel libstdc++-devel glibc-devel tree python3
           yum -y install \
             zip unzip rsync cmake3 ninja-build \
@@ -341,7 +341,7 @@ jobs:
           # jemalloc 
           $VCPKG_ROOT/vcpkg install lz4 zstd snappy openssl zlib --triplet x64-linux \
             || cat /workspace/vcpkg/installed/vcpkg/issue_body.md
-            
+
           git clone --filter=blob:none --depth 1 https://github.com/percona/percona-server.git -b 8.0
           cd percona-server
           git submodule update --init --recursive
@@ -547,7 +547,7 @@ jobs:
           echo 'Asia/Shanghai' > /etc/timezone
           yum update -y
           yum install -y glibc-devel tree python3
-          yum -y install make kernel-headers kernel-devel pkgconfig perl-IPC-Cmd perl-Test-Simple perl-FindBin perl-IPC-Cmd perl-Text-Template perl-File-Compare perl-File-Copy perl-Data-Dumper
+          yum -y install make kernel-headers kernel-devel pkgconfig perl-IPC-Cmd perl-Test-Simple perl-FindBin perl-IPC-Cmd perl-Text-Template perl-File-Compare perl-File-Copy perl-Data-Dumper perl-Time-Piece
           yum -y install \
             zip unzip rsync cmake3 ninja-build \
             jemalloc jemalloc-devel \
@@ -887,7 +887,7 @@ jobs:
           echo 'Asia/Shanghai' > /etc/timezone
           yum update -y
           yum install -y glibc-devel tree python3
-          yum -y install make kernel-headers kernel-devel pkgconfig perl-IPC-Cmd perl-Test-Simple perl-FindBin perl-IPC-Cmd perl-Text-Template perl-File-Compare perl-File-Copy perl-Data-Dumper
+          yum -y install make kernel-headers kernel-devel pkgconfig perl-IPC-Cmd perl-Test-Simple perl-FindBin perl-IPC-Cmd perl-Text-Template perl-File-Compare perl-File-Copy perl-Data-Dumper perl-Time-Piece
           yum -y install \
             zip unzip rsync cmake3 ninja-build \
             jemalloc jemalloc-devel \
@@ -1295,7 +1295,7 @@ jobs:
           echo 'Asia/Shanghai' > /etc/timezone
           yum update -y
           yum install -y glibc-devel tree
-          yum -y install make kernel-headers kernel-devel pkgconfig perl-IPC-Cmd perl-Test-Simple perl-FindBin perl-IPC-Cmd perl-Text-Template perl-File-Compare perl-File-Copy perl-Data-Dumper
+          yum -y install make kernel-headers kernel-devel pkgconfig perl-IPC-Cmd perl-Test-Simple perl-FindBin perl-IPC-Cmd perl-Text-Template perl-File-Compare perl-File-Copy perl-Data-Dumper perl-Time-Piece
           yum -y install \
             zip unzip rsync cmake3 ninja-build \
             jemalloc jemalloc-devel \
