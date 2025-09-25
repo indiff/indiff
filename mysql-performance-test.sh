@@ -35,6 +35,8 @@ STORAGE_ENGINES=("InnoDB" "MyISAM" "RocksDB")
 
 # 日志函数
 log() {
+    # 确保日志目录存在
+    mkdir -p "$LOG_DIR" 2>/dev/null || true
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*" | tee -a "$LOG_DIR/main.log"
 }
 
