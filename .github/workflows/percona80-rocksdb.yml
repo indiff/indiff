@@ -191,7 +191,7 @@ jobs:
   build-percona-in-centos7:
     runs-on: ubuntu-latest
     # needs: before_build
-    timeout-minutes: 360 # 设置超时时间为6小时
+    # timeout-minutes: 360 # 设置超时时间为6小时
 
     steps:
       - name: Free Disk-Space
@@ -464,7 +464,7 @@ jobs:
   build-mariadb-in-centos7:
     runs-on: ubuntu-latest
     # needs: before_build
-    timeout-minutes: 360 # 设置超时时间为6小时
+    # timeout-minutes: 360 # 设置超时时间为6小时
 
     steps:
       - name: Free Disk-Space
@@ -804,7 +804,7 @@ jobs:
   build-fbmysql-in-centos7:
     runs-on: ubuntu-latest
     # needs: before_build
-    timeout-minutes: 360 # 设置超时时间为6小时
+    # timeout-minutes: 360 # 设置超时时间为6小时
 
     steps:
       - name: Free Disk-Space
@@ -1194,7 +1194,7 @@ jobs:
   build-mysql-in-centos7:
     runs-on: ubuntu-latest
     # needs: before_build
-    timeout-minutes: 360 # 设置超时时间为6小时
+    # timeout-minutes: 360 # 设置超时时间为6小时
 
     steps:
       - name: Free Disk-Space
