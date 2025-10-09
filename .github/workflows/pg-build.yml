@@ -1,0 +1,369 @@
+name: Build PostgreSQL (with TimescaleDB & PostGIS via vcpkg)
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 7 * * *'  # UTC 07:17 -> 北京时间 15:17，可按需调整
+
+env:
+  PG_VERSION_TAG: "REL_17_STABLE"          # PostgreSQL 主分支/标签
+  TIMESCALEDB_VERSION: "2.15.2"            # TimescaleDB 版本 (也可改成 master)
+  POSTGIS_VERSION_TAG: "3.4.2"             # PostGIS 版本标签（或 master）
+  gcc_indiff_centos7_url: "https://github.com/indiff/gcc-build/releases/download/20250908_0934_16.0.0/gcc-indiff-centos7-16.0.0-x86_64-20250908_0931.xz"
+  # 打包前安装根目录
+  INSTALL_PREFIX: "/opt/postgresql"
+  # vcpkg 目标 triplet（统一使用动态库，方便减少静态链接冲突）
+  VCPKG_TRIPLET: "x64-linux"
+
+jobs:
+  build-postgresql-ubuntu:
+    runs-on: ubuntu-latest
+    name: PostgreSQL + TimescaleDB + PostGIS (Ubuntu)
+
+    steps:
+      - name: Free Disk Space
+        run: |
+          df -h
+          sudo apt-get clean
+          docker system prune -a -f
+          sudo rm -rf /opt/ghc /usr/local/.ghcup /usr/local/lib/android
+          df -h
+
+      - name: Checkout Repo (placeholder)
+        uses: actions/checkout@v5
+
+      - name: Install Base Dependencies
+        run: |
+          set -eux
+          sudo apt-get update
+          sudo apt-get install -y locales tzdata git curl zip unzip rsync tree pkg-config autoconf automake libtool \
+            build-essential ninja-build cmake flex bison gettext \
+            libpam0g-dev patchelf
+          sudo locale-gen zh_CN.UTF-8
+          sudo update-locale LANG=zh_CN.UTF-8
+          sudo timedatectl set-timezone Asia/Shanghai || true
+          git --version
+          gcc --version
+
+      - name: Setup vcpkg and Install Libraries
+        run: |
+          set -eux
+          git clone --depth 1 https://github.com/microsoft/vcpkg.git
+          ./vcpkg/bootstrap-vcpkg.sh
+          export VCPKG_ROOT=$PWD/vcpkg
+          # 核心依赖（与需求匹配 + PostGIS 需要）
+          # icu openssl lz4 zstd libxml2 libxslt geos proj gdal json-c
+          $VCPKG_ROOT/vcpkg install \
+            openssl \
+            lz4 \
+            zstd \
+            libxml2 \
+            libxslt \
+            icu \
+            geos \
+            proj \
+            gdal \
+            json-c \
+            --triplet ${VCPKG_TRIPLET} || cat $VCPKG_ROOT/installed/vcpkg/issue_body.md || true
+          # 目录同步（类似于 percona 的做法）
+          DEPS_SRC="$VCPKG_ROOT/installed/${VCPKG_TRIPLET}"
+          DEPS_DST="${INSTALL_PREFIX}"
+          sudo mkdir -p "$DEPS_DST"/{include,lib,lib64}
+          sudo rsync -a "$DEPS_SRC/include/" "$DEPS_DST/include/"
+          sudo rsync -a "$DEPS_SRC/lib/" "$DEPS_DST/lib/" || true
+          sudo rsync -a "$DEPS_SRC/lib64/" "$DEPS_DST/lib64/" || true
+          # pkgconfig 复制（部分扩展配置检测需要）
+          for d in lib lib64; do
+            if [ -d "$DEPS_SRC/$d/pkgconfig" ]; then
+              sudo mkdir -p "$DEPS_DST/$d/pkgconfig"
+              sudo rsync -a "$DEPS_SRC/$d/pkgconfig/" "$DEPS_DST/$d/pkgconfig/"
+            fi
+          done
+
+      - name: Build & Install PostgreSQL
+        run: |
+          set -eux
+          export VCPKG_ROOT=$PWD/vcpkg
+          export DEPS_DST="${INSTALL_PREFIX}"
+          git clone --depth 1 -b "${PG_VERSION_TAG}" https://github.com/postgres/postgres.git postgresql
+          cd postgresql
+          mkdir build && cd build
+          # 设置搜索路径
+          export CPPFLAGS="-I${DEPS_DST}/include"
+          export LDFLAGS="-L${DEPS_DST}/lib -Wl,-rpath,'\$ORIGIN/../lib:${DEPS_DST}/lib'"
+          ../configure \
+            --prefix="${DEPS_DST}" \
+            --with-openssl \
+            --with-lz4 \
+            --with-zstd \
+            --with-libxml \
+            --with-libxslt \
+            --with-icu \
+            --with-pam \
+            --with-system-tzdata=/usr/share/zoneinfo \
+            --with-readline \
+            --enable-thread-safety
+          make -j"$(nproc)"
+          sudo make install
+          # contrib
+          make -C ../contrib -j"$(nproc)"
+          sudo make -C ../contrib install
+
+      - name: Build TimescaleDB
+        run: |
+          set -eux
+          export DEPS_DST="${INSTALL_PREFIX}"
+          export PATH="${DEPS_DST}/bin:$PATH"
+          git clone --depth 1 -b "${TIMESCALEDB_VERSION}" https://github.com/timescale/timescaledb.git
+          cd timescaledb
+          # PGXS 使用 pg_config
+          ./bootstrap -Dbuild -DCMAKE_BUILD_TYPE=Release -DAPACHE_ONLY=1
+          cd build
+          make -j"$(nproc)"
+            # 如果需要安装调试符号可去掉 strip
+          sudo make install
+          # 校验
+          ls -l "${DEPS_DST}/lib/postgresql" | grep timescaledb || true
+
+      - name: Build PostGIS
+        run: |
+          set -eux
+          export DEPS_DST="${INSTALL_PREFIX}"
+          export PATH="${DEPS_DST}/bin:$PATH"
+          export PKG_CONFIG_PATH="${DEPS_DST}/lib/pkgconfig:${DEPS_DST}/lib64/pkgconfig:${PKG_CONFIG_PATH}"
+          # PostGIS 需要：geos proj gdal json-c libxml2 (均来自 vcpkg) + PostgreSQL 已装
+          git clone --depth 1 -b "${POSTGIS_VERSION_TAG}" https://github.com/postgis/postgis.git
+          cd postgis
+          ./autogen.sh
+          ./configure \
+            --with-pgconfig="${DEPS_DST}/bin/pg_config" \
+            --with-geosconfig="${DEPS_DST}/bin/geos-config" \
+            --with-projdir="${DEPS_DST}" \
+            --with-gdalconfig="${DEPS_DST}/bin/gdal-config" \
+            --with-xml2config="pkg-config libxml-2.0 --variable=exec_prefix" || true
+          make -j"$(nproc)"
+          sudo make install
+          # 只做简单存在性校验
+          ls "${DEPS_DST}/lib/postgresql" | grep -i postgis || true
+
+      - name: Post Process (Strip / Tree / Package)
+        run: |
+          set -eux
+          cd "${INSTALL_PREFIX}"
+          # 可选择保留静态库；这里删除部分 .a
+          find . -type f -name "*.a" -delete || true
+          find bin -type f -exec file {} \; | awk -F: '/ELF/{print $1}' | xargs -r sudo strip --strip-unneeded 2>/dev/null || true
+          find lib -maxdepth 1 -type f -name "*.so*" -exec sudo strip --strip-unneeded {} + 2>/dev/null || true
+          # Timescale / PostGIS 安装库的 RPATH 校验（仅演示性）
+          which patchelf && for f in lib/postgresql/*.so; do sudo patchelf --set-rpath "\$ORIGIN:${INSTALL_PREFIX}/lib" "$f" || true; done
+          tree . > ${{ github.workspace }}/postgresql-ubuntu-tree-$(date +'%Y%m%d_%H%M').txt
+          tar -C /opt -czf ${{ github.workspace }}/postgresql-ubuntu-x86_64-$(date +'%Y%m%d_%H%M').tar.gz postgresql
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: postgresql-ubuntu
+          path: |
+            ${{ github.workspace }}/*.tar.gz
+            ${{ github.workspace }}/*ubuntu-tree*.txt
+          retention-days: 10
+
+  build-postgresql-centos7:
+    runs-on: ubuntu-latest
+    name: PostgreSQL + TimescaleDB + PostGIS (CentOS7)
+
+    steps:
+      - name: Free Disk Space
+        run: |
+          df -h
+          sudo apt-get clean
+          docker system prune -a -f
+          sudo rm -rf /opt/ghc /usr/local/.ghcup /usr/local/lib/android
+          df -h
+
+      - name: Checkout Repo (placeholder)
+        uses: actions/checkout@v5
+
+      - name: Create Build Script
+        run: |
+          cat > build.sh <<'EOS'
+          #!/bin/bash
+          set -eux
+
+          export PG_VERSION_TAG="${PG_VERSION_TAG}"
+          export TIMESCALEDB_VERSION="${TIMESCALEDB_VERSION}"
+          export POSTGIS_VERSION_TAG="${POSTGIS_VERSION_TAG}"
+          export INSTALL_PREFIX="${INSTALL_PREFIX}"
+          export VCPKG_TRIPLET="${VCPKG_TRIPLET}"
+
+          echo 'LANG=zh_CN.UTF-8' >> /etc/environment
+          ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime || true
+
+          # 选择一个可访问的 vault 源
+          for M in \
+            http://mirror.rackspace.com/centos-vault/7.9.2009 \
+            https://archive.kernel.org/centos-vault/7.9.2009 \
+            https://vault.centos.org/7.9.2009 ; do
+            if curl -I -m 6 -o /dev/null -s -w '%{http_code}' "$M/os/x86_64/" | grep -qE '200|301|302'; then
+              BASE="$M"; break
+            fi
+          done
+
+          cat > /etc/yum.repos.d/CentOS-Base.repo <<REPO
+          [base]
+          name=CentOS-Base
+          baseurl=${BASE}/os/\$basearch/
+          gpgcheck=0
+          [updates]
+          name=CentOS-updates
+          baseurl=${BASE}/updates/\$basearch/
+          gpgcheck=0
+          [extras]
+          name=CentOS-extras
+          baseurl=${BASE}/extras/\$basearch/
+          gpgcheck=0
+          [centosplus]
+          name=CentOS-centosplus
+          baseurl=${BASE}/centosplus/\$basearch/
+          gpgcheck=0
+          REPO
+
+          yum clean all
+          yum install -y https://dl.fedoraproject.org/pub/archive/epel/7/x86_64/Packages/e/epel-release-7-14.noarch.rpm || true
+          yum makecache fast
+
+          # 基础依赖
+          yum install -y git curl wget tar xz unzip bzip2 which rsync tree pkgconfig \
+            make cmake3 gcc gcc-c++ flex bison gettext \
+            autoconf automake libtool patchelf \
+            readline-devel zlib-devel pam-devel \
+            perl-ExtUtils-Embed
+
+          # 更新 git（可选）
+          yum remove -y git
+          yum install -y https://packages.endpointdev.com/rhel/7/os/x86_64/endpoint-repo.x86_64.rpm
+          yum install -y git
+
+          # 自定义 GCC
+          curl -sLo /opt/gcc-indiff.zip "${gcc_indiff_centos7_url}"
+          unzip /opt/gcc-indiff.zip -d /opt/gcc-indiff
+          export PATH=/opt/gcc-indiff/bin:/usr/local/bin:/usr/bin:/bin
+          export CC=/opt/gcc-indiff/bin/gcc
+            # 有些扩展用到 C++
+          export CXX=/opt/gcc-indiff/bin/g++
+
+          gcc --version
+
+          # 安装 vcpkg 依赖
+          git clone --depth 1 https://github.com/microsoft/vcpkg.git
+          ./vcpkg/bootstrap-vcpkg.sh
+          export VCPKG_ROOT=$PWD/vcpkg
+
+          $VCPKG_ROOT/vcpkg install \
+            openssl \
+            lz4 \
+            zstd \
+            libxml2 \
+            libxslt \
+            icu \
+            geos \
+            proj \
+            gdal \
+            json-c \
+            --triplet ${VCPKG_TRIPLET} || cat $VCPKG_ROOT/installed/vcpkg/issue_body.md || true
+
+          DEPS_SRC="$VCPKG_ROOT/installed/${VCPKG_TRIPLET}"
+          DEPS_DST="${INSTALL_PREFIX}"
+          mkdir -p "$DEPS_DST"/{include,lib,lib64}
+          rsync -a "$DEPS_SRC/include/" "$DEPS_DST/include/"
+          rsync -a "$DEPS_SRC/lib/" "$DEPS_DST/lib/" || true
+          rsync -a "$DEPS_SRC/lib64/" "$DEPS_DST/lib64/" || true
+          for d in lib lib64; do
+            if [ -d "$DEPS_SRC/$d/pkgconfig" ]; then
+              mkdir -p "$DEPS_DST/$d/pkgconfig"
+              rsync -a "$DEPS_SRC/$d/pkgconfig/" "$DEPS_DST/$d/pkgconfig/"
+            fi
+          done
+
+          # PostgreSQL
+          git clone --depth 1 -b "${PG_VERSION_TAG}" https://github.com/postgres/postgres.git postgresql
+          cd postgresql
+          mkdir build && cd build
+          export CPPFLAGS="-I${DEPS_DST}/include"
+          export LDFLAGS="-L${DEPS_DST}/lib -Wl,-rpath,'\$ORIGIN/../lib:${DEPS_DST}/lib'"
+          ../configure \
+            --prefix="${DEPS_DST}" \
+            --with-openssl \
+            --with-lz4 \
+            --with-zstd \
+            --with-libxml \
+            --with-libxslt \
+            --with-icu \
+            --with-pam \
+            --with-system-tzdata=/usr/share/zoneinfo \
+            --with-readline \
+            --enable-thread-safety
+          make -j"$(nproc)"
+          make install
+          make -C ../contrib -j"$(nproc)"
+          make -C ../contrib install
+          cd ../..
+
+          # TimescaleDB
+          export PATH="${DEPS_DST}/bin:$PATH"
+          git clone --depth 1 -b "${TIMESCALEDB_VERSION}" https://github.com/timescale/timescaledb.git
+          cd timescaledb
+          ./bootstrap -Dbuild -DCMAKE_BUILD_TYPE=Release -DAPACHE_ONLY=1
+          cd build
+          make -j"$(nproc)"
+          make install
+          cd ../..
+
+          # PostGIS
+          export PKG_CONFIG_PATH="${DEPS_DST}/lib/pkgconfig:${DEPS_DST}/lib64/pkgconfig:${PKG_CONFIG_PATH}"
+          git clone --depth 1 -b "${POSTGIS_VERSION_TAG}" https://github.com/postgis/postgis.git
+          cd postgis
+          ./autogen.sh
+          ./configure \
+            --with-pgconfig="${DEPS_DST}/bin/pg_config" \
+            --with-geosconfig="${DEPS_DST}/bin/geos-config" \
+            --with-projdir="${DEPS_DST}" \
+            --with-gdalconfig="${DEPS_DST}/bin/gdal-config" || true
+          make -j"$(nproc)"
+          make install
+          cd ..
+
+          # 精简 & 打包
+          cd "${DEPS_DST}"
+          find . -type f -name "*.a" -delete || true
+          find bin -type f -exec file {} \; | awk -F: '/ELF/{print $1}' | xargs -r strip --strip-unneeded 2>/dev/null || true
+          find lib -maxdepth 1 -type f -name "*.so*" -exec strip --strip-unneeded {} + 2>/dev/null || true
+          # RPATH（可选）
+          command -v patchelf >/dev/null 2>&1 && for f in lib/postgresql/*.so; do patchelf --set-rpath "\$ORIGIN:${DEPS_DST}/lib" "$f" || true; done
+
+          tar -C /opt -czf /workspace/postgresql-centos7-x86_64-$(date +'%Y%m%d_%H%M').tar.gz postgresql
+          tree . > /workspace/postgresql-centos7-tree-$(date +'%Y%m%d_%H%M').txt
+          sync
+          echo 3 > /proc/sys/vm/drop_caches || true
+          EOS
+          chmod +x build.sh
+
+      - name: Run Build (CentOS7 Docker)
+        run: |
+          docker run --rm --privileged \
+            -e PG_VERSION_TAG=${{ env.PG_VERSION_TAG }} \
+            -e TIMESCALEDB_VERSION=${{ env.TIMESCALEDB_VERSION }} \
+            -e POSTGIS_VERSION_TAG=${{ env.POSTGIS_VERSION_TAG }} \
+            -e INSTALL_PREFIX=${{ env.INSTALL_PREFIX }} \
+            -e VCPKG_TRIPLET=${{ env.VCPKG_TRIPLET }} \
+            -e gcc_indiff_centos7_url=${{ env.gcc_indiff_centos7_url }} \
+            -v "${{ github.workspace }}":/workspace -w /workspace centos:7 /bin/bash -c "/workspace/build.sh"
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: postgresql-centos7
+          path: |
+            ${{ github.workspace }}/*.tar.gz
+            ${{ github.workspace }}/*centos7-tree*.txt
+          retention-days: 10
