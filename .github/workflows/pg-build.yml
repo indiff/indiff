@@ -325,12 +325,16 @@ jobs:
           cd postgresql
           mkdir build && cd build
           export CPPFLAGS="-I${DEPS_DST}/include"
+          export CXXFLAGS="-I${DEPS_DST}/include"
+          export CFLAGS="-I${DEPS_DST}/include"
           export LDFLAGS="-L${DEPS_DST}/lib -Wl,-rpath,'\$ORIGIN/../lib:${DEPS_DST}/lib'"
           ../configure \
             --prefix="${DEPS_DST}" \
             --with-openssl \
             --with-lz4 \
             --with-zstd \
+            ZSTD_CFLAGS="-I${DEPS_DST}/include" \
+            ZSTD_LIBS="-L${DEPS_DST}/lib -lzstd" \
             --with-libxml \
             --with-libxslt \
             --with-icu \
