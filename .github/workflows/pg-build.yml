@@ -6,7 +6,7 @@ on:
     - cron: '17 7 * * *'  # UTC 07:17 -> 北京时间 15:17，可按需调整
 
 env:
-  PG_VERSION_TAG: "REL_17_STABLE"          # PostgreSQL 主分支/标签
+  PG_VERSION_TAG: "master"          # PostgreSQL 主分支/标签 REL_17_STABLE
   TIMESCALEDB_VERSION: "2.15.2"            # TimescaleDB 版本 (也可改成 master)
   POSTGIS_VERSION_TAG: "3.4.2"             # PostGIS 版本标签（或 master）
   gcc_indiff_centos7_url: "https://github.com/indiff/gcc-build/releases/download/20250908_0934_16.0.0/gcc-indiff-centos7-16.0.0-x86_64-20250908_0931.xz"
@@ -19,6 +19,7 @@ jobs:
   build-postgresql-ubuntu:
     runs-on: ubuntu-latest
     name: PostgreSQL + TimescaleDB + PostGIS (Ubuntu)
+    if: false
 
     steps:
       - name: Free Disk Space
@@ -261,9 +262,9 @@ jobs:
             # 有些扩展用到 C++
           export CXX=/opt/gcc-indiff/bin/g++
           
-          # install cmake3 v4.1.1
-          curl -sLo cmake3.tar.gz https://github.com/Kitware/CMake/releases/download/v4.1.1/cmake-4.1.1-linux-x86_64.tar.gz
-          tar -xzf cmake3.tar.gz
+          # install cmake4 v4.1.1
+          curl -sLo cmake4.tar.gz https://github.com/Kitware/CMake/releases/download/v4.1.1/cmake-4.1.1-linux-x86_64.tar.gz
+          tar -xzf cmake4.tar.gz
           mv cmake-4.1.1-linux-x86_64 /opt/cmake
           rm -f /usr/bin/cmake
           ln -sf /opt/cmake/bin/cmake /usr/bin/cmake
@@ -283,7 +284,6 @@ jobs:
             libxslt \
             geos \
             proj \
-            gdal \
             json-c \
             --triplet ${VCPKG_TRIPLET} || cat $VCPKG_ROOT/installed/vcpkg/issue_body.md || true
 
