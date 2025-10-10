@@ -85,16 +85,16 @@ jobs:
           sudo mysql -e "FLUSH PRIVILEGES;"
           
           # 优化 MySQL 配置
-          cat << EOF | sudo tee -a /etc/mysql/mysql.conf.d/mysqld.cnf
-innodb_buffer_pool_size = 256M
-innodb_log_file_size = 64M
-innodb_flush_log_at_trx_commit = 2
-innodb_flush_method = O_DIRECT
-max_connections = 200
-table_open_cache = 400
-query_cache_size = 0
-query_cache_type = 0
-EOF
+          cat << 'MYSQLCONF' | sudo tee -a /etc/mysql/mysql.conf.d/mysqld.cnf
+          innodb_buffer_pool_size = 256M
+          innodb_log_file_size = 64M
+          innodb_flush_log_at_trx_commit = 2
+          innodb_flush_method = O_DIRECT
+          max_connections = 200
+          table_open_cache = 400
+          query_cache_size = 0
+          query_cache_type = 0
+          MYSQLCONF
           
           sudo systemctl restart mysql
           mysql -u${{ env.TEST_USER }} -p${{ env.TEST_PASSWORD }} -e "SELECT VERSION();"
