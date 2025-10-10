@@ -311,7 +311,8 @@ jobs:
           make -j$(nproc)
           make install
           rsync -a "/usr/local/icu68/include/" "$DEPS_DST/include/"
-          rsync -a "/usr/local/icu68/lib/"    "$DEPS_DST/lib64/"    || true
+          rsync -a "/usr/local/icu68/lib/"    "$DEPS_DST/lib/"    || true
+          # rsync -a "/usr/local/icu68/lib/"    "$DEPS_DST/lib64/"    || true
           cd ../..
 
           # 2) 复制头文件与动态库（.so 与 .so.*）及 pkgconfig
@@ -341,6 +342,8 @@ jobs:
             --with-libxml \
             --with-libxslt \
             --with-icu \
+            ICU_CFLAGS="-I${DEPS_DST}/include" \
+            ICU_LIBS="-L${DEPS_DST}/lib -licui18n -licuuc -licudata" \
             --with-pam \
             --with-system-tzdata=/usr/share/zoneinfo \
             --with-readline \
