@@ -349,8 +349,8 @@ jobs:
             ICU_LIBS="-L${DEPS_DST}/lib -licui18n -licuuc -licudata" \
             --with-pam \
             --with-system-tzdata=/usr/share/zoneinfo \
-            --with-readline \
-            --enable-thread-safety
+            --with-readline
+            #--enable-thread-safety
           make -j"$(nproc)"
           make install
           make -C ../contrib -j"$(nproc)"
