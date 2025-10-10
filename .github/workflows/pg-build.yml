@@ -247,7 +247,7 @@ jobs:
             make cmake3 gcc gcc-c++ flex bison gettext \
             autoconf automake libtool patchelf \
             readline-devel zlib-devel pam-devel \
-            perl-ExtUtils-Embed
+            perl-ExtUtils-Embed tree
 
           # 更新 git（可选）
           yum remove -y git
@@ -318,8 +318,11 @@ jobs:
           rsync -a "$DEPS_SRC/include/" "$DEPS_DST/include/"
           rsync -a --copy-links "$DEPS_SRC/lib/"      "$DEPS_DST/lib/"      || true
           rsync -a --copy-links "$DEPS_SRC/lib64/"    "$DEPS_DST/lib64/"    || true
-          rsync -a --copy-links "$DEPS_SRC/tools/protobuf/"    "$DEPS_DST/tools/"    || true
+          # rsync -a --copy-links "$DEPS_SRC/tools/protobuf/"    "$DEPS_DST/tools/"    || true
 
+          cp -r $DEPS_DST/include/libxml2/libxml $DEPS_DST/include/libxml || true
+          tree $DEPS_DST -d
+          
           # PostgreSQL
           git clone --depth 1 -b "${PG_VERSION_TAG}" https://github.com/postgres/postgres.git postgresql
           cd postgresql
