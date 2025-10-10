@@ -332,6 +332,9 @@ jobs:
           export CXXFLAGS="-I${DEPS_DST}/include"
           export CFLAGS="-I${DEPS_DST}/include"
           export LDFLAGS="-L${DEPS_DST}/lib -Wl,-rpath,'\$ORIGIN/../lib:${DEPS_DST}/lib'"
+          export LZ4_CFLAGS="-I${DEPS_DST}/include"
+          export LZ4_LIBS="-L${DEPS_DST}/lib -llz4"
+
           ../configure \
             --prefix="${DEPS_DST}" \
             --with-openssl \
