@@ -289,18 +289,16 @@ jobs:
 
           DEPS_SRC="$VCPKG_ROOT/installed/${VCPKG_TRIPLET}"
           DEPS_DST="${INSTALL_PREFIX}"
-          mkdir -p "$DEPS_DST"/{include,lib,lib64}
-          rsync -a "$DEPS_SRC/include/" "$DEPS_DST/include/"
-          rsync -a "$DEPS_SRC/lib/" "$DEPS_DST/lib/" || true
-          rsync -a "$DEPS_SRC/lib64/" "$DEPS_DST/lib64/" || true
+          mkdir -p  --copy-links "$DEPS_DST"/{include,lib,lib64}
+          rsync -a  --copy-links "$DEPS_SRC/include/" "$DEPS_DST/include/"
+          rsync -a  --copy-links "$DEPS_SRC/lib/" "$DEPS_DST/lib/" || true
+          # rsync -a  --copy-links "$DEPS_SRC/lib64/" "$DEPS_DST/lib64/" || true
           for d in lib lib64; do
             if [ -d "$DEPS_SRC/$d/pkgconfig" ]; then
               mkdir -p "$DEPS_DST/$d/pkgconfig"
-              rsync -a "$DEPS_SRC/$d/pkgconfig/" "$DEPS_DST/$d/pkgconfig/"
+              rsync -a  --copy-links "$DEPS_SRC/$d/pkgconfig/" "$DEPS_DST/$d/pkgconfig/"
             fi
           done
-
-          $VCPKG_ROOT/vcpkg install curl[core,non-http,ssl,openssl,zstd] snappy protobuf --triplet x64-linux-dynamic --clean-after-build
 
 
           # install icu  
@@ -312,8 +310,8 @@ jobs:
           ./configure --prefix=/usr/local/icu68
           make -j$(nproc)
           make install
-          rsync -a "/usr/local/icu68/include/" "$DEPS_DST/include/"
-          rsync -a "/usr/local/icu68/lib/"    "$DEPS_DST/lib/"    || true
+          rsync -a  --copy-links "/usr/local/icu68/include/" "$DEPS_DST/include/"
+          rsync -a  --copy-links "/usr/local/icu68/lib/"    "$DEPS_DST/lib/"    || true
           # rsync -a "/usr/local/icu68/lib/"    "$DEPS_DST/lib64/"    || true
           cd ../..
 
@@ -324,7 +322,7 @@ jobs:
           # rsync -a --copy-links "$DEPS_SRC/tools/protobuf/"    "$DEPS_DST/tools/"    || true
 
           cp -r $DEPS_DST/include/libxml2/libxml $DEPS_DST/include/libxml || true
-          tree $DEPS_DST -d
+          tree $DEPS_DST
           
           # PostgreSQL
           git clone --depth 1 -b "${PG_VERSION_TAG}" https://github.com/postgres/postgres.git postgresql
