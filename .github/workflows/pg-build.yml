@@ -289,7 +289,7 @@ jobs:
 
           DEPS_SRC="$VCPKG_ROOT/installed/${VCPKG_TRIPLET}"
           DEPS_DST="${INSTALL_PREFIX}"
-          mkdir -p  --copy-links "$DEPS_DST"/{include,lib,lib64}
+          mkdir -p  "$DEPS_DST"/{include,lib,lib64}
           rsync -a  --copy-links "$DEPS_SRC/include/" "$DEPS_DST/include/"
           rsync -a  --copy-links "$DEPS_SRC/lib/" "$DEPS_DST/lib/" || true
           # rsync -a  --copy-links "$DEPS_SRC/lib64/" "$DEPS_DST/lib64/" || true
