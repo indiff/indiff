@@ -11,9 +11,9 @@ env:
   POSTGIS_VERSION_TAG: "3.4.2"             # PostGIS 版本标签（或 master）
   gcc_indiff_centos7_url: "https://github.com/indiff/gcc-build/releases/download/20250908_0934_16.0.0/gcc-indiff-centos7-16.0.0-x86_64-20250908_0931.xz"
   # 打包前安装根目录
-  INSTALL_PREFIX: "/opt/postgresql"
+  INSTALL_PREFIX: "/opt/pg"
   # vcpkg 目标 triplet（统一使用动态库，方便减少静态链接冲突）
-  VCPKG_TRIPLET: "x64-linux"
+  VCPKG_TRIPLET: "x64-linux-dynamic"
 
 jobs:
   build-postgresql-ubuntu:
@@ -275,7 +275,7 @@ jobs:
           git clone --depth 1 https://github.com/microsoft/vcpkg.git
           ./vcpkg/bootstrap-vcpkg.sh
           export VCPKG_ROOT=$PWD/vcpkg
-
+          
           $VCPKG_ROOT/vcpkg install \
             openssl \
             lz4 \
@@ -299,6 +299,8 @@ jobs:
               rsync -a "$DEPS_SRC/$d/pkgconfig/" "$DEPS_DST/$d/pkgconfig/"
             fi
           done
+
+          $VCPKG_ROOT/vcpkg install curl[core,non-http,ssl,openssl,zstd] snappy protobuf --triplet x64-linux-dynamic --clean-after-build
 
 
           # install icu  
