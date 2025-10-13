@@ -344,6 +344,8 @@ jobs:
             ZSTD_LIBS="-L${DEPS_DST}/lib -lzstd" \
             --with-libxml \
             --with-libxslt \
+            LIBXSLT_CFLAGS="-I${DEPS_DST}/include" \
+            LIBXSLT_LIBS="-L${DEPS_DST}/lib -lxslt" \
             --with-icu \
             ICU_CFLAGS="-I${DEPS_DST}/include" \
             ICU_LIBS="-L${DEPS_DST}/lib -licui18n -licuuc -licudata" \
