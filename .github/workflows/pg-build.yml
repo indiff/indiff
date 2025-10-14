@@ -289,9 +289,10 @@ jobs:
 
           DEPS_SRC="$VCPKG_ROOT/installed/${VCPKG_TRIPLET}"
           DEPS_DST="${INSTALL_PREFIX}"
-          mkdir -p  "$DEPS_DST"/{include,lib,lib64}
+          mkdir -p  "$DEPS_DST"/{include,lib,share}
           rsync -a  --copy-links "$DEPS_SRC/include/" "$DEPS_DST/include/"
           rsync -a  --copy-links "$DEPS_SRC/lib/" "$DEPS_DST/lib/" || true
+          rsync -a  --copy-links "$DEPS_SRC/share/" "$DEPS_DST/share/" || true
           # rsync -a  --copy-links "$DEPS_SRC/lib64/" "$DEPS_DST/lib64/" || true
           for d in lib lib64; do
             if [ -d "$DEPS_SRC/$d/pkgconfig" ]; then
@@ -334,7 +335,9 @@ jobs:
           export LDFLAGS="-L${DEPS_DST}/lib -Wl,-rpath,'\$ORIGIN/../lib:${DEPS_DST}/lib'"
           export LZ4_CFLAGS="-I${DEPS_DST}/include"
           export LZ4_LIBS="-L${DEPS_DST}/lib -llz4"
-
+          export PKG_CONFIG_PATH=${DEPS_DST}/lib/pkgconfig:${DEPS_DST}/share/pkgconfig
+          pkg-config --cflags --libx libxslt
+          
           ../configure \
             --prefix="${DEPS_DST}" \
             --with-openssl \
@@ -345,7 +348,7 @@ jobs:
             --with-libxml \
             --with-libxslt \
             LIBXSLT_CFLAGS="-I${DEPS_DST}/include" \
-            LIBXSLT_LIBS="-L${DEPS_DST}/lib -lxslt" \
+            LIBXSLT_LIBS="-L${DEPS_DST}/lib -lxslt -lxml2 " \
             --with-icu \
             ICU_CFLAGS="-I${DEPS_DST}/include" \
             ICU_LIBS="-L${DEPS_DST}/lib -licui18n -licuuc -licudata" \
