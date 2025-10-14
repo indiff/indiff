@@ -345,7 +345,7 @@ jobs:
           export LZ4_CFLAGS="-I${DEPS_DST}/include"
           export LZ4_LIBS="-L${DEPS_DST}/lib -llz4"
           export PKG_CONFIG_PATH=${DEPS_DST}/lib/pkgconfig:${DEPS_DST}/share/pkgconfig
-          pkg-config --cflags --libx libxslt
+          pkg-config --cflags --libs libxslt
           
           ../configure \
             --prefix="${DEPS_DST}" \
