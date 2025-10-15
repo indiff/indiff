@@ -497,13 +497,13 @@ jobs:
           docker run --rm \
             -v ${{ github.workspace }}:/workspace \
             -w /workspace \
-            ghcr.io/${{ github.repository_owner }}/pg-build-centos7:latest \
             -e PG_VERSION_TAG=${{ env.PG_VERSION_TAG }} \
             -e TIMESCALEDB_VERSION=${{ env.TIMESCALEDB_VERSION }} \
             -e POSTGIS_VERSION_TAG=${{ env.POSTGIS_VERSION_TAG }} \
             -e INSTALL_PREFIX=${{ env.INSTALL_PREFIX }} \
             -e VCPKG_TRIPLET=${{ env.VCPKG_TRIPLET }} \
             -e gcc_indiff_centos7_url=${{ env.gcc_indiff_centos7_url }} \
+            ghcr.io/${{ github.repository_owner }}/pg-build-centos7:latest \
             /bin/bash -c "./images/pg-build/build-pg.sh"
 
       - name: Upload pg package
