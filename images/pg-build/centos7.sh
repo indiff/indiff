@@ -186,14 +186,16 @@ export PATH=/opt/gcc-indiff/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bi
 export LD_LIBRARY_PATH=/opt/gcc-indiff/lib64:/opt/gcc-indiff/lib
 
 CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ $VCPKG_ROOT/vcpkg install \
-            openssl \
             lz4 \
             zstd \
             libxml2 \
             libxslt \
+            --triplet x64-linux || cat $VCPKG_ROOT/installed/vcpkg/issue_body.md || true
+            
+CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ $VCPKG_ROOT/vcpkg install \
+            openssl \
             geos \
             proj \
             json-c \
-            --triplet ${VCPKG_TRIPLET} || cat $VCPKG_ROOT/installed/vcpkg/issue_body.md || true
-            
+            --triplet ${VCPKG_TRIPLET} || cat $VCPKG_ROOT/installed/vcpkg/issue_body.md || true       
 echo "CentOS 7 pg-build environment setup completed successfully!"
