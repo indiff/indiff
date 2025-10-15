@@ -505,7 +505,7 @@ jobs:
             -e VCPKG_TRIPLET=${{ env.VCPKG_TRIPLET }} \
             -e gcc_indiff_centos7_url=${{ env.gcc_indiff_centos7_url }} \
             ghcr.io/${{ github.repository_owner }}/pg-build-centos7:latest \
-            /bin/bash -c "./images/pg-build/build-pg.sh"
+            /bin/bash -c "./build-pg.sh"
 
       - name: Upload pg package
         uses: actions/upload-artifact@v4
