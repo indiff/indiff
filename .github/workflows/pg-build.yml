@@ -469,6 +469,7 @@ jobs:
       - name: Generate Docker cache key
         id: cache-key
         run: |
+          cat images/pg-build/Dockerfile images/pg-build/centos7.sh
           CACHE_KEY=$(cat images/pg-build/Dockerfile images/pg-build/centos7.sh | sha256sum | cut -d' ' -f1)
           echo "cache_key=${CACHE_KEY}" >> $GITHUB_OUTPUT
           echo "Docker cache key: ${CACHE_KEY}"
