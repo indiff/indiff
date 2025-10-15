@@ -2,7 +2,7 @@
 # author: indiff
 set -xe
 
-DEPS_SRC="$VCPKG_ROOT/installed/${VCPKG_TRIPLET}"
+DEPS_SRC="/opt/vcpkg/installed/${VCPKG_TRIPLET}"
 DEPS_DST="${INSTALL_PREFIX}"
 mkdir -p  "$DEPS_DST"/{include,lib,share}
 rsync -a  --copy-links "$DEPS_SRC/include/" "$DEPS_DST/include/"
