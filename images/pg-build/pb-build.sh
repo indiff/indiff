@@ -2,9 +2,15 @@
 # author: indiff
 set -xe
 
-DEPS_SRC="/opt/vcpkg/installed/${VCPKG_TRIPLET}"
+
+DEPS_SRC="/opt/vcpkg/installed/x64-linux"
 DEPS_DST="${INSTALL_PREFIX}"
 mkdir -p  "$DEPS_DST"/{include,lib,share}
+rsync -a  --copy-links "$DEPS_SRC/include/" "$DEPS_DST/include/"
+rsync -a  --copy-links "$DEPS_SRC/lib/" "$DEPS_DST/lib/" || true
+
+DEPS_SRC="/opt/vcpkg/installed/${VCPKG_TRIPLET}"
+DEPS_DST="${INSTALL_PREFIX}"
 rsync -a  --copy-links "$DEPS_SRC/include/" "$DEPS_DST/include/"
 rsync -a  --copy-links "$DEPS_SRC/lib/" "$DEPS_DST/lib/" || true
 rsync -a  --copy-links "$DEPS_SRC/share/" "$DEPS_DST/share/" || true
@@ -22,7 +28,7 @@ wget https://github.com/unicode-org/icu/releases/download/release-68-2/icu4c-68_
 tar -xzf icu4c-68_2-src.tgz
 cd icu/source
 export LD_LIBRARY_PATH=${LD_LIBRARY_PATH:-""}
-LD_LIBRARY_PATH=/opt/gcc-indiff/lib64:$LD_LIBRARY_PATH
+LD_LIBRARY_PATH=/opt/gcc-indiff/lib64:$DEPS_DST/lib:$LD_LIBRARY_PATH
 ./configure --prefix=/usr/local/icu68
 make -j$(nproc)
 make install
