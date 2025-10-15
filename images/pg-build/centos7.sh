@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: GPL-3.0
 # CentOS 7 dependency installation and configuration script
 set -xe
-export gcc_indiff_centos7_url="https://github.com/indiff/gcc-build/releases/download/20250908_0934_16.0.0/gcc-indiff-centos7-16.0.0-x86_64-20250908_0931.xz"
 echo 'LANG=zh_CN.UTF-8' >> /etc/environment
 echo 'LANGUAGE=zh_CN.UTF-8' >> /etc/environment
 echo 'LC_ALL=zh_CN.UTF-8' >> /etc/environment
@@ -185,8 +184,6 @@ export VCPKG_ROOT=/opt/vcpkg
 export TRIPLET=x64-linux
 export PATH=/opt/gcc-indiff/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 export LD_LIBRARY_PATH=/opt/gcc-indiff/lib64:/opt/gcc-indiff/lib
-
-VCPKG_TRIPLET="$1"
 
 CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ $VCPKG_ROOT/vcpkg install \
             openssl \
