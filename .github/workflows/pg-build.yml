@@ -476,9 +476,11 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
-          context: .
-          file: ./images/pg-build/Dockerfile
+          context: images/pg-build
+          file: Dockerfile
           push: true
+          pull: true
+          provenance: false
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/pg-build-centos7:latest
