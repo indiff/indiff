@@ -28,6 +28,10 @@ RUN chmod +x /tmp/centos7.sh && \
 # Set working directory
 WORKDIR /workspace
 
-# Set default shell to bash with devtoolset-10 enabled
+ENV PATH=/opt/gcc-indiff/bin:$PATH
+ENV LD_LIBRARY_PATH=/opt/gcc-indiff/lib:/opt/gcc-indiff/lib64:$LD_LIBRARY_PATH
+ENV CC=/opt/gcc-indiff/bin/gcc
+ENV CXX=/opt/gcc-indiff/bin/g++
+
 SHELL ["/bin/bash", "-c"]
 CMD ["/bin/bash"]
