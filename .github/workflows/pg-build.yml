@@ -38,7 +38,7 @@ jobs:
           set -eux
           sudo apt-get update
           sudo apt-get install -y locales tzdata git curl zip unzip rsync tree pkg-config autoconf automake libtool \
-            build-essential ninja-build cmake flex bison gettext \
+            build-essential ninja-build cmake flex bison gettext tree \
             libpam0g-dev patchelf
           sudo locale-gen zh_CN.UTF-8
           sudo update-locale LANG=zh_CN.UTF-8
@@ -494,6 +494,7 @@ jobs:
       - name: Build PG in Docker
         run: |
           sudo timedatectl set-timezone Asia/Shanghai
+          ls
           docker run --rm \
             -v ${{ github.workspace }}:/workspace \
             -w /workspace \
