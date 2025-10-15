@@ -484,6 +484,12 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/pg-build-centos7:latest
           cache-to: type=inline
+          build-args: |
+            PG_VERSION_TAG=${{ env.PG_VERSION_TAG }}
+            TIMESCALEDB_VERSION=${{ env.TIMESCALEDB_VERSION }}
+            POSTGIS_VERSION_TAG=${{ env.POSTGIS_VERSION_TAG }}
+            VCPKG_TRIPLET=${{ env.VCPKG_TRIPLET }}
+            gcc_indiff_centos7_url=${{ env.gcc_indiff_centos7_url }}
 
       - name: Build PG in Docker
         run: |
