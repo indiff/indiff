@@ -87,17 +87,17 @@ cd ../..
 # TimescaleDB
 export PATH="${DEPS_DST}/bin:$PATH"
 # git clone --depth 1 -b "${TIMESCALEDB_VERSION}" https://github.com/timescale/timescaledb.git
-git clone --depth 1 --filter=blob:none https://github.com/timescale/timescaledb.git
-cd timescaledb
-sed -E -i 's/OR[[:space:]]*\([[:space:]]*\$\{PG_VERSION_MAJOR\}[[:space:]]+GREATER[[:space:]]+"17"[[:space:]]*\)/OR (\${PG_VERSION_MAJOR} GREATER "20")/g' CMakeLists.txt
-sed -E -i 's/OR[[:space:]]*\([[:space:]]*\$\{PG_VERSION_MAJOR\}[[:space:]]+GREATER[[:space:]]+"18"[[:space:]]*\)/OR (\${PG_VERSION_MAJOR} GREATER "20")/g' CMakeLists.txt
-sed -E -i 's/OR[[:space:]]*\([[:space:]]*\$\{PG_VERSION_MAJOR\}[[:space:]]+GREATER[[:space:]]+"19"[[:space:]]*\)/OR (\${PG_VERSION_MAJOR} GREATER "20")/g' CMakeLists.txt
+# git clone --depth 1 --filter=blob:none https://github.com/timescale/timescaledb.git
+# cd timescaledb
+# sed -E -i 's/OR[[:space:]]*\([[:space:]]*\$\{PG_VERSION_MAJOR\}[[:space:]]+GREATER[[:space:]]+"17"[[:space:]]*\)/OR (\${PG_VERSION_MAJOR} GREATER "20")/g' CMakeLists.txt
+# sed -E -i 's/OR[[:space:]]*\([[:space:]]*\$\{PG_VERSION_MAJOR\}[[:space:]]+GREATER[[:space:]]+"18"[[:space:]]*\)/OR (\${PG_VERSION_MAJOR} GREATER "20")/g' CMakeLists.txt
+# sed -E -i 's/OR[[:space:]]*\([[:space:]]*\$\{PG_VERSION_MAJOR\}[[:space:]]+GREATER[[:space:]]+"19"[[:space:]]*\)/OR (\${PG_VERSION_MAJOR} GREATER "20")/g' CMakeLists.txt
 
-./bootstrap -DCMAKE_BUILD_TYPE=Release -DAPACHE_ONLY=1 -DPG_CONFIG="${DEPS_DST}/bin/pg_config"
-cd build
-make -j"$(nproc)"
-make install
-cd ../..
+# ./bootstrap -DCMAKE_BUILD_TYPE=Release -DAPACHE_ONLY=1 -DPG_CONFIG="${DEPS_DST}/bin/pg_config"
+# cd build
+# make -j"$(nproc)"
+# make install
+# cd ../..
 
 # PostGIS
 export PKG_CONFIG_PATH="${DEPS_DST}/lib/pkgconfig:${DEPS_DST}/lib64/pkgconfig:${PKG_CONFIG_PATH}"
