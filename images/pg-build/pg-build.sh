@@ -88,7 +88,7 @@ cd ../..
 export PATH="${DEPS_DST}/bin:$PATH"
 git clone --depth 1 -b "${TIMESCALEDB_VERSION}" https://github.com/timescale/timescaledb.git
 cd timescaledb
-./bootstrap -Dbuild -DCMAKE_BUILD_TYPE=Release -DAPACHE_ONLY=1 -DPG_CONFIG="${DEPS_DST}/bin/pg_config"
+./bootstrap -DCMAKE_BUILD_TYPE=Release -DAPACHE_ONLY=1 -DPG_CONFIG="${DEPS_DST}/bin/pg_config"
 cd build
 make -j"$(nproc)"
 make install
