@@ -75,20 +75,20 @@ pkg-config --cflags --libs libxslt
     ICU_LIBS="-L${DEPS_DST}/lib -licui18n -licuuc -licudata" \
     --with-pam \
     --with-system-tzdata=/usr/share/zoneinfo \
+    --enable-nls='zh'
     --with-readline || cat config.log
 
 #--enable-thread-safety
-make -j"$(nproc)"
+# make world-bin
+make world-bin -j"$(nproc)"
 make install
-make -C ../contrib -j"$(nproc)"
-make -C ../contrib install
 cd ../..
 
 # TimescaleDB
 export PATH="${DEPS_DST}/bin:$PATH"
 git clone --depth 1 -b "${TIMESCALEDB_VERSION}" https://github.com/timescale/timescaledb.git
 cd timescaledb
-./bootstrap -Dbuild -DCMAKE_BUILD_TYPE=Release -DAPACHE_ONLY=1
+./bootstrap -Dbuild -DCMAKE_BUILD_TYPE=Release -DAPACHE_ONLY=1 -DPG_CONFIG="${DEPS_DST}/bin/pg_config"
 cd build
 make -j"$(nproc)"
 make install
