@@ -116,6 +116,7 @@ cd postgis
     --with-pgconfig="${DEPS_DST}/bin/pg_config" \
     --with-geosconfig="${DEPS_DST}/bin/geos-config" \
     --with-projdir="${DEPS_DST}" \
+    --without-protobuf \
     --with-gdalconfig="${DEPS_DST}/bin/gdal-config" || true
 make -j"$(nproc)"
 make install
