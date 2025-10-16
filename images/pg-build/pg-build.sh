@@ -131,7 +131,7 @@ find lib -maxdepth 1 -type f -name "*.so*" -exec strip --strip-unneeded {} + 2>/
 command -v patchelf >/dev/null 2>&1 && for f in lib/postgresql/*.so; do patchelf --set-rpath "\$ORIGIN:${DEPS_DST}/lib" "$f" || true; done
 
 # tar -C /opt -czf /workspace/postgresql-centos7-x86_64-$(date +'%Y%m%d_%H%M').tar.gz postgresql
-zip -r -q -9 ../pg-indiff-centos7-x86_64-$(date +'%Y%m%d_%H%M').zip .
+zip -r -q -9 ../pg-indiff-centos7-x86_64-$(date +'%Y%m%d_%H%M').xz .
 tree . > /workspace/pg-centos7-tree-$(date +'%Y%m%d_%H%M').txt
 sync
 echo 3 > /proc/sys/vm/drop_caches || true
