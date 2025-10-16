@@ -98,6 +98,14 @@ export PATH="${DEPS_DST}/bin:$PATH"
 # make -j"$(nproc)"
 # make install
 # cd ../..
+git clone --depth 1 --filter=blob:none https://github.com/libgeos/geos.git
+cd geos
+mkdir build
+cd build
+CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ cmake -DCMAKE_C_COMPILER=/opt/gcc-indiff/bin/gcc -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=NO -DBUILD_DOCUMENTATION=NO -DCMAKE_INSTALL_LIBDIR=${DEPS_DST}/lib -DCMAKE_INSTALL_BINDIR=${DEPS_DST}/bin -DCMAKE_INSTALL_INCLUDEDIR=${DEPS_DST}/include  ..
+cmake --build . -j $(nproc)
+cmake --build . -j $(nproc)  --target install
+cd ../..
 
 # PostGIS
 export PKG_CONFIG_PATH="${DEPS_DST}/lib/pkgconfig:${DEPS_DST}/lib64/pkgconfig:${PKG_CONFIG_PATH}"
