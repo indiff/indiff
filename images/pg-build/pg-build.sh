@@ -108,19 +108,19 @@ cmake --build . -j $(nproc)  --target install
 cd ../..
 
 # PostGIS
-export PKG_CONFIG_PATH="${DEPS_DST}/lib/pkgconfig:${DEPS_DST}/lib64/pkgconfig:${PKG_CONFIG_PATH}"
-git clone --depth 1 -b "${POSTGIS_VERSION_TAG}" https://github.com/postgis/postgis.git
-cd postgis
-./autogen.sh
-./configure \
-    --with-pgconfig="${DEPS_DST}/bin/pg_config" \
-    --with-geosconfig="${DEPS_DST}/bin/geos-config" \
-    --with-projdir="${DEPS_DST}" \
-    --without-protobuf \
-    --with-gdalconfig="${DEPS_DST}/bin/gdal-config" || true
-make -j"$(nproc)"
-make install
-cd ..
+# export PKG_CONFIG_PATH="${DEPS_DST}/lib/pkgconfig:${DEPS_DST}/lib64/pkgconfig:${PKG_CONFIG_PATH}"
+# git clone --depth 1 -b "${POSTGIS_VERSION_TAG}" https://github.com/postgis/postgis.git
+# cd postgis
+# ./autogen.sh
+# ./configure \
+#     --with-pgconfig="${DEPS_DST}/bin/pg_config" \
+#     --with-geosconfig="${DEPS_DST}/bin/geos-config" \
+#     --with-projdir="${DEPS_DST}" \
+#     --without-protobuf \
+#     --with-gdalconfig="${DEPS_DST}/bin/gdal-config" || true
+# make -j"$(nproc)"
+# make install
+# cd ..
 
 # 精简 & 打包
 cd "${DEPS_DST}"
