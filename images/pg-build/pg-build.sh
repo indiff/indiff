@@ -46,6 +46,10 @@ rsync -a --copy-links "$DEPS_SRC/lib64/"    "$DEPS_DST/lib64/"    || true
 cp -r $DEPS_DST/include/libxml2/libxml $DEPS_DST/include/libxml || true
 tree $DEPS_DST
 
+# sync gcc lib
+rsync -a "/opt/gcc-indiff/include/" "$DEPS_DST/include/"
+rsync -a --copy-links "/opt/gcc-indiff/lib64/"    "$DEPS_DST/lib64/"    || true
+
 # PostgreSQL
 git clone --depth 1 -b "${PG_VERSION_TAG}" https://github.com/postgres/postgres.git postgresql
 cd postgresql
