@@ -79,7 +79,7 @@ pkg-config --cflags --libs libxslt
     ICU_LIBS="-L${DEPS_DST}/lib -licui18n -licuuc -licudata" \
     --with-pam \
     --with-system-tzdata=/usr/share/zoneinfo \
-    --enable-nls='zh'
+    --enable-nls='zh' \
     --with-readline || cat config.log
 
 #--enable-thread-safety
@@ -104,12 +104,25 @@ export PATH="${DEPS_DST}/bin:$PATH"
 # cd ../..
 git clone --depth 1 --filter=blob:none https://github.com/libgeos/geos.git
 cd geos
-mkdir build
-cd build
-CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ cmake -DCMAKE_C_COMPILER=/opt/gcc-indiff/bin/gcc -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=NO -DBUILD_DOCUMENTATION=NO -DCMAKE_INSTALL_LIBDIR=${DEPS_DST}/lib -DCMAKE_INSTALL_BINDIR=${DEPS_DST}/bin -DCMAKE_INSTALL_INCLUDEDIR=${DEPS_DST}/include  ..
-cmake --build . -j $(nproc)
-cmake --build . -j $(nproc)  --target install
-cd ../..
+# mkdir build
+# cd build
+# CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ cmake -DCMAKE_C_COMPILER=/opt/gcc-indiff/bin/gcc -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=NO -DBUILD_DOCUMENTATION=NO -DCMAKE_INSTALL_LIBDIR=${DEPS_DST}/lib -DCMAKE_INSTALL_BINDIR=${DEPS_DST}/bin -DCMAKE_INSTALL_INCLUDEDIR=${DEPS_DST}/include  ..
+cmake -S . -B build \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_INSTALL_PREFIX="${DEPS_DST}" \
+  -DCMAKE_INSTALL_LIBDIR=${DEPS_DST}/lib  \
+  -DCMAKE_INSTALL_BINDIR=${DEPS_DST}/bin  \
+  -DCMAKE_INSTALL_INCLUDEDIR=${DEPS_DST}/include  \
+  -DBUILD_TESTING=OFF \
+  -DBUILD_DOCUMENTATION=OFF \
+  -DBUILD_SHARED_LIBS=ON \
+  -DCMAKE_C_COMPILER=/opt/gcc-indiff/bin/gcc \
+  -DCMAKE_CXX_COMPILER=/opt/gcc-indiff/bin/g++
+# cmake --build . -j $(nproc)
+# cmake --build . -j $(nproc)  --target install
+cmake --build build -j"$(nproc)"
+cmake --install build
+cd ..
 
 # PostGIS
 # export PKG_CONFIG_PATH="${DEPS_DST}/lib/pkgconfig:${DEPS_DST}/lib64/pkgconfig:${PKG_CONFIG_PATH}"
@@ -125,6 +138,24 @@ cd ../..
 # make -j"$(nproc)"
 # make install
 # cd ..
+
+export PATH="${DEPS_DST}/bin:$PATH"
+export PKG_CONFIG_PATH="${DEPS_DST}/lib/pkgconfig:${DEPS_DST}/share/pkgconfig:${PKG_CONFIG_PATH:-}"
+export CPPFLAGS="-I${DEPS_DST}/include ${CPPFLAGS:-}"
+export LDFLAGS="-L${DEPS_DST}/lib -Wl,-rpath,'\$ORIGIN/../lib:${DEPS_DST}/lib' ${LDFLAGS:-}"
+
+git clone --depth 1 -b "${POSTGIS_VERSION_TAG:-3.4.2}" https://github.com/postgis/postgis.git
+cd postgis
+./autogen.sh
+# 如 GDAL/PROJ 由 vcpkg 提供，通常通过 pkg-config 自动发现；如果有 gdal-config 也可显式指定
+./configure \
+  --with-pgconfig="${DEPS_DST}/bin/pg_config" \
+  --with-geosconfig="${DEPS_DST}/bin/geos-config" \
+  --with-projdir="${DEPS_DST}" \
+  --without-protobuf
+make -j"$(nproc)"
+make install
+cd ..
 
 # 精简 & 打包
 cd "${DEPS_DST}"
