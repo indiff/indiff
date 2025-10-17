@@ -572,9 +572,8 @@ jobs:
           ```
          
           EOF
-          centos7_pg_bname="$(basename artifacts/*pg*/*pg*centos7*.xz)"
+          centos7_pg_bname="$(basename artifacts/*pg*centos7*.xz)"
           sed -i "s/shit1centos7/${centos7_pg_bname}/g" hello.md
-
-          gh release create ${{ env.TAG_NAME }} -F hello.md "artifacts/*pg*/*.xz"
+          gh release create ${{ env.TAG_NAME }} -F hello.md "artifacts/*.xz"
         env:
           GITHUB_TOKEN: ${{ github.token }}
