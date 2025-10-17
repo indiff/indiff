@@ -564,11 +564,11 @@ jobs:
           cat <<'EOF' >> hello.md
           Proxy download:
           ```bash         
-          curl -#Lo /opt/percona80.zip "https://ghproxy.cfd/https://github.com/indiff/indiff/releases/download/${{ env.TAG_NAME }}/shit1centos7"
+          curl -#Lo /opt/pg.zip "https://ghproxy.cfd/https://github.com/indiff/indiff/releases/download/${{ env.TAG_NAME }}/shit1centos7"
           ```
           Direct download:
           ```bash         
-          curl -#Lo /opt/percona80.zip "https://github.com/indiff/indiff/releases/download/${{ env.TAG_NAME }}/shit1centos7"
+          curl -#Lo /opt/pg.zip "https://github.com/indiff/indiff/releases/download/${{ env.TAG_NAME }}/shit1centos7"
           ```
          
           EOF
