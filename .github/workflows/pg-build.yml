@@ -514,3 +514,67 @@ jobs:
           name: pg-centos7-x86_64
           path: |
             ${{ github.workspace }}/pg*.xz
+
+  publish-release:
+    needs: [build-pg-centos7] 
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v5
+      - name: Restoring artifacts
+        uses: actions/download-artifact@main
+        with:
+          path: artifacts
+          pattern: pg*-*
+          merge-multiple: false
+        
+      - name: Release Tag
+        id: release_tag
+        run: |
+          # sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+          # sudo apt update
+          # sudo add-apt-repository ppa:ubuntu-toolchain-r/ppa
+          # sudo apt upgrade
+          sudo apt install -y chrony
+          sudo systemctl enable chrony
+          sudo systemctl start chrony
+          sudo timedatectl set-timezone Asia/Shanghai
+          timedatectl status
+          echo "TAG_NAME=$(date +'%Y%m%d_%H%M')_pg" >> $GITHUB_ENV
+
+      - name: Create Release
+        run: |
+          set -xe
+          sudo apt-get update
+          sudo apt-get install -y zip unzip systemd language-pack-zh-hans language-pack-zh-hans-base locales tree
+          sudo locale-gen zh_CN.UTF-8; /usr/bin/localectl set-locale LANG=zh_CN.UTF-8 || true ; 
+          /usr/bin/timedatectl set-timezone Asia/Shanghai || true; 
+          /usr/bin/timedatectl set-ntp true || true;
+          # 使用 GitHub API 获取最后一次提交信息
+          commit_info=$(curl -s -H "Authorization: Bearer $GITHUB_TOKEN" \
+          -H "Accept: application/vnd.github.v3+json" \
+          https://api.github.com/repos/postgres/postgres/commits \
+          | jq -r '.[0] | "\(.commit.author.name) \(.commit.message) \(.commit.author.date)"')
+          tree .
+          # 输出变量
+          echo "Commit Info: $commit_info"
+          echo -e "## 你好$(date) postgres \n > $commit_info\n" > hello.md
+
+          
+          cat <<'EOF' >> hello.md
+          Proxy download:
+          ```bash         
+          curl -#Lo /opt/percona80.zip "https://ghproxy.cfd/https://github.com/indiff/indiff/releases/download/${{ env.TAG_NAME }}/shit1centos7"
+          ```
+          Direct download:
+          ```bash         
+          curl -#Lo /opt/percona80.zip "https://github.com/indiff/indiff/releases/download/${{ env.TAG_NAME }}/shit1centos7"
+          ```
+         
+          EOF
+          centos7_pg_bname="$(basename artifacts/*pg*/*pg*centos7*.xz)"
+          sed -i "s/shit1centos7/${centos7_pg_bname}/g" hello.md
+
+          gh release create ${{ env.TAG_NAME }} -F hello.md "artifacts/*pg*/*.xz"
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
