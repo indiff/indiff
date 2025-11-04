@@ -7,7 +7,7 @@ set -xe
 PROTOC_BASENAME=$(basename $VCPKG_ROOT/installed/x64-linux-dynamic/tools/protobuf/protoc-*)
 PROTOC_LIB_BASENAME=$(basename $VCPKG_ROOT/installed/x64-linux-dynamic/lib/libprotoc.so.*)
 chmod +x $VCPKG_ROOT/installed/x64-linux-dynamic/tools/protobuf/$PROTOC_BASENAME
-git clone --filter=blob:none --depth 1 https://github.com/mysql/mysql-server.git $MYSQL_BRANCH server
+git clone --filter=blob:none --depth 1 https://github.com/mysql/mysql-server.git  -b $MYSQL_BRANCH server
 cd server
 # git submodule update --init --recursive
 # wget https://archives.boost.io/release/1.89.0/source/boost_1_89_0.tar.bz2
