@@ -184,18 +184,43 @@ export VCPKG_ROOT=/opt/vcpkg
 export TRIPLET=x64-linux
 export PATH=/opt/gcc-indiff/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 export LD_LIBRARY_PATH=/opt/gcc-indiff/lib64:/opt/gcc-indiff/lib
+export TRIPLET=x64-linux
+# TRIPLET=x64-linux-dynamic
 
-CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ $VCPKG_ROOT/vcpkg install \
-            lz4 \
-            zstd \
-            libxml2 \
-            libxslt \
-            --triplet x64-linux || cat $VCPKG_ROOT/installed/vcpkg/issue_body.md || true
-            
+# 用 vcpkg 安装第三方库（确认需的端口名，必要时用 --overlay-ports)
+# curl => 替代 libcurl-devel
+# yum install libcurl-devel       # libcurl 开发库（HTTP 客户端、下载等功能）
+# yum install zlib-devel          # zlib 开发库（通用压缩库）
+# yum install lz4-devel           # LZ4 开发库（高速压缩，MySQL 用于快速压缩）
+# yum install zstd                # Zstandard 压缩工具与库（快速压缩算法，现代替代选项）
+# yum install snappy snappy-devel # Snappy 压缩库及开发文件（RocksDB 等依赖）
+# yum install openssl openssl-devel   # OpenSSL 运行时与开发库（TLS/加密与 SSL 编译依赖）
+# yum install pcre2-devel         # PCRE2 正则表达式开发库（正则匹配功能）
+# yum install lzo-devel           # LZO 开发库（另一种压缩算法，部分组件可能依赖）
+# yum install ncurses-devel       # ncurses 开发库（终端界面库，某些工具依赖）
+# yum install libxml2-devel       # libxml2 开发库（XML 解析，部分插件或工具需要）
+# yum install libaio-devel        # libaio 异步 IO 开发库（高性能 IO 支持，数据库常用）
+# yum install libevent-devel      # libevent 开发库（高性能事件通知库，网络组件常用）
+# yum install bzip2-devel         # bzip2 开发库（压缩算法支持）
+# $VCPKG_ROOT/vcpkg install boost
+# openssl
+
+# 用 vcpkg 安装动态 curl （会生成 libcurl.so 并自动依赖 libssl/libcrypto)
+# cyrus-sasl
+CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ $VCPKG_ROOT/vcpkg install curl[core,non-http,ssl,openssl,zstd] snappy protobuf --triplet x64-linux-dynamic --clean-after-build
 CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ $VCPKG_ROOT/vcpkg install \
             openssl \
-            geos \
-            proj \
-            json-c \
-            --triplet ${VCPKG_TRIPLET} || cat $VCPKG_ROOT/installed/vcpkg/issue_body.md || true       
-echo "CentOS 7 pg-build environment setup completed successfully!"
+            zlib \
+            lz4 \
+            zstd \
+            bzip2 \
+            libxml2 \
+            libevent[openssl] \
+            pcre2 \
+            ncurses \
+            readline \
+            libaio  \
+            pkgconf \
+            --triplet $TRIPLET --clean-after-build	
+ 
+echo "CentOS 7 mysql-build environment setup completed successfully!"
