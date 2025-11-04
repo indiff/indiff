@@ -26,8 +26,15 @@ env:
   RE2C_VERSION: "4.2" # https://github.com/skvadrik/re2c/releases
   GIT_LFS_VERSION: "3.6.1" # https://github.com/git-lfs/git-lfs/releases
   GIT_VERSION: "2.49.0" # https://mirrors.edge.kernel.org/pub/software/scm/git/ https://github.com/git/git/releases
-  # https://github.com/indiff/gcc-build/releases
+  PG_VERSION_TAG: "master"          # PostgreSQL 主分支/标签 REL_17_STABLE
+  TIMESCALEDB_VERSION: "2.15.2"            # TimescaleDB 版本 (也可改成 master)
+  POSTGIS_VERSION_TAG: "3.4.2"             # PostGIS 版本标签（或 master）
   gcc_indiff_centos7_url: "https://github.com/indiff/gcc-build/releases/download/20250908_0934_16.0.0/gcc-indiff-centos7-16.0.0-x86_64-20250908_0931.xz"
+  # 打包前安装根目录
+  INSTALL_PREFIX: "/opt/pg"
+  # vcpkg 目标 triplet（统一使用动态库，方便减少静态链接冲突）
+  VCPKG_TRIPLET: "x64-linux-dynamic"
+
 jobs:
   before_build:
     runs-on: [ ubuntu-latest ]
@@ -425,9 +432,90 @@ jobs:
           path: |
             ${{ github.workspace }}/*.xz
   
+
+
+  build-git-centos7:
+    runs-on: ubuntu-latest
+    #timeout-minutes: 120
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Free Disk-Space
+        run: df -h && sudo apt-get clean && docker system prune -a -f && sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc && df -h && free -h
+
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository_owner }}/git-build-centos7
+          tags: |
+            type=raw,value=latest
+            type=sha,prefix=
+
+      - name: Generate Docker cache key
+        id: cache-key
+        run: |
+          cat images/git-build/Dockerfile images/git-build/centos7.sh
+          CACHE_KEY=$(cat images/git-build/Dockerfile images/git-build/centos7.sh | sha256sum | cut -d' ' -f1)
+          echo "cache_key=${CACHE_KEY}" >> $GITHUB_OUTPUT
+          echo "Docker cache key: ${CACHE_KEY}"
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: images/git-build
+          push: true
+          pull: true
+          provenance: false
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/git-build-centos7:latest
+          cache-to: type=inline
+          build-args: |
+            RE2C_VERSION=${{ env.RE2C_VERSION }}
+            GIT_LFS_VERSION=${{ env.GIT_LFS_VERSION }}
+            GIT_VERSION=${{ env.GIT_VERSION }}
+            gcc_indiff_centos7_url=${{ env.gcc_indiff_centos7_url }}
+
+      - name: Build PG in Docker
+        run: |
+          sudo timedatectl set-timezone Asia/Shanghai
+          ls
+          docker run --rm \
+            -v ${{ github.workspace }}:/workspace \
+            -w /workspace \
+            -e RE2C_VERSION=${{ env.RE2C_VERSION }} \
+            -e GIT_LFS_VERSION=${{ env.GIT_LFS_VERSION }} \
+            -e GIT_VERSION=${{ env.GIT_VERSION }} \
+            -e gcc_indiff_centos7_url=${{ env.gcc_indiff_centos7_url }} \
+            ghcr.io/${{ github.repository_owner }}/git-build-centos7:latest \
+            /bin/bash -c "ls -ll && sh ./images/git-build/git-build.sh"
+
+      - name: Upload pg package
+        uses: actions/upload-artifact@v4
+        with:
+          name: git-centos7-x86_64
+          path: |
+            ${{ github.workspace }}/git*.xz
+
   publish-release:
     #  build-in-centos6 can not buildss
-    needs: [build-in-centos7] # build-arm64-tc,build-x86-tc,build-in-centos6
+    needs: [build-in-centos7,build-git-centos7] # build-arm64-tc,build-x86-tc,build-in-centos6
     runs-on: ubuntu-latest
 
     steps:
