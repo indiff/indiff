@@ -160,10 +160,20 @@ rm -rf ninja
 
 /usr/bin/ninja --version
 
-# yum -y remove python36 python36-pip python36-devel python3 python3-pip python3-devel
-# yum -y install yum-plugin-copr
-# yum -y copr enable adrienverge/python37
-# yum -y install python37 python37-devel python37-pip
+
+yum -y install autoconf autoconf-archive icu wget automake libtool m4 pkgconfig
+
+# install python 38
+# yum -y install centos-release-scl
+# yum -y install rh-python38 rh-python38-python-devel
+# scl enable rh-python38 bash
+# ln -s /opt/rh/rh-python38/root/usr/bin/python3 /usr/bin/python3
+# ln -s /opt/rh/rh-python38/root/usr/bin/pip3 /usr/bin/pip3
+
+yum -y remove python36 python36-pip python36-devel python3 python3-pip python3-devel
+yum -y install yum-plugin-copr
+yum -y copr enable adrienverge/python37
+yum -y install python37 python37-devel python37-pip
 python3 --version
           
 git --version
