@@ -32,6 +32,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y systemd language-pack-zh-hans language-pack-zh-hans-base locales tree
+          sudo apt-get install -y autoconf autoconf-archive automake libtool
           sudo locale-gen zh_CN.UTF-8; /usr/bin/localectl set-locale LANG=zh_CN.UTF-8 || true ; 
           /usr/bin/timedatectl set-timezone Asia/Shanghai || true; 
           /usr/bin/timedatectl set-ntp true || true;
@@ -59,11 +60,12 @@ jobs:
             curl libcurl4-openssl-dev bison libudev-dev libkrb5-dev libreadline-dev zlib1g-dev liblz4-dev libedit-dev libevent-dev libsasl2-dev libsasl2-modules-gssapi-mit libicu-dev libtirpc-dev
 
       # Step 3: 克隆 MySQL 源码
-      - name: Clone MySQL Source
+      - name: Clone percona Source
         run: |
           # git clone --filter=blob:none --depth 1 -b 8.0  https://github.com/mysql/mysql-server.git
           # git clone --filter=blob:none --depth 1 https://github.com/mysql/mysql-server.git
-          git clone --filter=blob:none --depth 1 https://github.com/percona/percona-server.git -b 8.0
+          # git clone --filter=blob:none --depth 1 https://github.com/percona/percona-server.git -b 8.0
+          git clone --filter=blob:none --depth 1 https://github.com/percona/percona-server.git
           cd percona-server
           git submodule update --init --recursive
           cd ..
