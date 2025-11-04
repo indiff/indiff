@@ -1,0 +1,202 @@
+name: Build MySQL with docker images
+
+on:
+  # push:
+  #   branches:
+  #     - main
+  #   paths:
+  #     - '**/mysql-rocksdb.yml'  
+  # pull_request:
+  #   branches:
+  #     - main
+  workflow_dispatch:
+  schedule:
+    #- cron: '07 10 * * *' # 每天凌晨2点（UTC），对应每天上午10点（CST）, 这里对应的是中国时区的是 18 点
+    - cron: '3 7 * * *' # UTC 时间 1:00 对应中国时间 9:00          
+env:
+  gcc_indiff_ubuntu_url: "https://github.com/indiff/gcc-build/releases/download/20250416_1126/gcc-indiff-ubuntu-x86_64-20250416_1125.xz"
+  gcc_indiff_centos7_url: "https://github.com/indiff/gcc-build/releases/download/20250908_0934_16.0.0/gcc-indiff-centos7-16.0.0-x86_64-20250908_0931.xz"
+  PG_VERSION_TAG: "master"          # PostgreSQL 主分支/标签 REL_17_STABLE
+  TIMESCALEDB_VERSION: "2.15.2"            # TimescaleDB 版本 (也可改成 master)
+  POSTGIS_VERSION_TAG: "3.4.2"             # PostGIS 版本标签（或 master）
+  # 打包前安装根目录
+  INSTALL_PREFIX: "/opt/pg"
+  # vcpkg 目标 triplet（统一使用动态库，方便减少静态链接冲突）
+  VCPKG_TRIPLET: "x64-linux-dynamic"
+jobs:
+  build-mysql-centos7:
+    runs-on: ubuntu-latest
+    #timeout-minutes: 120
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Free Disk-Space
+        run: df -h && sudo apt-get clean && docker system prune -a -f && sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc && df -h && free -h
+
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository_owner }}/mysql-build-centos7
+          tags: |
+            type=raw,value=latest
+            type=sha,prefix=
+
+      - name: Generate Docker cache key
+        id: cache-key
+        run: |
+          cat images/mysql-build/Dockerfile images/mysql-build/centos7.sh
+          CACHE_KEY=$(cat images/mysql-build/Dockerfile images/mysql-build/centos7.sh | sha256sum | cut -d' ' -f1)
+          echo "cache_key=${CACHE_KEY}" >> $GITHUB_OUTPUT
+          echo "Docker cache key: ${CACHE_KEY}"
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: images/mysql-build
+          push: true
+          pull: true
+          provenance: false
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/mysql-build-centos7:latest
+          cache-to: type=inline
+          build-args: |
+            PG_VERSION_TAG=${{ env.PG_VERSION_TAG }}
+            TIMESCALEDB_VERSION=${{ env.TIMESCALEDB_VERSION }}
+            POSTGIS_VERSION_TAG=${{ env.POSTGIS_VERSION_TAG }}
+            VCPKG_TRIPLET=${{ env.VCPKG_TRIPLET }}
+            gcc_indiff_centos7_url=${{ env.gcc_indiff_centos7_url }}
+
+      - name: Build mysql in Docker
+        run: |
+          sudo timedatectl set-timezone Asia/Shanghai
+          ls
+          docker run --rm \
+            -v ${{ github.workspace }}:/workspace \
+            -w /workspace \
+            -e PG_VERSION_TAG=${{ env.PG_VERSION_TAG }} \
+            -e TIMESCALEDB_VERSION=${{ env.TIMESCALEDB_VERSION }} \
+            -e POSTGIS_VERSION_TAG=${{ env.POSTGIS_VERSION_TAG }} \
+            -e INSTALL_PREFIX=${{ env.INSTALL_PREFIX }} \
+            -e VCPKG_TRIPLET=${{ env.VCPKG_TRIPLET }} \
+            -e gcc_indiff_centos7_url=${{ env.gcc_indiff_centos7_url }} \
+            ghcr.io/${{ github.repository_owner }}/mysql-build-centos7:latest \
+            /bin/bash -c "ls -ll && sh ./images/mysql-build/mysql-build.sh"
+
+      - name: Upload mysql package
+        uses: actions/upload-artifact@v4
+        with:
+          name: mysql-centos7-x86_64
+          path: |
+            ${{ github.workspace }}/mysql*.xz
+            
+  publish-release:
+      needs: [build-mysql-centos7] 
+      runs-on: ubuntu-latest
+
+      steps:
+        - uses: actions/checkout@v5
+        - name: Restoring artifacts
+          uses: actions/download-artifact@main
+          with:
+            path: artifacts
+            pattern: mysql*-*
+            merge-multiple: false
+          
+        - name: Release Tag
+          id: release_tag
+          run: |
+            # sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+            # sudo apt update
+            # sudo add-apt-repository ppa:ubuntu-toolchain-r/ppa
+            # sudo apt upgrade
+            sudo apt install -y chrony
+            sudo systemctl enable chrony
+            sudo systemctl start chrony
+            sudo timedatectl set-timezone Asia/Shanghai
+            timedatectl status
+            echo "TAG_NAME=$(date +'%Y%m%d_%H%M')_mysql" >> $GITHUB_ENV
+
+        - name: Create Release
+          run: |
+            set -xe
+            sudo apt-get update
+            sudo apt-get install -y zip unzip systemd language-pack-zh-hans language-pack-zh-hans-base locales tree
+            sudo locale-gen zh_CN.UTF-8; /usr/bin/localectl set-locale LANG=zh_CN.UTF-8 || true ; 
+            /usr/bin/timedatectl set-timezone Asia/Shanghai || true; 
+            /usr/bin/timedatectl set-ntp true || true;
+            # 使用 GitHub API 获取最后一次提交信息
+            commit_info=$(curl -s -H "Authorization: Bearer $GITHUB_TOKEN" \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://api.github.com/repos/percona/percona-server/commits \
+            | jq -r '.[0] | "\(.commit.author.name) \(.commit.message) \(.commit.author.date)"')
+            tree .
+            # 输出变量
+            echo "Commit Info: $commit_info"
+            echo -e "## 你好$(date) percona \n > $commit_info\n" > hello.md
+
+            commit_info=$(curl -s -H "Authorization: Bearer $GITHUB_TOKEN" \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://api.github.com/repos/mariadb/server/commits \
+            | jq -r '.[0] | "\(.commit.author.name) \(.commit.message) \(.commit.author.date)"')
+
+            echo -e "## mariadb \n > $commit_info\n" >> hello.md
+            cat <<'EOF' >> hello.md
+            Proxy download:
+            ```bash         
+            curl -#Lo /opt/percona80.zip "https://ghproxy.cfd/https://github.com/indiff/indiff/releases/download/${{ env.TAG_NAME }}/shit1centos7"
+            ```
+            ```bash         
+            curl -#Lo /opt/mariadb.zip "https://ghproxy.cfd/https://github.com/indiff/indiff/releases/download/${{ env.TAG_NAME }}/shit2centos7"
+            ```
+            ```bash         
+            curl -#Lo /opt/percona80.zip "https://ghproxy.cfd/https://github.com/indiff/indiff/releases/download/${{ env.TAG_NAME }}/shit3ubuntu"
+            ```
+             ```bash         
+            curl -#Lo /opt/fbmysql.zip "https://ghproxy.cfd/https://github.com/indiff/indiff/releases/download/${{ env.TAG_NAME }}/shit5centos7"
+            ```
+             ```bash         
+            curl -#Lo /opt/omysql.zip "https://ghproxy.cfd/https://github.com/indiff/indiff/releases/download/${{ env.TAG_NAME }}/shit6centos7"
+            ```
+            
+            Direct download:
+            ```bash         
+            curl -#Lo /opt/percona80.zip "https://github.com/indiff/indiff/releases/download/${{ env.TAG_NAME }}/shit1centos7"
+            ```
+             ```bash         
+            curl -#Lo /opt/mariadb.zip "https://github.com/indiff/indiff/releases/download/${{ env.TAG_NAME }}/shit2centos7"
+            ```
+             ```bash         
+            curl -#Lo /opt/percona80.zip "https://github.com/indiff/indiff/releases/download/${{ env.TAG_NAME }}/shit3ubuntu"
+            ```
+            EOF
+            centos7_fbmysql_bname="$(basename artifacts/*mysql*/*fbmysql*centos7*.xz)"
+            centos7_omysql_bname="$(basename artifacts/*mysql*/*omysql*centos7*.xz)"
+            centos7_percona_bname="$(basename artifacts/*mysql*/*percona*centos7*.xz)"
+            centos7_mariadb_bname="$(basename artifacts/*mysql*/*mariadb*centos7*.xz)"
+            ubuntu_percona_bname="$(basename artifacts/*mysql*/*percona*ubuntu*.xz)"
+            sed -i "s/shit1centos7/${centos7_percona_bname}/g" hello.md
+            sed -i "s/shit2centos7/${centos7_mariadb_bname}/g" hello.md
+            sed -i "s/shit3ubuntu/${ubuntu_percona_bname}/g" hello.md
+            sed -i "s/shit5centos7/${centos7_fbmysql_bname}/g" hello.md
+            sed -i "s/shit6centos7/${centos7_omysql_bname}/g" hello.md
+
+            gh release create ${{ env.TAG_NAME }} -F hello.md "artifacts/*mysql*/*.xz"
+          env:
+            GITHUB_TOKEN: ${{ github.token }}
