@@ -1,7 +1,7 @@
 FROM centos:7
 
 LABEL maintainer="indiff"
-LABEL description="CentOS 7 build environment for GCC and LLD compilation"
+LABEL description="CentOS 7 build environment for mysql compilation"
 
 ARG PG_VERSION_TAG
 ARG TIMESCALEDB_VERSION
