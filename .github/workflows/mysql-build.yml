@@ -23,12 +23,13 @@ on:
       fbmysql_build_branch:
         description: 'Build Branch'
         type: choice
-        default: "trunk"
+        default: "fb-mysql-8.0.32"
         required: false
         options:
-          - "trunk" 
-          - "8.0" 
-          - "8.4"
+          - "fb-mysql-8.0.32"
+          - "fb-mysql-8.0.28" 
+          - "fb-mysql-8.0.17" 
+          
   schedule:
     #- cron: '07 10 * * *' # 每天凌晨2点（UTC），对应每天上午10点（CST）, 这里对应的是中国时区的是 18 点
     - cron: '3 7 * * *' # UTC 时间 1:00 对应中国时间 9:00          
