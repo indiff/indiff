@@ -61,7 +61,8 @@ rsync -a "$DEPS_SRC/$d/pkgconfig/" "$DEPS_DST/$d/pkgconfig/" 2>/dev/null || true
 done
 
 # 显示一下目录接口查看是否存在相关的 lib 和 include
-tree "$DEPS_DST"/{include,lib,lib64} | tee /workspace/deps_dst_tree.txt
+# tree "$DEPS_DST"/{include,lib,lib64} | tee /workspace/deps_dst_tree.txt
+tree "$DEPS_DST"/{include,lib,lib64} > /workspace/deps_dst_tree.txt
 
 # build persona mysql
 mkdir -p server/build server/boost
@@ -86,54 +87,54 @@ export LD_LIBRARY_PATH="/opt/gcc-indiff/lib64:$DEPS_DST/lib:$DEPS_DST/lib64${LD_
 # -std=gnu++20
 unset PROTOC
 cmake .. -G Ninja \
--DCMAKE_INSTALL_PREFIX=$DEPS_DST \
--DCMAKE_C_FLAGS="-I$DEPS_DST/include -O3 -pipe -fPIC -DPIC -Wno-implicit-fallthrough -Wno-int-in-bool-context -Wno-shift-negative-value -Wno-misleading-indentation -Wno-format-overflow -Wno-nonnull -Wno-unused-function " \
--DCMAKE_CXX_FLAGS="-include cstdint -include cstddef -I$DEPS_DST/include -O3 -pipe -fPIC -DPIC -march=native -Wno-aligned-new -Wno-implicit-fallthrough -Wno-int-in-bool-context -Wno-shift-negative-value -Wno-misleading-indentation -Wno-format-overflow -Wno-nonnull -Wno-unused-function  " \
--DCMAKE_CXX_EXTENSIONS=OFF \
--DENABLE_DTRACE=0 \
--DCMAKE_EXE_LINKER_FLAGS="-L/usr/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--no-as-needed -ldl" \
--DCMAKE_SHARED_LINKER_FLAGS="-L/usr/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--no-as-needed -ldl" \
--DCMAKE_MODULE_LINKER_FLAGS="-L/usr/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--no-as-needed -ldl" \
--DDEFAULT_CHARSET="utf8mb4" \
--DDEFAULT_COLLATION="utf8mb4_bin" \
--DWITH_BOOST="/tmp/boost" \
--DWITH_TESTS=0 \
--DWITH_BENCHMARK_TOOLS=0 \
--DWITH_GFLAGS=0 \
--DWITH_NDB=OFF \
--DWITH_LTO=ON \
--DWITH_MYSQLX=0 \
--DWITH_NDB_JAVA=0 \
--DWITH_RAPID=0 \
--DWITH_ROUTER=0 \
--DWITH_UNIT_TESTS=0 \
--DWITH_ROCKSDB=ON \
--DWITH_INNODB_MEMCACHED=ON \
--DWITH_CURL=system \
--DWITH_LIBEVENT=system \
--DWITH_ZLIB=system -DWITH_LZ4=system -DWITH_ZSTD=system -DWITH_SNAPPY=system \
--DWITH_PROTOBUF=system  \
--DPROTOBUF_PROTOC_LIBRARY="$DEPS_DST/lib/$PROTOC_LIB_BASENAME"  \
--DPROTOBUF_PROTOC_EXECUTABLE="$VCPKG_ROOT/installed/x64-linux-dynamic/tools/protobuf/$PROTOC_BASENAME"  \
--DWITH_ICU=system  \
--DWITH_SSL=system -DOPENSSL_ROOT_DIR="$DEPS_DST" \
--DWITH_FIDO=system \
--DWITH_MECAB=OFF \
--DWITH_EXT_BACKTRACE=OFF \
--DWITH_NUMA=OFF \
--DWITH_ARCHIVE_STORAGE_ENGINE=OFF \
--DWITH_BLACKHOLE_STORAGE_ENGINE=OFF \
--DWITH_EXAMPLE_STORAGE_ENGINE=ON \
--DWITH_FEDERATED_STORAGE_ENGINE=OFF \
--DCMAKE_BUILD_TYPE=Release \
--DMYSQL_MAINTAINER_MODE=OFF \
--DWITH_SAFEMALLOC=OFF \
--DCMAKE_INSTALL_RPATH='$ORIGIN/../lib64:$ORIGIN/../lib' \
--DCMAKE_BUILD_RPATH='$ORIGIN/../lib64:$ORIGIN/../lib' \
--DBUILD_CONFIG=mysql_release \
--DWITH_DOCS=OFF -DWITH_MAN_PAGES=OFF
+    -DCMAKE_INSTALL_PREFIX=$DEPS_DST \
+    -DCMAKE_C_FLAGS="-I$DEPS_DST/include -O3 -pipe -fPIC -DPIC -Wno-implicit-fallthrough -Wno-int-in-bool-context -Wno-shift-negative-value -Wno-misleading-indentation -Wno-format-overflow -Wno-nonnull -Wno-unused-function " \
+    -DCMAKE_CXX_FLAGS="-include cstdint -include cstddef -I$DEPS_DST/include -O3 -pipe -fPIC -DPIC -march=native -Wno-aligned-new -Wno-implicit-fallthrough -Wno-int-in-bool-context -Wno-shift-negative-value -Wno-misleading-indentation -Wno-format-overflow -Wno-nonnull -Wno-unused-function  " \
+    -DCMAKE_CXX_EXTENSIONS=OFF \
+    -DENABLE_DTRACE=0 \
+    -DCMAKE_EXE_LINKER_FLAGS="-L/usr/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--no-as-needed -ldl" \
+    -DCMAKE_SHARED_LINKER_FLAGS="-L/usr/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--no-as-needed -ldl" \
+    -DCMAKE_MODULE_LINKER_FLAGS="-L/usr/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--no-as-needed -ldl" \
+    -DDEFAULT_CHARSET="utf8mb4" \
+    -DDEFAULT_COLLATION="utf8mb4_bin" \
+    -DWITH_BOOST="/tmp/boost" \
+    -DWITH_TESTS=0 \
+    -DWITH_BENCHMARK_TOOLS=0 \
+    -DWITH_GFLAGS=0 \
+    -DWITH_NDB=OFF \
+    -DWITH_LTO=ON \
+    -DWITH_MYSQLX=0 \
+    -DWITH_NDB_JAVA=0 \
+    -DWITH_RAPID=0 \
+    -DWITH_ROUTER=0 \
+    -DWITH_UNIT_TESTS=0 \
+    -DWITH_ROCKSDB=ON \
+    -DWITH_INNODB_MEMCACHED=ON \
+    -DWITH_CURL=system \
+    -DWITH_LIBEVENT=system \
+    -DWITH_ZLIB=system -DWITH_LZ4=system -DWITH_ZSTD=system -DWITH_SNAPPY=system \
+    -DWITH_PROTOBUF=system  \
+    -DPROTOBUF_PROTOC_LIBRARY="$DEPS_DST/lib/$PROTOC_LIB_BASENAME"  \
+    -DPROTOBUF_PROTOC_EXECUTABLE="$VCPKG_ROOT/installed/x64-linux-dynamic/tools/protobuf/$PROTOC_BASENAME"  \
+    -DWITH_ICU=system  \
+    -DWITH_SSL=system -DOPENSSL_ROOT_DIR="$DEPS_DST" \
+    -DWITH_FIDO=system \
+    -DWITH_MECAB=OFF \
+    -DWITH_EXT_BACKTRACE=OFF \
+    -DWITH_NUMA=OFF \
+    -DWITH_ARCHIVE_STORAGE_ENGINE=OFF \
+    -DWITH_BLACKHOLE_STORAGE_ENGINE=OFF \
+    -DWITH_EXAMPLE_STORAGE_ENGINE=ON \
+    -DWITH_FEDERATED_STORAGE_ENGINE=OFF \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DMYSQL_MAINTAINER_MODE=OFF \
+    -DWITH_SAFEMALLOC=OFF \
+    -DCMAKE_INSTALL_RPATH='$ORIGIN/../lib64:$ORIGIN/../lib' \
+    -DCMAKE_BUILD_RPATH='$ORIGIN/../lib64:$ORIGIN/../lib' \
+    -DBUILD_CONFIG=mysql_release \
+    -DWITH_DOCS=OFF -DWITH_MAN_PAGES=OFF
 
-cmake .. -LH | tee /workspace/cmake-cache-vars-centos7.txt
+# cmake .. -LH | tee /workspace/cmake-cache-vars-centos7.txt
 
 # Ninja 默认详细，便于定位真实失败点
 # 只会编译并安装最终产物(不会编译 tests)  [3343/4756]
