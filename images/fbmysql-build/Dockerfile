@@ -3,12 +3,12 @@ FROM centos:7
 LABEL maintainer="indiff"
 LABEL description="CentOS 7 build environment for fbmysql compilation"
 
-ARG MYSQL_BRANCH
+ARG FBMYSQL_BRANCH
 ARG VCPKG_ROOT
 ARG INSTALL_PREFIX
 ARG gcc_indiff_centos7_url
 
-ENV MYSQL_BRANCH=${MYSQL_BRANCH} \
+ENV FBMYSQL_BRANCH=${FBMYSQL_BRANCH} \
     VCPKG_ROOT=${VCPKG_ROOT} \
     INSTALL_PREFIX=${INSTALL_PREFIX} \
     gcc_indiff_centos7_url=${gcc_indiff_centos7_url}
