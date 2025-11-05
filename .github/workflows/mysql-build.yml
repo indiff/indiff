@@ -11,7 +11,16 @@ on:
   #     - main
   workflow_dispatch:
     inputs:
-      build_branch:
+      mysql_build_branch:
+        description: 'Build Branch'
+        type: choice
+        default: "trunk"
+        required: false
+        options:
+          - "trunk" 
+          - "8.0" 
+          - "8.4"
+      fbmysql_build_branch:
         description: 'Build Branch'
         type: choice
         default: "trunk"
@@ -26,10 +35,13 @@ on:
 env:
   gcc_indiff_ubuntu_url: "https://github.com/indiff/gcc-build/releases/download/20250416_1126/gcc-indiff-ubuntu-x86_64-20250416_1125.xz"
   gcc_indiff_centos7_url: "https://github.com/indiff/gcc-build/releases/download/20250908_0934_16.0.0/gcc-indiff-centos7-16.0.0-x86_64-20250908_0931.xz"
-  MYSQL_BRANCH: "${{ github.event.inputs.build_branch }}"          # mysql
+  MYSQL_BRANCH: "${{ github.event.inputs.mysql_build_branch }}"          # mysql
   VCPKG_ROOT: "/opt/vcpkg"
   # 打包前安装根目录
   INSTALL_PREFIX: "/opt/mysql"
+  # for fb mysql
+  FBMYSQL_BRANCH: "${{ github.event.inputs.fbmysql_build_branch }}"
+  FBMYSQL_INSTALL_PREFIX: "/opt/fbmysql"
 jobs:
   build-mysql-centos7:
     runs-on: ubuntu-latest
@@ -109,9 +121,87 @@ jobs:
           name: mysql-centos7-x86_64
           path: |
             ${{ github.workspace }}/mysql*.xz
+  build-fbmysql-centos7:
+    runs-on: ubuntu-latest
+    #timeout-minutes: 120
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Free Disk-Space
+        run: df -h && sudo apt-get clean && docker system prune -a -f && sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc && df -h && free -h
+
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository_owner }}/fbmysql-build-centos7
+          tags: |
+            type=raw,value=latest
+            type=sha,prefix=
+
+      - name: Generate Docker cache key
+        id: cache-key
+        run: |
+          cat images/fbmysql-build/Dockerfile images/fbmysql-build/centos7.sh
+          CACHE_KEY=$(cat images/fbmysql-build/Dockerfile images/fbmysql-build/centos7.sh | sha256sum | cut -d' ' -f1)
+          echo "cache_key=${CACHE_KEY}" >> $GITHUB_OUTPUT
+          echo "Docker cache key: ${CACHE_KEY}"
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: images/fbmysql-build
+          push: true
+          pull: true
+          provenance: false
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/fbmysql-build-centos7:latest
+          cache-to: type=inline
+          build-args: |
+            FBMYSQL_BRANCH=${{ env.FBMYSQL_BRANCH }}
+            VCPKG_ROOT=${{ env.VCPKG_ROOT }}
+            FBMYSQL_INSTALL_PREFIX=${{ env.FBMYSQL_INSTALL_PREFIX }}
+            gcc_indiff_centos7_url=${{ env.gcc_indiff_centos7_url }}
+
+      - name: Build mysql in Docker
+        run: |
+          sudo timedatectl set-timezone Asia/Shanghai
+          ls
+          docker run --rm \
+            -v ${{ github.workspace }}:/workspace \
+            -w /workspace \
+            -e FBMYSQL_BRANCH=${{ env.FBMYSQL_BRANCH }} \
+            -e VCPKG_ROOT=${{ env.VCPKG_ROOT }} \
+            -e FBMYSQL_INSTALL_PREFIX=${{ env.FBMYSQL_INSTALL_PREFIX }} \
+            -e gcc_indiff_centos7_url=${{ env.gcc_indiff_centos7_url }} \
+            ghcr.io/${{ github.repository_owner }}/fbmysql-build-centos7:latest \
+            /bin/bash -c "ls -ll && sh ./images/fbmysql-build/fbmysql-build.sh"
+
+      - name: Upload mysql package
+        uses: actions/upload-artifact@v4
+        with:
+          name: fbmysql-centos7-x86_64
+          path: |
+            ${{ github.workspace }}/fbmysql*.xz
             
   publish-release:
-      needs: [build-mysql-centos7] 
+      needs: [build-mysql-centos7,build-fbmysql-centos7] 
       runs-on: ubuntu-latest
 
       steps:
