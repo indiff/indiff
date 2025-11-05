@@ -13,7 +13,12 @@ wget https://archives.boost.io/release/1.77.0/source/boost_1_77_0.tar.bz2
 mkdir -p /tmp/boost
 tar -xjf boost_1_77_0.tar.bz2 -C /tmp/boost --strip-components=1
 
-git clone --filter=blob:none --depth 1 https://github.com/facebook/mysql-5.6.git -b $FBMYSQL_BRANCH server
+if [[ -z "$FBMYSQL_BRANCH" ]]; then
+  git clone --filter=blob:none --depth 1 https://github.com/facebook/mysql-5.6.git server
+else
+  git clone --filter=blob:none --depth 1 https://github.com/facebook/mysql-5.6.git -b $FBMYSQL_BRANCH server
+fi
+
 cd server
 git submodule update --init --recursive
 
