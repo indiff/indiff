@@ -22,7 +22,7 @@ git submodule update --init --recursive
 sed -i '1i#ifndef Z_ARG\n#define Z_ARG(args) args\n#endif\n' extra/zlib/zlib-1.2.13/zlib.h || true
 cd ..
 
-DEPS_SRC="$VCPKG_ROOT/installed/$TRIPLET"
+DEPS_SRC="$VCPKG_ROOT/installed/x64-linux"
 DEPS_DST="$FBMYSQL_INSTALL_PREFIX"
 mkdir -p "$DEPS_DST"/{include,lib,lib64,tools}
 
