@@ -26,14 +26,7 @@ DEPS_SRC="$VCPKG_ROOT/installed/x64-linux"
 DEPS_DST="$INSTALL_PREFIX"
 mkdir -p "$DEPS_DST"/{include,lib,lib64,tools}
 
-# install icu  
-wget https://github.com/unicode-org/icu/releases/download/release-68-2/icu4c-68_2-src.tgz
-tar -xzf icu4c-68_2-src.tgz
-cd icu/source
-export LD_LIBRARY_PATH=/opt/gcc-indiff/lib64:$LD_LIBRARY_PATH
-./configure --prefix=/usr/local/icu68
-make -j$(nproc)
-make install
+# sync icu  
 rsync -a "/usr/local/icu68/include/" "$DEPS_DST/include/"
 rsync -a "/usr/local/icu68/lib/"    "$DEPS_DST/lib64/"    || true
 cd ../..

@@ -231,5 +231,14 @@ CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ $VCPKG_ROOT/vcpkg install
             libaio  \
             pkgconf \
             --triplet $TRIPLET --clean-after-build	
- 
+
+# install icu  
+wget https://github.com/unicode-org/icu/releases/download/release-68-2/icu4c-68_2-src.tgz
+tar -xzf icu4c-68_2-src.tgz
+cd icu/source
+export LD_LIBRARY_PATH=/opt/gcc-indiff/lib64:$LD_LIBRARY_PATH
+./configure --prefix=/usr/local/icu68
+make -j$(nproc)
+make install
+
 echo "CentOS 7 mysql-build environment setup completed successfully!"
