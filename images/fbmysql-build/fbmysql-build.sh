@@ -25,7 +25,6 @@ git submodule update --init --recursive
 
 # patch zlib.h
 sed -i '1i#ifndef Z_ARG\n#define Z_ARG(args) args\n#endif\n' extra/zlib/zlib-1.2.13/zlib.h || true
-cd ..
 
 DEPS_SRC="$VCPKG_ROOT/installed/x64-linux"
 DEPS_DST="$FBMYSQL_INSTALL_PREFIX"
@@ -34,7 +33,6 @@ mkdir -p "$DEPS_DST"/{include,lib,lib64,tools}
 # sync icu68
 rsync -a "/usr/local/icu68/include/" "$DEPS_DST/include/"
 rsync -a "/usr/local/icu68/lib/"    "$DEPS_DST/lib64/"    || true
-cd ../..
 
 # 2) 复制头文件与动态库（.so 与 .so.*）及 pkgconfig
 rsync -a "$DEPS_SRC/include/" "$DEPS_DST/include/"
@@ -70,8 +68,8 @@ done
 tree "$DEPS_DST"/{include,lib,lib64} > /workspace/deps_dst_tree.txt
 
 # build persona mysql
-mkdir -p server/build server/boost
-cd server/build
+mkdir -p /workspace/server/build /workspace/server/boost
+cd /workspace/server/build
 
 # 供 CMake/ld 查找 vcpkg 拷贝到 /opt 的头文件与库
 export CMAKE_PREFIX_PATH="$DEPS_DST${CMAKE_PREFIX_PATH:+:$CMAKE_PREFIX_PATH}"
