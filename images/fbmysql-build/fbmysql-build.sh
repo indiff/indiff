@@ -153,10 +153,10 @@ rm -f $DEPS_DST/bin/ps-admin
 rm -f $DEPS_DST/bin/mysqltest
 rm -f $DEPS_DST/bin/mysqlxtest
 rm -f $DEPS_DST/bin/mytap
-zip -r -q -9 /workspace/fbmysql-centos7-x86_64-$(date +'%Y%m%d_%H%M').xz .
+zip -r -q -9 /workspace/fbmysql-centos7-x86_64-$FBMYSQL_BRANCH-$(date +'%Y%m%d_%H%M').xz .
 
 # free memory
 free -h
-sync
-echo 3 > /proc/sys/vm/drop_caches
-free -h && df -h
+# sync
+# echo 3 > /proc/sys/vm/drop_caches
+# free -h && df -h
