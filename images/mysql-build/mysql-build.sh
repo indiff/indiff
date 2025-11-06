@@ -7,7 +7,14 @@ set -xe
 PROTOC_BASENAME=$(basename $VCPKG_ROOT/installed/x64-linux-dynamic/tools/protobuf/protoc-*)
 PROTOC_LIB_BASENAME=$(basename $VCPKG_ROOT/installed/x64-linux-dynamic/lib/libprotoc.so.*)
 chmod +x $VCPKG_ROOT/installed/x64-linux-dynamic/tools/protobuf/$PROTOC_BASENAME
-git clone --filter=blob:none --depth 1 https://github.com/mysql/mysql-server.git  -b $MYSQL_BRANCH server
+
+if [[ -z "$FBMYSQL_BRANCH" ]]; then
+    git clone --filter=blob:none --depth 1 https://github.com/mysql/mysql-server.git server
+else
+    git clone --filter=blob:none --depth 1 https://github.com/mysql/mysql-server.git  -b $MYSQL_BRANCH server
+fi
+
+
 cd server
 # git submodule update --init --recursive
 # wget https://archives.boost.io/release/1.89.0/source/boost_1_89_0.tar.bz2
@@ -20,7 +27,6 @@ sed -i '/^[[:space:]]*#include[[:space:]]*<vector>[[:space:]]*$/a #include <cstd
 # patch fix /workspace/server/strings/collations_internal.cc:553:22: error: no matching function for call t
 # sed -i 's/hash\.find(\s*\(key\)\s*)/hash.find(std::to_string(\1))/g' /workspace/server/strings/collations_internal.cc
 sed -i 's/enum class Gtid_format : uint8_t {/enum Gtid_format {/g' /workspace/server/libs/mysql/gtid/gtid_format.h
-cd ..
 
 DEPS_SRC="$VCPKG_ROOT/installed/x64-linux"
 DEPS_DST="$INSTALL_PREFIX"
@@ -29,7 +35,6 @@ mkdir -p "$DEPS_DST"/{include,lib,lib64,tools}
 # sync icu  
 rsync -a "/usr/local/icu68/include/" "$DEPS_DST/include/"
 rsync -a "/usr/local/icu68/lib/"    "$DEPS_DST/lib64/"    || true
-cd ../..
 
 # 2) 复制头文件与动态库（.so 与 .so.*）及 pkgconfig
 rsync -a "$DEPS_SRC/include/" "$DEPS_DST/include/"
@@ -65,8 +70,8 @@ done
 tree "$DEPS_DST"/{include,lib,lib64} > /workspace/deps_dst_tree.txt
 
 # build persona mysql
-mkdir -p server/build server/boost
-cd server/build
+mkdir -p /workspace/server/build /workspace/server/boost
+cd /workspace/server/build
 
 # 供 CMake/ld 查找 vcpkg 拷贝到 /opt 的头文件与库
 export CMAKE_PREFIX_PATH="$DEPS_DST${CMAKE_PREFIX_PATH:+:$CMAKE_PREFIX_PATH}"
