@@ -34,6 +34,23 @@ on:
           - "fb-mysql-8.0.32"
           - "fb-mysql-8.0.28" 
           - "fb-mysql-8.0.17" 
+      mariadb_build_branch:
+        description: 'Build Branch'
+        type: choice
+        default: "main"
+        required: false
+        options:
+          - "main"
+          - "12.1" 
+          - "12.0" 
+          - "11.8" 
+      percona_build_branch:
+        description: 'Build Branch'
+        type: choice
+        default: "8.0"
+        required: false
+        options:
+          - "trunk"
           
   schedule:
     #- cron: '07 10 * * *' # 每天凌晨2点（UTC），对应每天上午10点（CST）, 这里对应的是中国时区的是 18 点
@@ -48,6 +65,10 @@ env:
   # for fb mysql
   FBMYSQL_BRANCH: "${{ github.event.inputs.fbmysql_build_branch }}"
   FBMYSQL_INSTALL_PREFIX: "/opt/fbmysql"
+  MARIADB_BRANCH: "${{ github.event.inputs.mariadb_build_branch }}"
+  MARIADB_INSTALL_PREFIX: "/opt/mariadb"
+  PERCONA_BRANCH: "${{ github.event.inputs.percona_build_branch }}"
+  PERCONA_INSTALL_PREFIX: "/opt/percona80"
 jobs:
   build_image:
     name: Build image
@@ -56,7 +77,7 @@ jobs:
       fail-fast: false
       matrix:
         runner: [ubuntu-latest]
-        target: [mysql,fbmysql]
+        target: [mysql,fbmysql,percona,mariadb]
     runs-on: ${{ matrix.runner }}
     steps:
       - name: Free Disk-Space
@@ -103,8 +124,10 @@ jobs:
             MYSQL_BRANCH=${{ env.MYSQL_BRANCH }}
             INSTALL_PREFIX=${{ env.INSTALL_PREFIX }}
             VCPKG_ROOT=${{ env.VCPKG_ROOT }}
-            FBMYSQL_INSTALL_PREFIX=${{ env.FBMYSQL_INSTALL_PREFIX }}
             FBMYSQL_BRANCH=${{ env.FBMYSQL_BRANCH }}
+            FBMYSQL_INSTALL_PREFIX=${{ env.FBMYSQL_INSTALL_PREFIX }}
+            MARIADB_BRANCH=${{ env.MARIADB_BRANCH }}
+            MARIADB_INSTALL_PREFIX=${{ env.MARIADB_INSTALL_PREFIX }}
             gcc_indiff_centos7_url=${{ env.gcc_indiff_centos7_url }}
   build_target:
     runs-on: ubuntu-latest
@@ -114,7 +137,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target: [mysql,fbmysql]
+        target: [mysql,fbmysql,percona,mariadb]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
@@ -136,10 +159,12 @@ jobs:
             -v ${{ github.workspace }}:/workspace \
             -w /workspace \
             -e MYSQL_BRANCH=${{ env.MYSQL_BRANCH }} \
-            -e FBMYSQL_BRANCH=${{ env.FBMYSQL_BRANCH }} \
-            -e VCPKG_ROOT=${{ env.VCPKG_ROOT }} \
-            -e FBMYSQL_INSTALL_PREFIX=${{ env.FBMYSQL_INSTALL_PREFIX }} \
             -e INSTALL_PREFIX=${{ env.INSTALL_PREFIX }} \
+            -e VCPKG_ROOT=${{ env.VCPKG_ROOT }} \
+            -e FBMYSQL_BRANCH=${{ env.FBMYSQL_BRANCH }} \
+            -e FBMYSQL_INSTALL_PREFIX=${{ env.FBMYSQL_INSTALL_PREFIX }} \
+            -e MARIADB_BRANCH=${{ env.MARIADB_BRANCH }} \
+            -e MARIADB_INSTALL_PREFIX=${{ env.MARIADB_INSTALL_PREFIX }} \
             -e gcc_indiff_centos7_url=${{ env.gcc_indiff_centos7_url }} \
             ghcr.io/${{ github.repository_owner }}/${{ matrix.target }}-build-centos7:latest \
             /bin/bash -c "ls -ll && sh ./images/${{ matrix.target }}-build/${{ matrix.target }}-build.sh"
