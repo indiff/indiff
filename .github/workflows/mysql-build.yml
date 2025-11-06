@@ -11,6 +11,11 @@ on:
   #     - main
   workflow_dispatch:
     inputs:
+      buildOnly:
+        description: 'Only build ffmpeg'
+        type: boolean
+        default: false
+        required: false
       mysql_build_branch:
         description: 'Build Branch'
         type: choice
@@ -44,7 +49,106 @@ env:
   FBMYSQL_BRANCH: "${{ github.event.inputs.fbmysql_build_branch }}"
   FBMYSQL_INSTALL_PREFIX: "/opt/fbmysql"
 jobs:
-  build-mysql-centos7:
+  build_image:
+    name: Build image
+    if: ${{ github.event.inputs.buildOnly != 'true' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [ubuntu-latest]
+        target: [mysql,fbmysql]
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - name: Free Disk-Space
+        run: df -h && sudo apt-get clean && docker system prune -a -f && sudo rm -rf /opt/ghc /usr/local/.ghcup /usr/local/lib/android && df -h && docker search ubuntu
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Extract metadata for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository_owner }}/${{ matrix.target }}-build-centos7
+          tags: |
+            type=raw,value=latest
+            type=sha,prefix=          
+      - name: Generate Docker cache key
+        id: cache-key
+        run: |
+          cat images/${{ matrix.target }}-build/Dockerfile images/${{ matrix.target }}-build/centos7.sh
+          CACHE_KEY=$(cat images/${{ matrix.target }}-build/Dockerfile images/${{ matrix.target }}-build/centos7.sh | sha256sum | cut -d' ' -f1)
+          echo "cache_key=${CACHE_KEY}" >> $GITHUB_OUTPUT
+          echo "Docker cache key: ${CACHE_KEY}"  build-${{ matrix.target }}-centos7:
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: images/${{ matrix.target }}-build
+          push: true
+          pull: true
+          provenance: false
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/${{ matrix.target }}-build-centos7:latest
+          cache-to: type=inline
+          build-args: |
+            MYSQL_BRANCH=${{ env.MYSQL_BRANCH }}
+            INSTALL_PREFIX=${{ env.INSTALL_PREFIX }}
+            VCPKG_ROOT=${{ env.VCPKG_ROOT }}
+            FBMYSQL_INSTALL_PREFIX=${{ env.FBMYSQL_INSTALL_PREFIX }}
+            FBMYSQL_BRANCH=${{ env.FBMYSQL_BRANCH }}
+            gcc_indiff_centos7_url=${{ env.gcc_indiff_centos7_url }}
+  build_target:
+    name: Build image
+    if: ${{ github.event.inputs.buildOnly != 'true' }}
+    needs: build_image
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [mysql,fbmysql]
+    runs-on: ubuntu-latest
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build ${{ matrix.target }} in Docker
+        run: |
+          sudo timedatectl set-timezone Asia/Shanghai
+          ls
+          docker run --rm \
+            -v ${{ github.workspace }}:/workspace \
+            -w /workspace \
+            -e MYSQL_BRANCH=${{ env.MYSQL_BRANCH }} \
+            -e FBMYSQL_BRANCH=${{ env.FBMYSQL_BRANCH }} \
+            -e VCPKG_ROOT=${{ env.VCPKG_ROOT }} \
+            -e FBMYSQL_INSTALL_PREFIX=${{ env.FBMYSQL_INSTALL_PREFIX }} \
+            -e INSTALL_PREFIX=${{ env.INSTALL_PREFIX }} \
+            -e gcc_indiff_centos7_url=${{ env.gcc_indiff_centos7_url }} \
+            ghcr.io/${{ github.repository_owner }}/${{ matrix.target }}-build-centos7:latest \
+            /bin/bash -c "ls -ll && sh ./images/${{ matrix.target }}-build/${{ matrix.target }}-build.sh"
+      - name: Upload ${{ matrix.target }} package
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.target }}-centos7-x86_64
+          path: |
+            ${{ github.workspace }}/${{ matrix.target }}*.xz
+  build-mysql-centos7:       
     runs-on: ubuntu-latest
     #timeout-minutes: 120
     permissions:
@@ -202,7 +306,8 @@ jobs:
             ${{ github.workspace }}/fbmysql*.xz
             
   publish-release:
-      needs: [build-mysql-centos7,build-fbmysql-centos7] 
+      #needs: [build-mysql-centos7,build-fbmysql-centos7] 
+      needs: [build_target] 
       runs-on: ubuntu-latest
 
       steps:
