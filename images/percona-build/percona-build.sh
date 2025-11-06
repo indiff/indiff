@@ -32,12 +32,12 @@ rsync -a "/opt/gcc-indiff/include/" "$DEPS_DST/include/"
 rsync -a "/opt/gcc-indiff/lib64/"    "$DEPS_DST/lib64/"    || true
 
 # 如果宿主镜像/系统有 /lib64/libjemalloc.so.1 同步到目标目录
-# if [ -f /lib64/libjemalloc.so.1 ]; then
-#     echo "Found /lib64/libjemalloc.so.1 on build host, copying to $DEPS_DST/lib64"
-#     mkdir -p "$DEPS_DST/lib64"
-#     cp -a /lib64/libjemalloc.so* "$DEPS_DST/lib64/" || true
-#     chmod 644 "$DEPS_DST/lib64"/libjemalloc.so* 2>/dev/null || true
-# fi
+if [ -f /lib64/libjemalloc.so.1 ]; then
+     echo "Found /lib64/libjemalloc.so.1 on build host, copying to $DEPS_DST/lib64"
+     mkdir -p "$DEPS_DST/lib64"
+     cp -a /lib64/libjemalloc.so* "$DEPS_DST/lib64/" || true
+     chmod 644 "$DEPS_DST/lib64"/libjemalloc.so* 2>/dev/null || true
+fi
 
 for d in lib lib64; do
 [[ -d "$DEPS_DST/$d/pkgconfig" ]] || mkdir -p "$DEPS_DST/$d/pkgconfig"
