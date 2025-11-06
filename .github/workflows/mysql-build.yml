@@ -12,7 +12,7 @@ on:
   workflow_dispatch:
     inputs:
       buildOnly:
-        description: 'Only build ffmpeg'
+        description: 'Only build target'
         type: boolean
         default: false
         required: false
