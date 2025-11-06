@@ -176,6 +176,7 @@ jobs:
             ${{ github.workspace }}/${{ matrix.target }}*.xz
   build-mysql-centos7:       
     runs-on: ubuntu-latest
+    if: false
     #timeout-minutes: 120
     permissions:
       contents: read
@@ -254,6 +255,7 @@ jobs:
             ${{ github.workspace }}/mysql*.xz
   build-fbmysql-centos7:
     runs-on: ubuntu-latest
+    if: false
     #timeout-minutes: 120
     permissions:
       contents: read
