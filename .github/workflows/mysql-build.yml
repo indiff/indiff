@@ -345,7 +345,7 @@ jobs:
           uses: actions/download-artifact@main
           with:
             path: artifacts
-            pattern: mysql*-*
+            pattern: *-centos7-x86_64
             merge-multiple: false
           
         - name: Release Tag
@@ -426,6 +426,6 @@ jobs:
             sed -i "s/shit5centos7/${centos7_fbmysql_bname}/g" hello.md
             sed -i "s/shit6centos7/${centos7_omysql_bname}/g" hello.md
 
-            gh release create ${{ env.TAG_NAME }} -F hello.md "artifacts/*mysql*/*.xz"
+            gh release create ${{ env.TAG_NAME }} -F hello.md "artifacts/*/*.xz"
           env:
             GITHUB_TOKEN: ${{ github.token }}
