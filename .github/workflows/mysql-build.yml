@@ -107,6 +107,7 @@ jobs:
             FBMYSQL_BRANCH=${{ env.FBMYSQL_BRANCH }}
             gcc_indiff_centos7_url=${{ env.gcc_indiff_centos7_url }}
   build_target:
+    runs-on: ubuntu-latest
     name: Build image
     if: ${{ github.event.inputs.buildOnly != 'true' }}
     needs: build_image
@@ -114,7 +115,7 @@ jobs:
       fail-fast: false
       matrix:
         target: [mysql,fbmysql]
-    runs-on: ubuntu-latest
+    steps:
       - name: Checkout repository
         uses: actions/checkout@v5
 
