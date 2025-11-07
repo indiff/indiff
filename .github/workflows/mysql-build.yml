@@ -62,7 +62,7 @@ env:
   MYSQL_BRANCH: "${{ github.event.inputs.mysql_build_branch }}"          # mysql
   VCPKG_ROOT: "/opt/vcpkg"
   # 打包前安装根目录
-  INSTALL_PREFIX: "/opt/mysql"
+  MYSQL_INSTALL_PREFIX: "/opt/mysql"
   # for fb mysql
   FBMYSQL_BRANCH: "${{ github.event.inputs.fbmysql_build_branch }}"
   FBMYSQL_INSTALL_PREFIX: "/opt/fbmysql"
@@ -126,6 +126,7 @@ jobs:
           cache-from: type=registry,ref=${{ matrix.target }}-build-centos7:cache
           build-args: |
             CACHE_KEY=ghcr.io/${{ steps.cachekey.outputs.cache_key }}
+            gcc_indiff_centos7_url=${{ env.gcc_indiff_centos7_url }}
           # build-args: |
           #   MYSQL_BRANCH=${{ env.MYSQL_BRANCH }}
           #   INSTALL_PREFIX=${{ env.INSTALL_PREFIX }}
@@ -135,6 +136,16 @@ jobs:
           #   MARIADB_BRANCH=${{ env.MARIADB_BRANCH }}
           #   MARIADB_INSTALL_PREFIX=${{ env.MARIADB_INSTALL_PREFIX }}
           #   gcc_indiff_centos7_url=${{ env.gcc_indiff_centos7_url }}
+      - name: Cleanup
+        continue-on-error: true
+        uses: BtbN/delete-untagged-ghcr-action@main
+        with:
+          token: ${{ github.token }}
+          package_name: ${{ matrix.target }}-build-centos7
+          repository_owner: ${{ github.repository_owner }}
+          repository: ${{ github.repository }}
+          owner_type: user
+          untagged_only: true
   build_target:
     runs-on: ubuntu-latest
     name: Build target
@@ -161,19 +172,22 @@ jobs:
         run: |
           sudo timedatectl set-timezone Asia/Shanghai
           ls
+          cat > run-config.sh <<'EOF'
+          VCPKG_ROOT=${{ env.VCPKG_ROOT }}
+          MYSQL_BRANCH='${{ env.MYSQL_BRANCH }}'
+          MYSQL_INSTALL_PREFIX='${{ env.MYSQL_INSTALL_PREFIX }}'
+          FBMYSQL_BRANCH='${{ env.FBMYSQL_BRANCH }}'
+          FBMYSQL_INSTALL_PREFIX='${{ env.FBMYSQL_INSTALL_PREFIX }}'
+          MARIADB_BRANCH='${{ env.MARIADB_BRANCH }}'
+          MARIADB_INSTALL_PREFIX='${{ env.MARIADB_INSTALL_PREFIX }}'
+          gcc_indiff_centos7_url='${{ env.gcc_indiff_centos7_url }}'
+          EOF
           docker run --rm \
             -v ${{ github.workspace }}:/workspace \
             -w /workspace \
-            -e MYSQL_BRANCH=${{ env.MYSQL_BRANCH }} \
-            -e INSTALL_PREFIX=${{ env.INSTALL_PREFIX }} \
-            -e VCPKG_ROOT=${{ env.VCPKG_ROOT }} \
-            -e FBMYSQL_BRANCH=${{ env.FBMYSQL_BRANCH }} \
-            -e FBMYSQL_INSTALL_PREFIX=${{ env.FBMYSQL_INSTALL_PREFIX }} \
-            -e MARIADB_BRANCH=${{ env.MARIADB_BRANCH }} \
-            -e MARIADB_INSTALL_PREFIX=${{ env.MARIADB_INSTALL_PREFIX }} \
-            -e gcc_indiff_centos7_url=${{ env.gcc_indiff_centos7_url }} \
+            -v "$PWD/run-config.sh":/etc/indiff/run-config.sh:ro \
             ghcr.io/${{ github.repository_owner }}/${{ matrix.target }}-build-centos7:latest \
-            /bin/bash -c "ls -ll && sh ./images/${{ matrix.target }}-build/${{ matrix.target }}-build.sh"
+            /bin/bash -c "ls -ll && source /etc/indiff/run-config.sh && sh ./images/${{ matrix.target }}-build/${{ matrix.target }}-build.sh"
       - name: Upload ${{ matrix.target }} package
         uses: actions/upload-artifact@v4
         with:
