@@ -77,9 +77,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        runner: [ubuntu-latest]
+        runner: [ubuntu-latest,ubuntu-24.04-arm]
         target: [mysql,fbmysql,percona,mariadb]
     runs-on: ${{ matrix.runner }}
+    permissions:
+      contents: read
+      packages: write
+
     steps:
       - name: Free Disk-Space
         run: df -h && sudo apt-get clean && docker system prune -a -f && sudo rm -rf /opt/ghc /usr/local/.ghcup /usr/local/lib/android && df -h && docker search ubuntu
@@ -88,6 +92,9 @@ jobs:
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
+        with:
+          buildkitd-config: .github/buildkit.toml
+          driver-opts: image=ghcr.io/btbn/buildkit:master
 
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
@@ -122,9 +129,9 @@ jobs:
           # labels: ${{ steps.meta.outputs.labels }}
           # cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/${{ matrix.target }}-build-centos7:latest
           # cache-to: type=inline
-          tags: ${{ matrix.target }}-build-centos7:latest
-          cache-to: type=registry,mode=max,ref=${{ matrix.target }}-build-centos7:cache
-          cache-from: type=registry,ref=${{ matrix.target }}-build-centos7:cache
+          tags: ${{ matrix.target }}-build-centos7:latest${{ (contains(matrix.runner, 'arm') && '-arm') || '' }}
+          cache-to: type=registry,mode=max,ref=${{ matrix.target }}-build-centos7:cache${{ (contains(matrix.runner, 'arm') && '-arm') || '' }}
+          cache-from: type=registry,ref=${{ matrix.target }}-build-centos7:cache${{ (contains(matrix.runner, 'arm') && '-arm') || '' }}
           build-args: |
             CACHE_KEY=ghcr.io/${{ steps.cachekey.outputs.cache_key }}
             gcc_indiff_centos7_url=${{ env.gcc_indiff_centos7_url }}
