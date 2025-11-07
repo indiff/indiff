@@ -6,6 +6,60 @@ echo 'LANG=zh_CN.UTF-8' >> /etc/environment
 echo 'LANGUAGE=zh_CN.UTF-8' >> /etc/environment
 echo 'LC_ALL=zh_CN.UTF-8' >> /etc/environment
 echo 'LC_CTYPE=zh_CN.UTF-8' >> /etc/environment
+
+# Define mirror list for CentOS 7.9.2009
+MIRRORS=(
+    "http://mirror.rackspace.com/centos-vault/7.9.2009"
+    "https://mirror.nsc.liu.se/centos-store/7.9.2009"
+    "https://linuxsoft.cern.ch/centos-vault/7.9.2009"
+    "https://archive.kernel.org/centos-vault/7.9.2009"
+    "https://vault.centos.org/7.9.2009"
+)
+
+# Initialize variables
+FASTEST_MIRROR=""
+FASTEST_TIME=99999
+
+echo "Testing mirror response times..."
+
+# Test each mirror's response time
+for MIRROR in "${MIRRORS[@]}"; do
+    echo -n "Testing $MIRROR ... "
+    TIME=$(curl -o /dev/null -s -w "%{time_total}\n" "$MIRROR" || echo "99999")
+    echo "$TIME seconds"
+    
+    if (( $(echo "$TIME < $FASTEST_TIME" | bc -l) )); then
+        FASTEST_TIME=$TIME
+        FASTEST_MIRROR=$MIRROR
+    fi
+done
+
+echo "-----------------------------------"
+echo "Fastest mirror: $FASTEST_MIRROR"
+echo "Response time: $FASTEST_TIME seconds"
+
+# Configure YUM repositories
+echo "[base]" > /etc/yum.repos.d/CentOS-Base.repo
+echo "name=CentOS-Base" >> /etc/yum.repos.d/CentOS-Base.repo
+echo "baseurl=${FASTEST_MIRROR}/os/\$basearch/" >> /etc/yum.repos.d/CentOS-Base.repo
+echo "gpgcheck=0" >> /etc/yum.repos.d/CentOS-Base.repo
+
+echo "[updates]" >> /etc/yum.repos.d/CentOS-Base.repo
+echo "name=CentOS-updates" >> /etc/yum.repos.d/CentOS-Base.repo
+echo "baseurl=${FASTEST_MIRROR}/updates/\$basearch/" >> /etc/yum.repos.d/CentOS-Base.repo
+echo "gpgcheck=0" >> /etc/yum.repos.d/CentOS-Base.repo
+
+echo "[extras]" >> /etc/yum.repos.d/CentOS-Base.repo
+echo "name=CentOS-extras" >> /etc/yum.repos.d/CentOS-Base.repo
+echo "baseurl=${FASTEST_MIRROR}/extras/\$basearch/" >> /etc/yum.repos.d/CentOS-Base.repo
+echo "gpgcheck=0" >> /etc/yum.repos.d/CentOS-Base.repo
+
+echo "[centosplus]" >> /etc/yum.repos.d/CentOS-Base.repo
+echo "name=CentOS-centosplus" >> /etc/yum.repos.d/CentOS-Base.repo
+echo "baseurl=${FASTEST_MIRROR}/centosplus/\$basearch/" >> /etc/yum.repos.d/CentOS-Base.repo
+echo "gpgcheck=0" >> /etc/yum.repos.d/CentOS-Base.repo
+
+
 yum clean all
 yum makecache
 yum install -y https://dl.fedoraproject.org/pub/archive/epel/7/x86_64/Packages/e/epel-release-7-14.noarch.rpm
