@@ -104,9 +104,9 @@ jobs:
             type=raw,value=latest
             type=sha,prefix=          
       - name: Generate Docker cache key
-        id: cache-key
+        id: cachekey
         run: |
-          cat images/${{ matrix.target }}-build/Dockerfile images/${{ matrix.target }}-build/centos7.sh
+          # cat images/${{ matrix.target }}-build/Dockerfile images/${{ matrix.target }}-build/centos7.sh
           CACHE_KEY=$(cat images/${{ matrix.target }}-build/Dockerfile images/${{ matrix.target }}-build/centos7.sh | sha256sum | cut -d' ' -f1)
           echo "cache_key=${CACHE_KEY}" >> $GITHUB_OUTPUT
           echo "Docker cache key: ${CACHE_KEY}"  build-${{ matrix.target }}-centos7:
@@ -117,23 +117,28 @@ jobs:
           push: true
           pull: true
           provenance: false
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/${{ matrix.target }}-build-centos7:latest
-          cache-to: type=inline
+          # tags: ${{ steps.meta.outputs.tags }}
+          # labels: ${{ steps.meta.outputs.labels }}
+          # cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/${{ matrix.target }}-build-centos7:latest
+          # cache-to: type=inline
+          tags: ${{ matrix.target }}-build-centos7:latest
+          cache-to: type=registry,mode=max,ref=${{ matrix.target }}-build-centos7:cache
+          cache-from: type=registry,ref=${{ matrix.target }}-build-centos7:cache
           build-args: |
-            MYSQL_BRANCH=${{ env.MYSQL_BRANCH }}
-            INSTALL_PREFIX=${{ env.INSTALL_PREFIX }}
-            VCPKG_ROOT=${{ env.VCPKG_ROOT }}
-            FBMYSQL_BRANCH=${{ env.FBMYSQL_BRANCH }}
-            FBMYSQL_INSTALL_PREFIX=${{ env.FBMYSQL_INSTALL_PREFIX }}
-            MARIADB_BRANCH=${{ env.MARIADB_BRANCH }}
-            MARIADB_INSTALL_PREFIX=${{ env.MARIADB_INSTALL_PREFIX }}
-            gcc_indiff_centos7_url=${{ env.gcc_indiff_centos7_url }}
+            CACHE_KEY=ghcr.io/${{ steps.cachekey.outputs.cache_key }}
+          # build-args: |
+          #   MYSQL_BRANCH=${{ env.MYSQL_BRANCH }}
+          #   INSTALL_PREFIX=${{ env.INSTALL_PREFIX }}
+          #   VCPKG_ROOT=${{ env.VCPKG_ROOT }}
+          #   FBMYSQL_BRANCH=${{ env.FBMYSQL_BRANCH }}
+          #   FBMYSQL_INSTALL_PREFIX=${{ env.FBMYSQL_INSTALL_PREFIX }}
+          #   MARIADB_BRANCH=${{ env.MARIADB_BRANCH }}
+          #   MARIADB_INSTALL_PREFIX=${{ env.MARIADB_INSTALL_PREFIX }}
+          #   gcc_indiff_centos7_url=${{ env.gcc_indiff_centos7_url }}
   build_target:
     runs-on: ubuntu-latest
-    name: Build image
-    if: ${{ github.event.inputs.buildOnly != 'true' }}
+    name: Build target
+    if: ${{ ( github.event.inputs.buildOnly == 'true' && !cancelled() ) || success() }}
     needs: build_image
     strategy:
       fail-fast: false
