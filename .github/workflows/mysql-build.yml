@@ -78,7 +78,7 @@ jobs:
       fail-fast: false
       matrix:
         runner: [ubuntu-latest,ubuntu-24.04-arm]
-        target: [mysql,fbmysql,percona,mariadb]
+        target: [mysql,fbmysql,percona,mariadb,demo]
     runs-on: ${{ matrix.runner }}
     permissions:
       contents: read
@@ -162,7 +162,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target: [mysql,fbmysql,percona,mariadb]
+        target: [mysql,fbmysql,percona,mariadb,demo]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
