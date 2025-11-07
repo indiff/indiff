@@ -17,7 +17,7 @@ on:
         default: false
         required: false
       mysql_build_branch:
-        description: 'Build Branch'
+        description: 'Build mysql Branch'
         type: choice
         default: ""
         required: false
@@ -26,7 +26,7 @@ on:
           - "8.0" 
           - "8.4"
       fbmysql_build_branch:
-        description: 'Build Branch'
+        description: 'Build fbmysql Branch'
         type: choice
         default: ""
         required: false
@@ -35,7 +35,7 @@ on:
           - "fb-mysql-8.0.28" 
           - "fb-mysql-8.0.17" 
       mariadb_build_branch:
-        description: 'Build Branch'
+        description: 'Build mariadb Branch'
         type: choice
         default: ""
         required: false
@@ -45,7 +45,7 @@ on:
           - "12.0" 
           - "11.8" 
       percona_build_branch:
-        description: 'Build Branch'
+        description: 'Build percona Branch'
         type: choice
         default: ""
         required: false
