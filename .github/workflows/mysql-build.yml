@@ -94,7 +94,8 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          password: ${{ github.token }}
+          # password: ${{ secrets.GITHUB_TOKEN }}
       - name: Extract metadata for Docker
         id: meta
         uses: docker/metadata-action@v5
