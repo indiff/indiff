@@ -345,7 +345,7 @@ jobs:
           uses: actions/download-artifact@main
           with:
             path: artifacts
-            pattern: *-centos7-x86_64
+            pattern: "*-centos7-x86_64"
             merge-multiple: false
           
         - name: Release Tag
