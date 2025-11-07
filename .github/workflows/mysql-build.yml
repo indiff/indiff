@@ -52,6 +52,14 @@ on:
         options:
           - "8.0"
           - "trunk"
+      demo_build_flag:
+        description: 'Build demo flag'
+        type: choice
+        default: "false"
+        required: false
+        options:
+          - "false"
+          - "true"
           
   schedule:
     #- cron: '07 10 * * *' # 每天凌晨2点（UTC），对应每天上午10点（CST）, 这里对应的是中国时区的是 18 点
@@ -78,7 +86,7 @@ jobs:
       fail-fast: false
       matrix:
         runner: [ubuntu-latest] # centos7 can not use ,ubuntu-24.04-arm
-        target: [mysql,fbmysql,percona,mariadb,demo]
+        target: ${{ fromJSON( github.event.inputs.demo_build_flag == 'true' && '["demo"]' || '["mysql","fbmysql","percona","mariadb","demo"]' ) }}
     runs-on: ${{ matrix.runner }}
     permissions:
       contents: read
@@ -101,8 +109,8 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ github.token }}
-          # password: ${{ secrets.GITHUB_TOKEN }}
+          # password: ${{ github.token }}
+          password: ${{ secrets.GITHUB_TOKEN }}
       - name: Extract metadata for Docker
         id: meta
         uses: docker/metadata-action@v5
