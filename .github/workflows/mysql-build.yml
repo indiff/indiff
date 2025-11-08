@@ -189,14 +189,14 @@ jobs:
           sudo timedatectl set-timezone Asia/Shanghai
           ls
           cat > run-config.sh <<'EOF'
-          VCPKG_ROOT=${{ env.VCPKG_ROOT }}
-          MYSQL_BRANCH='${{ env.MYSQL_BRANCH }}'
-          MYSQL_INSTALL_PREFIX='${{ env.MYSQL_INSTALL_PREFIX }}'
-          FBMYSQL_BRANCH='${{ env.FBMYSQL_BRANCH }}'
-          FBMYSQL_INSTALL_PREFIX='${{ env.FBMYSQL_INSTALL_PREFIX }}'
-          MARIADB_BRANCH='${{ env.MARIADB_BRANCH }}'
-          MARIADB_INSTALL_PREFIX='${{ env.MARIADB_INSTALL_PREFIX }}'
-          gcc_indiff_centos7_url='${{ env.gcc_indiff_centos7_url }}'
+          export VCPKG_ROOT=${{ env.VCPKG_ROOT }}
+          export MYSQL_BRANCH='${{ env.MYSQL_BRANCH }}'
+          export MYSQL_INSTALL_PREFIX='${{ env.MYSQL_INSTALL_PREFIX }}'
+          export FBMYSQL_BRANCH='${{ env.FBMYSQL_BRANCH }}'
+          export FBMYSQL_INSTALL_PREFIX='${{ env.FBMYSQL_INSTALL_PREFIX }}'
+          export MARIADB_BRANCH='${{ env.MARIADB_BRANCH }}'
+          export MARIADB_INSTALL_PREFIX='${{ env.MARIADB_INSTALL_PREFIX }}'
+          export gcc_indiff_centos7_url='${{ env.gcc_indiff_centos7_url }}'
           EOF
           docker run --rm \
             -v ${{ github.workspace }}:/workspace \
