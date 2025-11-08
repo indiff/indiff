@@ -8,7 +8,7 @@ PROTOC_BASENAME=$(basename $VCPKG_ROOT/installed/x64-linux-dynamic/tools/protobu
 PROTOC_LIB_BASENAME=$(basename $VCPKG_ROOT/installed/x64-linux-dynamic/lib/libprotoc.so.*)
 chmod +x $VCPKG_ROOT/installed/x64-linux-dynamic/tools/protobuf/$PROTOC_BASENAME
 
-if [[ -z "$FBMYSQL_BRANCH" ]]; then
+if [[ -z "$MYSQL_BRANCH" ]]; then
     git clone --filter=blob:none --depth 1 https://github.com/mysql/mysql-server.git server
 else
     git clone --filter=blob:none --depth 1 https://github.com/mysql/mysql-server.git  -b $MYSQL_BRANCH server
@@ -29,7 +29,7 @@ sed -i '/^[[:space:]]*#include[[:space:]]*<vector>[[:space:]]*$/a #include <cstd
 sed -i 's/enum class Gtid_format : uint8_t {/enum Gtid_format {/g' /workspace/server/libs/mysql/gtid/gtid_format.h
 
 DEPS_SRC="$VCPKG_ROOT/installed/x64-linux"
-DEPS_DST="$INSTALL_PREFIX"
+DEPS_DST="$MYSQL_INSTALL_PREFIX"
 mkdir -p "$DEPS_DST"/{include,lib,lib64,tools}
 
 # sync icu  
