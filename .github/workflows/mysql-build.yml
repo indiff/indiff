@@ -138,10 +138,10 @@ jobs:
           # cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/${{ matrix.target }}-build-centos7:latest
           # cache-to: type=inline
           tags: ${{ matrix.target }}-build-centos7:latest${{ (contains(matrix.runner, 'arm') && '-arm') || '' }}
-          cache-to: type=registry,mode=max,ref=${{ matrix.target }}-build-centos7:cache${{ (contains(matrix.runner, 'arm') && '-arm') || '' }}
-          cache-from: type=registry,ref=${{ matrix.target }}-build-centos7:cache${{ (contains(matrix.runner, 'arm') && '-arm') || '' }}
+          cache-to: type=registry,mode=max,ref=ghcr.io/${{ github.repository_owner }}/${{ matrix.target }}-build-centos7:cache${{ (contains(matrix.runner, 'arm') && '-arm') || '' }}
+          cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/${{ matrix.target }}-build-centos7:cache${{ (contains(matrix.runner, 'arm') && '-arm') || '' }}
           build-args: |
-            CACHE_KEY=ghcr.io/${{ steps.cachekey.outputs.cache_key }}
+            CACHE_KEY=${{ steps.cachekey.outputs.cache_key }}
             gcc_indiff_centos7_url=${{ env.gcc_indiff_centos7_url }}
           # build-args: |
           #   MYSQL_BRANCH=${{ env.MYSQL_BRANCH }}
