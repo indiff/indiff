@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+echo $VCPKG_ROOT
 
 curl -#Lo lld-indiff.zip "https://github.com/indiff/gcc-build/releases/download/20251107_1309_16.0.0/lld-indiff-centos7-x86_64-20251107_1308.xz"
 unzip ldd-indiff.zip -d /opt/gcc-indiff
