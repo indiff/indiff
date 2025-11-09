@@ -86,7 +86,7 @@ jobs:
       fail-fast: false
       matrix:
         runner: [ubuntu-latest] # centos7 can not use ,ubuntu-24.04-arm
-        target: ${{ fromJSON( github.event.inputs.demo_build_flag == 'true' && '["demo"]' || '["mysql","fbmysql","percona","mariadb","demo"]' ) }}
+        target: ${{ fromJSON( github.event.inputs.demo_build_flag == 'true' && '["demo"]' || '["mysql","fbmysql","percona","mariadb"]' ) }}
     runs-on: ${{ matrix.runner }}
     permissions:
       contents: read
