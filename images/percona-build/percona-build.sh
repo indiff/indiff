@@ -17,6 +17,18 @@ cd server
 git submodule update --init --recursive
 
 
+DEPS_SRC="$VCPKG_ROOT/installed/x64-linux-dynamic"
+
+rsync -a "$DEPS_SRC/include/" "$DEPS_DST/include/"
+rsync -a --copy-links "$DEPS_SRC/lib/"      "$DEPS_DST/lib/"      || true
+rsync -a --copy-links "$DEPS_SRC/lib64/"    "$DEPS_DST/lib64/"    || true
+rsync -a --copy-links "$DEPS_SRC/tools/protobuf/"    "$DEPS_DST/tools/"    || true
+
+rsync -a "/opt/gcc-indiff/include/" "$DEPS_DST/include/"
+rsync -a --copy-links "/opt/gcc-indiff/lib64/"    "$DEPS_DST/lib64/"    || true
+
+
+
 TRIPLET=x64-linux
 DEPS_SRC="$VCPKG_ROOT/installed/$TRIPLET"
 DEPS_DST="$PERCONA_INSTALL_PREFIX"
