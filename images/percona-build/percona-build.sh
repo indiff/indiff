@@ -3,9 +3,9 @@
 set -xe
 
 
-# PROTOC_BASENAME=$(basename $VCPKG_ROOT/installed/x64-linux-dynamic/tools/protobuf/protoc-*)
-# PROTOC_LIB_BASENAME=$(basename $VCPKG_ROOT/installed/x64-linux-dynamic/lib/libprotoc.so.*)
-# chmod +x $VCPKG_ROOT/installed/x64-linux-dynamic/tools/protobuf/$PROTOC_BASENAME
+PROTOC_BASENAME=$(basename $VCPKG_ROOT/installed/x64-linux-dynamic/tools/protobuf/protoc-*)
+PROTOC_LIB_BASENAME=$(basename $VCPKG_ROOT/installed/x64-linux-dynamic/lib/libprotoc.so.*)
+chmod +x $VCPKG_ROOT/installed/x64-linux-dynamic/tools/protobuf/$PROTOC_BASENAME
 
 if [[ -z "$PERCONA_BRANCH" ]]; then
     git clone --filter=blob:none --depth 1 https://github.com/percona/percona-server.git -b 8.0 server
@@ -18,6 +18,10 @@ git submodule update --init --recursive
 
 
 DEPS_SRC="$VCPKG_ROOT/installed/x64-linux-dynamic"
+
+# sync icu68
+rsync -a "/usr/local/icu68/include/" "$DEPS_DST/include/"
+rsync -a "/usr/local/icu68/lib/"    "$DEPS_DST/lib64/"    || true
 
 rsync -a "$DEPS_SRC/include/" "$DEPS_DST/include/"
 rsync -a --copy-links "$DEPS_SRC/lib/"      "$DEPS_DST/lib/"      || true
@@ -80,7 +84,10 @@ cmake .. -G Ninja \
     -DWITH_ROCKSDB=ON \
     -DWITH_LZ4=system -DWITH_ZSTD=system -DWITH_SNAPPY=system -DWITH_JEMALLOC=system \
     -DWITH_SSL=system -DOPENSSL_ROOT_DIR="$DEPS_DST" \
-    -DWITH_PROTOBUF=bundled \
+    -DWITH_ICU=system \
+    -DWITH_PROTOBUF=system  \
+    -DPROTOBUF_PROTOC_LIBRARY="$DEPS_DST/lib/$PROTOC_LIB_BASENAME"  \
+    -DPROTOBUF_PROTOC_EXECUTABLE="$VCPKG_ROOT/installed/x64-linux-dynamic/tools/protobuf/$PROTOC_BASENAME"  \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_INSTALL_RPATH='$ORIGIN/../lib:$ORIGIN/../lib64' \
     -DCMAKE_BUILD_RPATH='/opt/gcc-indiff/lib64:$ORIGIN/../lib:$ORIGIN/../lib64' \
