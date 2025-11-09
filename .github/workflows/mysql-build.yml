@@ -170,7 +170,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target: [mysql,fbmysql,percona,mariadb,demo]
+        target: ${{ fromJSON( github.event.inputs.demo_build_flag == 'true' && '["demo"]' || '["mysql","fbmysql","percona","mariadb"]' ) }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
