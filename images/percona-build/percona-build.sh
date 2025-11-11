@@ -59,9 +59,6 @@ for d in lib lib64; do
 rsync -a "$DEPS_SRC/$d/pkgconfig/" "$DEPS_DST/$d/pkgconfig/" 2>/dev/null || true
 done
 
-# build persona mysql
-mkdir -p /workspace/server/build /workspace/server/boost
-cd /workspace/server/build
 
 # 供 CMake/ld 查找 vcpkg 拷贝到 /opt 的头文件与库
 export CMAKE_PREFIX_PATH="$DEPS_DST${CMAKE_PREFIX_PATH:+:$CMAKE_PREFIX_PATH}"
@@ -72,6 +69,17 @@ export PKG_CONFIG_PATH="/usr/lib64/pkgconfig:/usr/share/pkgconfig:$DEPS_DST/lib/
 # 链接期搜索路径(关键修复 -ljemalloc not found)
 export LIBRARY_PATH="/opt/gcc-indiff/lib64:$DEPS_DST/lib:$DEPS_DST/lib64${LIBRARY_PATH:+:$LIBRARY_PATH}"
 export LD_LIBRARY_PATH="/opt/gcc-indiff/lib64:$DEPS_DST/lib:$DEPS_DST/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+
+git clone --filter=blob:none --depth 1 https://github.com/cyrusimap/cyrus-sasl.git
+cd cyrus-sasl
+sh autogen.sh
+env CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ ./configure --prefix=$DEPS_DST
+make -j$(nproc)
+make install
+
+# build persona mysql
+mkdir -p /workspace/server/build /workspace/server/boost
+cd /workspace/server/build
 
 # 避免外部 protobuf 干扰
 unset PROTOC
