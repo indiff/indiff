@@ -77,6 +77,14 @@ env CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ ./configure --prefix=
 make -j$(nproc)
 make install
 
+cd ..
+git clone --filter=blob:none --depth 1 https://git.openldap.org/openldap/openldap.git
+cd openldap
+env CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ ./configure --prefix=$DEPS_DST --with-cyrus-sasl
+make -j$(nproc)
+make install
+
+
 # build persona mysql
 mkdir -p /workspace/server/build /workspace/server/boost
 cd /workspace/server/build
