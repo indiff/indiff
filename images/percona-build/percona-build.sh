@@ -21,24 +21,25 @@ cd server
 git submodule update --init --recursive
 
 
-DEPS_SRC="$VCPKG_ROOT/installed/x64-linux-dynamic"
-
+DEPS_SRC="$VCPKG_ROOT/installed/x64-linux"
 # sync icu68
 rsync -a "/usr/local/icu68/include/" "$DEPS_DST/include/"
 rsync -a "/usr/local/icu68/lib/"    "$DEPS_DST/lib64/"    || true
 
 rsync -a "$DEPS_SRC/include/" "$DEPS_DST/include/"
 rsync -a --copy-links "$DEPS_SRC/lib/"      "$DEPS_DST/lib/"      || true
-rsync -a --copy-links "$DEPS_SRC/lib64/"    "$DEPS_DST/lib64/"    || true
+# rsync -a --copy-links "$DEPS_SRC/lib64/"    "$DEPS_DST/lib64/"    || true
 rsync -a --copy-links "$DEPS_SRC/tools/protobuf/"    "$DEPS_DST/tools/"    || true
 
 rsync -a "/opt/gcc-indiff/include/" "$DEPS_DST/include/"
 rsync -a --copy-links "/opt/gcc-indiff/lib64/"    "$DEPS_DST/lib64/"    || true
 
+DEPS_SRC="$VCPKG_ROOT/installed/x64-linux-dynamic"
+
 # 2) 复制头文件与动态库（.so 与 .so.*）及 pkgconfig
 rsync -a "$DEPS_SRC/include/" "$DEPS_DST/include/"
 rsync -a "$DEPS_SRC/lib/"      "$DEPS_DST/lib/"      || true
-rsync -a "$DEPS_SRC/lib64/"    "$DEPS_DST/lib64/"    || true
+# rsync -a "$DEPS_SRC/lib64/"    "$DEPS_DST/lib64/"    || true
         
 rsync -a "/opt/gcc-indiff/include/" "$DEPS_DST/include/"
 rsync -a "/opt/gcc-indiff/lib64/"    "$DEPS_DST/lib64/"    || true
