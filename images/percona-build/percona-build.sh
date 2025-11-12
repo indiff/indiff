@@ -6,6 +6,10 @@ set -xe
 PROTOC_BASENAME=$(basename $VCPKG_ROOT/installed/x64-linux-dynamic/tools/protobuf/protoc-*)
 PROTOC_LIB_BASENAME=$(basename $VCPKG_ROOT/installed/x64-linux-dynamic/lib/libprotoc.so.*)
 chmod +x $VCPKG_ROOT/installed/x64-linux-dynamic/tools/protobuf/$PROTOC_BASENAME
+TRIPLET=x64-linux
+DEPS_SRC="$VCPKG_ROOT/installed/$TRIPLET"
+DEPS_DST="$PERCONA_INSTALL_PREFIX"
+mkdir -p "$DEPS_DST"/{include,lib,lib64}
 
 if [[ -z "$PERCONA_BRANCH" ]]; then
     git clone --filter=blob:none --depth 1 https://github.com/percona/percona-server.git -b 8.0 server
@@ -30,13 +34,6 @@ rsync -a --copy-links "$DEPS_SRC/tools/protobuf/"    "$DEPS_DST/tools/"    || tr
 
 rsync -a "/opt/gcc-indiff/include/" "$DEPS_DST/include/"
 rsync -a --copy-links "/opt/gcc-indiff/lib64/"    "$DEPS_DST/lib64/"    || true
-
-
-
-TRIPLET=x64-linux
-DEPS_SRC="$VCPKG_ROOT/installed/$TRIPLET"
-DEPS_DST="$PERCONA_INSTALL_PREFIX"
-mkdir -p "$DEPS_DST"/{include,lib,lib64}
 
 # 2) 复制头文件与动态库（.so 与 .so.*）及 pkgconfig
 rsync -a "$DEPS_SRC/include/" "$DEPS_DST/include/"
