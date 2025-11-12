@@ -68,9 +68,9 @@ export PKG_CONFIG_PATH="/usr/lib64/pkgconfig:/usr/share/pkgconfig:$DEPS_DST/lib/
 export LIBRARY_PATH="/opt/gcc-indiff/lib64:$DEPS_DST/lib:$DEPS_DST/lib64${LIBRARY_PATH:+:$LIBRARY_PATH}"
 export LD_LIBRARY_PATH="/opt/gcc-indiff/lib64:$DEPS_DST/lib:$DEPS_DST/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
 
-export CPPFLAGS="-I$DEPS_DST/include"
+export CPPFLAGS="-I$DEPS_DST/include "
 export CFLAGS="$CPPFLAGS"
-export LDFLAGS="$LD_LIBRARY_PATH"
+export LDFLAGS="/opt/gcc-indiff/lib64:$DEPS_DST/lib:$DEPS_DST/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
   
 git clone --filter=blob:none --depth 1 https://github.com/cyrusimap/cyrus-sasl.git
 cd cyrus-sasl
