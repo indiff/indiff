@@ -74,10 +74,16 @@ export LD_LIBRARY_PATH="/opt/gcc-indiff/lib64:$DEPS_DST/lib:$DEPS_DST/lib64${LD_
   
 git clone --filter=blob:none --depth 1 https://github.com/cyrusimap/cyrus-sasl.git
 cd cyrus-sasl
-sh autogen.sh
-env LDFLAGS="/opt/gcc-indiff/lib64:$DEPS_DST/lib:$DEPS_DST/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ ./configure --prefix=$DEPS_DST
-make -j$(nproc)
-make install
+# sh autogen.sh
+
+export CFLAGS="-Wall "
+./autogen.sh --prefix="$DEPS_DST" \
+    --with-openssl="$DEPS_DST" \
+    --with-staticsasl
+env LDFLAGS="/opt/gcc-indiff/lib64:$DEPS_DST/lib:$DEPS_DST/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++  \
+make install DESTDIR="$DEPS_DST" || true
+# make -j$(nproc)
+# make install
 
 cd ..
 git clone --filter=blob:none --depth 1 https://git.openldap.org/openldap/openldap.git
