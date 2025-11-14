@@ -3,10 +3,9 @@ set -euo pipefail
 
 echo $VCPKG_ROOT
 
-curl -#Lo lld-indiff.zip "https://github.com/indiff/gcc-build/releases/download/20251107_1309_16.0.0/lld-indiff-centos7-x86_64-20251107_1308.xz"
+curl -sLo lld-indiff.zip https://github.com/indiff/gcc-build/releases/download/20251107_1309_16.0.0/lld-indiff-centos7-x86_64-20251107_1308.xz
 ls
-
-unzip ldd-indiff.zip -d /opt/gcc-indiff
+unzip lld-indiff.zip -d /opt/gcc-indiff
 # 工具链前缀目录
 TOOLCHAIN=/opt/gcc-indiff/bin
 export PATH="$TOOLCHAIN:$PATH"
