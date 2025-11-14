@@ -16,6 +16,72 @@ export CFLAGS="-O2 -g -pipe -fuse-ld=lld -Wall"
 export CXXFLAGS="-O2 -g -pipe -fuse-ld=lld -Wall -std=c++17"
 export LDFLAGS="-Wl,-Map=output.map -Wl,--gc-sections"
 
+
+TRIPLET=x64-linux
+DEPS_SRC="$VCPKG_ROOT/installed/$TRIPLET"
+DEPS_DST="/opt/fuck"
+mkdir -p "$DEPS_DST"/{include,lib,lib64}
+
+
+DEPS_SRC="$VCPKG_ROOT/installed/x64-linux"
+# sync icu68
+rsync -a "/usr/local/icu68/include/" "$DEPS_DST/include/"
+rsync -a "/usr/local/icu68/lib/"    "$DEPS_DST/lib64/"    || true
+
+rsync -a "$DEPS_SRC/include/" "$DEPS_DST/include/"
+rsync -a --copy-links "$DEPS_SRC/lib/"      "$DEPS_DST/lib/"      || true
+# rsync -a --copy-links "$DEPS_SRC/lib64/"    "$DEPS_DST/lib64/"    || true
+rsync -a --copy-links "$DEPS_SRC/tools/protobuf/"    "$DEPS_DST/tools/"    || true
+
+rsync -a "/opt/gcc-indiff/include/" "$DEPS_DST/include/"
+rsync -a --copy-links "/opt/gcc-indiff/lib64/"    "$DEPS_DST/lib64/"    || true
+
+DEPS_SRC="$VCPKG_ROOT/installed/x64-linux-dynamic"
+
+# 2) 复制头文件与动态库（.so 与 .so.*）及 pkgconfig
+rsync -a "$DEPS_SRC/include/" "$DEPS_DST/include/"
+rsync -a "$DEPS_SRC/lib/"      "$DEPS_DST/lib/"      || true
+# rsync -a "$DEPS_SRC/lib64/"    "$DEPS_DST/lib64/"    || true
+        
+rsync -a "/opt/gcc-indiff/include/" "$DEPS_DST/include/"
+rsync -a "/opt/gcc-indiff/lib64/"    "$DEPS_DST/lib64/"    || true
+
+# 如果宿主镜像/系统有 /lib64/libjemalloc.so.1 同步到目标目录
+if [ -f /lib64/libjemalloc.so.1 ]; then
+     echo "Found /lib64/libjemalloc.so.1 on build host, copying to $DEPS_DST/lib64"
+     mkdir -p "$DEPS_DST/lib64"
+     cp -a /lib64/libjemalloc.so* "$DEPS_DST/lib64/" || true
+     chmod 644 "$DEPS_DST/lib64"/libjemalloc.so* 2>/dev/null || true
+fi
+
+for d in lib lib64; do
+[[ -d "$DEPS_DST/$d/pkgconfig" ]] || mkdir -p "$DEPS_DST/$d/pkgconfig"
+rsync -a "$DEPS_SRC/$d/pkgconfig/" "$DEPS_DST/$d/pkgconfig/" 2>/dev/null || true
+done
+
+
+
+git clone --filter=blob:none --depth 1 https://github.com/cyrusimap/cyrus-sasl.git
+cd cyrus-sasl
+# sh autogen.sh
+
+export CFLAGS="-Wall "
+./autogen.sh --prefix="$DEPS_DST" \
+    --with-openssl="$DEPS_DST"
+    # --with-staticsasl
+env LDFLAGS="/opt/gcc-indiff/lib64:$DEPS_DST/lib:$DEPS_DST/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++  \
+make install DESTDIR="$DEPS_DST" || true
+# make -j$(nproc)
+# make install
+
+cd ..
+git clone --filter=blob:none --depth 1 https://git.openldap.org/openldap/openldap.git
+cd openldap
+env CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ ./configure --prefix=$DEPS_DST --with-cyrus-sasl="$DEPS_DST" --with-tls="openssl"
+env LDFLAGS="/opt/gcc-indiff/lib64:$DEPS_DST/lib:$DEPS_DST/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++  \
+make install DESTDIR="$DEPS_DST" || true
+
+
 echo "[INFO] 使用 gcc 路径: $(command -v gcc)"
 echo "[INFO] 使用 g++ 路径: $(command -v g++)"
 echo "[INFO] 预期链接器: $TOOLCHAIN/ld.lld"
