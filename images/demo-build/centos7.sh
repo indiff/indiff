@@ -94,6 +94,7 @@ yum install -y \
     sed \
     curl \
     file \
+    dos2unix \
     zip
 yum clean all
 
