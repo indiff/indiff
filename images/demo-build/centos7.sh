@@ -148,6 +148,6 @@ export LD_LIBRARY_PATH=/opt/gcc-indiff/lib64:/opt/gcc-indiff/lib
 export TRIPLET=x64-linux
 # 用 vcpkg 安装动态 curl （会生成 libcurl.so 并自动依赖 libssl/libcrypto)
 # cyrus-sasl openldap 
-CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ $VCPKG_ROOT/vcpkg install openssl openldap[cyrus-sasl] --triplet x64-linux-dynamic --clean-after-build \
+CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ $VCPKG_ROOT/vcpkg install openssl krb5 lmdb --triplet x64-linux-dynamic --clean-after-build \
             || cat /opt/vcpkg/installed/vcpkg/issue_body.md
 echo "CentOS 7 demo-build environment setup completed successfully!"
