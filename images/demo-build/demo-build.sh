@@ -48,7 +48,8 @@ for d in lib lib64; do
 rsync -a "$DEPS_SRC/$d/pkgconfig/" "$DEPS_DST/$d/pkgconfig/" 2>/dev/null || true
 done
 
-
+tree $DEPS_DST
+sleep 10
 
 git clone --filter=blob:none --depth 1 https://github.com/cyrusimap/cyrus-sasl.git
 cd cyrus-sasl
