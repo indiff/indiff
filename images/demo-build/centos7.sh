@@ -150,4 +150,7 @@ export TRIPLET=x64-linux
 # cyrus-sasl openldap 
 CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ $VCPKG_ROOT/vcpkg install openssl krb5 lmdb --triplet x64-linux-dynamic --clean-after-build \
             || cat /opt/vcpkg/installed/vcpkg/issue_body.md
+
+CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ $VCPKG_ROOT/vcpkg install openssl --clean-after-build \
+            || cat /opt/vcpkg/installed/vcpkg/issue_body.md
 echo "CentOS 7 demo-build environment setup completed successfully!"
