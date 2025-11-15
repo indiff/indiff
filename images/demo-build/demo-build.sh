@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-set -euo pipefail
+# set -euo pipefail
+set -ex
 
 echo $VCPKG_ROOT
 
