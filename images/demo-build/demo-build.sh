@@ -29,6 +29,12 @@ rsync -a --copy-links "/opt/gcc-indiff/lib64/"    "$DEPS_DST/lib64/"    || true
 rsync -a "$DEPS_SRC/include/" "$DEPS_DST/include/"
 rsync -a "$DEPS_SRC/lib/"      "$DEPS_DST/lib/"      || true
 
+
+for d in lib lib64; do
+[[ -d "$DEPS_DST/$d/pkgconfig" ]] || mkdir -p "$DEPS_DST/$d/pkgconfig"
+rsync -a "$DEPS_SRC/$d/pkgconfig/" "$DEPS_DST/$d/pkgconfig/" 2>/dev/null || true
+done
+
 DEPS_SRC="$VCPKG_ROOT/installed/x64-linux-dynamic"
 
 # 2) 复制头文件与动态库（.so 与 .so.*）及 pkgconfig
