@@ -89,7 +89,7 @@ cd ..
 git clone --filter=blob:none --depth 1 https://git.openldap.org/openldap/openldap.git
 cd openldap
 # autoreconf -fi
-#autoreconf
+autoreconf
 mkdir obj
 cd obj
 env CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ CPPFLAGS="-I$DEPS_DST/include " \
