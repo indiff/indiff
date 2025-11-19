@@ -87,11 +87,13 @@ make install || true
 cd ..
 git clone --filter=blob:none --depth 1 https://git.openldap.org/openldap/openldap.git
 cd openldap
+autoreconf -fi
 env CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ CPPFLAGS="-I$DEPS_DST/include " \
     CFLAGS="-I$DEPS_DST/include " \
     LDFLAGS="-L$DEPS_DST/lib " \
     ./configure --prefix=$DEPS_DST --with-cyrus-sasl --with-tls="openssl"
 # env LDFLAGS="/opt/gcc-indiff/lib64:$DEPS_DST/lib:$DEPS_DST/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++  \
+make depend
 make -j$(nproc)
 make install
 
