@@ -77,11 +77,10 @@ cd cyrus-sasl
 # sh autogen.sh
 
 # export CFLAGS="-Wall "
-env LDFLAGS="/opt/gcc-indiff/lib64:$DEPS_DST/lib:$DEPS_DST/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++  \
+env LDFLAGS="/opt/gcc-indiff/lib64:$DEPS_DST/lib:$DEPS_DST/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" CC="/opt/gcc-indiff/bin/gcc" CXX="/opt/gcc-indiff/bin/g++" \
 ./autogen.sh --prefix="$DEPS_DST" \
     --with-openssl="$DEPS_DST"
     # --with-staticsasl
-
 # make install DESTDIR="$DEPS_DST" || true
 make -j$(nproc)
 make install
