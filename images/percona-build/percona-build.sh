@@ -88,6 +88,7 @@ cd ..
 # yum install pkgconfig -y
 git clone --filter=blob:none --depth 1 https://git.openldap.org/openldap/openldap.git
 cd openldap
+git submodule update --init --recursive
 # autoreconf -fi
 autoreconf
 mkdir obj
