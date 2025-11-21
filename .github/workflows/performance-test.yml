@@ -1,0 +1,520 @@
+name: PostgreSQL vs MySQL Performance Test
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 2 * * 0'  # 每周日凌晨2点 (UTC) 运行
+
+env:
+  TEST_DATABASE: "benchmark_db"
+  TEST_USER: "testuser"
+  TEST_PASSWORD: "testpass123"
+  SYSBENCH_THREADS: "4,8,16"
+  SYSBENCH_TABLES: "10"
+  SYSBENCH_TABLE_SIZE: "100000"
+  SYSBENCH_TIME: "60"
+
+jobs:
+  performance-test:
+    runs-on: ubuntu-latest
+    name: 性能对比测试 (PG vs MySQL)
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v5
+
+      - name: 安装系统依赖
+        run: |
+          set -eux
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            libmysqlclient-dev \
+            libpq-dev \
+            libaio-dev \
+            libssl-dev \
+            automake \
+            autoconf \
+            libtool \
+            pkg-config \
+            bc \
+            git
+
+      - name: 安装 PostgreSQL
+        run: |
+          set -eux
+          sudo apt-get install -y postgresql postgresql-contrib
+          sudo systemctl start postgresql
+          sudo systemctl status postgresql
+          
+          # 配置 PostgreSQL
+          sudo -u postgres psql -c "CREATE USER ${{ env.TEST_USER }} WITH PASSWORD '${{ env.TEST_PASSWORD }}';"
+          sudo -u postgres psql -c "CREATE DATABASE ${{ env.TEST_DATABASE }} OWNER ${{ env.TEST_USER }};"
+          sudo -u postgres psql -c "ALTER USER ${{ env.TEST_USER }} WITH SUPERUSER;"
+          
+          # 优化 PostgreSQL 配置
+          echo "shared_buffers = 256MB" | sudo tee -a /etc/postgresql/*/main/postgresql.conf
+          echo "max_connections = 200" | sudo tee -a /etc/postgresql/*/main/postgresql.conf
+          echo "effective_cache_size = 1GB" | sudo tee -a /etc/postgresql/*/main/postgresql.conf
+          echo "maintenance_work_mem = 64MB" | sudo tee -a /etc/postgresql/*/main/postgresql.conf
+          echo "checkpoint_completion_target = 0.9" | sudo tee -a /etc/postgresql/*/main/postgresql.conf
+          echo "wal_buffers = 16MB" | sudo tee -a /etc/postgresql/*/main/postgresql.conf
+          echo "default_statistics_target = 100" | sudo tee -a /etc/postgresql/*/main/postgresql.conf
+          echo "random_page_cost = 1.1" | sudo tee -a /etc/postgresql/*/main/postgresql.conf
+          echo "work_mem = 4MB" | sudo tee -a /etc/postgresql/*/main/postgresql.conf
+          
+          sudo systemctl restart postgresql
+          psql -U ${{ env.TEST_USER }} -d ${{ env.TEST_DATABASE }} -c "SELECT version();"
+
+      - name: 安装 MySQL (Percona Server)
+        run: |
+          set -eux
+          wget https://repo.percona.com/apt/percona-release_latest.$(lsb_release -sc)_all.deb
+          sudo dpkg -i percona-release_latest.$(lsb_release -sc)_all.deb
+          sudo apt-get update
+          sudo apt-get install -y percona-server-server
+          
+          # 启动 MySQL
+          sudo systemctl start mysql
+          sudo systemctl status mysql
+          
+          # 配置 MySQL
+          sudo mysql -e "CREATE DATABASE ${{ env.TEST_DATABASE }};"
+          sudo mysql -e "CREATE USER '${{ env.TEST_USER }}'@'localhost' IDENTIFIED BY '${{ env.TEST_PASSWORD }}';"
+          sudo mysql -e "GRANT ALL PRIVILEGES ON ${{ env.TEST_DATABASE }}.* TO '${{ env.TEST_USER }}'@'localhost';"
+          sudo mysql -e "FLUSH PRIVILEGES;"
+          
+          # 优化 MySQL 配置
+          cat << 'MYSQLCONF' | sudo tee -a /etc/mysql/mysql.conf.d/mysqld.cnf
+          innodb_buffer_pool_size = 256M
+          innodb_log_file_size = 64M
+          innodb_flush_log_at_trx_commit = 2
+          innodb_flush_method = O_DIRECT
+          max_connections = 200
+          table_open_cache = 400
+          query_cache_size = 0
+          query_cache_type = 0
+          MYSQLCONF
+          
+          sudo systemctl restart mysql
+          mysql -u${{ env.TEST_USER }} -p${{ env.TEST_PASSWORD }} -e "SELECT VERSION();"
+
+      - name: 编译安装 Sysbench
+        run: |
+          set -eux
+          cd /tmp
+          git clone https://github.com/akopytov/sysbench.git
+          cd sysbench
+          ./autogen.sh
+          ./configure --with-pgsql --with-mysql
+          make -j$(nproc)
+          sudo make install
+          sysbench --version
+
+      - name: 创建测试脚本
+        run: |
+          cat << 'EOF' > /tmp/run_benchmark.sh
+          #!/bin/bash
+          set -e
+          
+          DB_TYPE=$1
+          THREADS=$2
+          TEST_TYPE=$3
+          REPORT_FILE=$4
+          
+          echo "=== 测试配置 ===" | tee -a "$REPORT_FILE"
+          echo "数据库类型: $DB_TYPE" | tee -a "$REPORT_FILE"
+          echo "线程数: $THREADS" | tee -a "$REPORT_FILE"
+          echo "测试类型: $TEST_TYPE" | tee -a "$REPORT_FILE"
+          echo "测试时间: ${{ env.SYSBENCH_TIME }} 秒" | tee -a "$REPORT_FILE"
+          echo "表数量: ${{ env.SYSBENCH_TABLES }}" | tee -a "$REPORT_FILE"
+          echo "表大小: ${{ env.SYSBENCH_TABLE_SIZE }} 行" | tee -a "$REPORT_FILE"
+          echo "" | tee -a "$REPORT_FILE"
+          
+          if [ "$DB_TYPE" = "postgresql" ]; then
+            DB_DRIVER="pgsql"
+            DB_CONN="--pgsql-host=localhost --pgsql-port=5432 --pgsql-user=${{ env.TEST_USER }} --pgsql-password=${{ env.TEST_PASSWORD }} --pgsql-db=${{ env.TEST_DATABASE }}"
+          else
+            DB_DRIVER="mysql"
+            DB_CONN="--mysql-host=localhost --mysql-port=3306 --mysql-user=${{ env.TEST_USER }} --mysql-password=${{ env.TEST_PASSWORD }} --mysql-db=${{ env.TEST_DATABASE }}"
+          fi
+          
+          echo "--- 准备数据 ---" | tee -a "$REPORT_FILE"
+          sysbench $TEST_TYPE \
+            --db-driver=$DB_DRIVER \
+            $DB_CONN \
+            --tables=${{ env.SYSBENCH_TABLES }} \
+            --table-size=${{ env.SYSBENCH_TABLE_SIZE }} \
+            prepare 2>&1 | tee -a "$REPORT_FILE"
+          
+          echo "" | tee -a "$REPORT_FILE"
+          echo "--- 运行测试 ---" | tee -a "$REPORT_FILE"
+          sysbench $TEST_TYPE \
+            --db-driver=$DB_DRIVER \
+            $DB_CONN \
+            --tables=${{ env.SYSBENCH_TABLES }} \
+            --table-size=${{ env.SYSBENCH_TABLE_SIZE }} \
+            --threads=$THREADS \
+            --time=${{ env.SYSBENCH_TIME }} \
+            --report-interval=10 \
+            run 2>&1 | tee -a "$REPORT_FILE"
+          
+          echo "" | tee -a "$REPORT_FILE"
+          echo "--- 清理数据 ---" | tee -a "$REPORT_FILE"
+          sysbench $TEST_TYPE \
+            --db-driver=$DB_DRIVER \
+            $DB_CONN \
+            --tables=${{ env.SYSBENCH_TABLES }} \
+            cleanup 2>&1 | tee -a "$REPORT_FILE"
+          
+          echo "" | tee -a "$REPORT_FILE"
+          echo "==========================================" | tee -a "$REPORT_FILE"
+          echo "" | tee -a "$REPORT_FILE"
+          EOF
+          chmod +x /tmp/run_benchmark.sh
+
+      - name: PostgreSQL OLTP 读写测试
+        run: |
+          set -eux
+          REPORT_DIR="${{ github.workspace }}/reports"
+          mkdir -p "$REPORT_DIR"
+          
+          for THREADS in $(echo "${{ env.SYSBENCH_THREADS }}" | tr ',' ' '); do
+            REPORT_FILE="$REPORT_DIR/pg_oltp_read_write_threads_${THREADS}.txt"
+            echo "PostgreSQL OLTP Read/Write 测试 - ${THREADS} 线程" > "$REPORT_FILE"
+            echo "========================================" >> "$REPORT_FILE"
+            echo "" >> "$REPORT_FILE"
+            /tmp/run_benchmark.sh postgresql $THREADS oltp_read_write "$REPORT_FILE"
+          done
+
+      - name: MySQL OLTP 读写测试
+        run: |
+          set -eux
+          REPORT_DIR="${{ github.workspace }}/reports"
+          
+          for THREADS in $(echo "${{ env.SYSBENCH_THREADS }}" | tr ',' ' '); do
+            REPORT_FILE="$REPORT_DIR/mysql_oltp_read_write_threads_${THREADS}.txt"
+            echo "MySQL (Percona) OLTP Read/Write 测试 - ${THREADS} 线程" > "$REPORT_FILE"
+            echo "========================================" >> "$REPORT_FILE"
+            echo "" >> "$REPORT_FILE"
+            /tmp/run_benchmark.sh mysql $THREADS oltp_read_write "$REPORT_FILE"
+          done
+
+      - name: PostgreSQL OLTP 只读测试
+        run: |
+          set -eux
+          REPORT_DIR="${{ github.workspace }}/reports"
+          
+          for THREADS in $(echo "${{ env.SYSBENCH_THREADS }}" | tr ',' ' '); do
+            REPORT_FILE="$REPORT_DIR/pg_oltp_read_only_threads_${THREADS}.txt"
+            echo "PostgreSQL OLTP Read Only 测试 - ${THREADS} 线程" > "$REPORT_FILE"
+            echo "========================================" >> "$REPORT_FILE"
+            echo "" >> "$REPORT_FILE"
+            /tmp/run_benchmark.sh postgresql $THREADS oltp_read_only "$REPORT_FILE"
+          done
+
+      - name: MySQL OLTP 只读测试
+        run: |
+          set -eux
+          REPORT_DIR="${{ github.workspace }}/reports"
+          
+          for THREADS in $(echo "${{ env.SYSBENCH_THREADS }}" | tr ',' ' '); do
+            REPORT_FILE="$REPORT_DIR/mysql_oltp_read_only_threads_${THREADS}.txt"
+            echo "MySQL (Percona) OLTP Read Only 测试 - ${THREADS} 线程" > "$REPORT_FILE"
+            echo "========================================" >> "$REPORT_FILE"
+            echo "" >> "$REPORT_FILE"
+            /tmp/run_benchmark.sh mysql $THREADS oltp_read_only "$REPORT_FILE"
+          done
+
+      - name: PostgreSQL OLTP 只写测试
+        run: |
+          set -eux
+          REPORT_DIR="${{ github.workspace }}/reports"
+          
+          for THREADS in $(echo "${{ env.SYSBENCH_THREADS }}" | tr ',' ' '); do
+            REPORT_FILE="$REPORT_DIR/pg_oltp_write_only_threads_${THREADS}.txt"
+            echo "PostgreSQL OLTP Write Only 测试 - ${THREADS} 线程" > "$REPORT_FILE"
+            echo "========================================" >> "$REPORT_FILE"
+            echo "" >> "$REPORT_FILE"
+            /tmp/run_benchmark.sh postgresql $THREADS oltp_write_only "$REPORT_FILE"
+          done
+
+      - name: MySQL OLTP 只写测试
+        run: |
+          set -eux
+          REPORT_DIR="${{ github.workspace }}/reports"
+          
+          for THREADS in $(echo "${{ env.SYSBENCH_THREADS }}" | tr ',' ' '); do
+            REPORT_FILE="$REPORT_DIR/mysql_oltp_write_only_threads_${THREADS}.txt"
+            echo "MySQL (Percona) OLTP Write Only 测试 - ${THREADS} 线程" > "$REPORT_FILE"
+            echo "========================================" >> "$REPORT_FILE"
+            echo "" >> "$REPORT_FILE"
+            /tmp/run_benchmark.sh mysql $THREADS oltp_write_only "$REPORT_FILE"
+          done
+
+      - name: 生成详细的中文性能对比报告
+        run: |
+          set -e
+          REPORT_DIR="${{ github.workspace }}/reports"
+          FINAL_REPORT="$REPORT_DIR/性能对比报告_$(date +'%Y%m%d_%H%M%S').md"
+          
+          cat << 'EOF' > /tmp/generate_report.py
+          #!/usr/bin/env python3
+          # -*- coding: utf-8 -*-
+          
+          import os
+          import re
+          import sys
+          from datetime import datetime
+          
+          def parse_sysbench_result(file_path):
+              """解析 sysbench 输出结果"""
+              with open(file_path, 'r', encoding='utf-8') as f:
+                  content = f.read()
+              
+              results = {
+                  'tps': 0,
+                  'qps': 0,
+                  'latency_95': 0,
+                  'latency_avg': 0,
+                  'total_time': 0,
+                  'total_events': 0,
+                  'read_queries': 0,
+                  'write_queries': 0
+              }
+              
+              # 提取 TPS (transactions per second)
+              tps_match = re.search(r'transactions:\s+\d+\s+\((\d+\.\d+)\s+per sec', content)
+              if tps_match:
+                  results['tps'] = float(tps_match.group(1))
+              
+              # 提取 QPS (queries per second)
+              qps_match = re.search(r'queries:\s+\d+\s+\((\d+\.\d+)\s+per sec', content)
+              if qps_match:
+                  results['qps'] = float(qps_match.group(1))
+              
+              # 提取 95% 延迟
+              lat95_match = re.search(r'95th percentile:\s+(\d+\.\d+)', content)
+              if lat95_match:
+                  results['latency_95'] = float(lat95_match.group(1))
+              
+              # 提取平均延迟
+              latavg_match = re.search(r'avg:\s+(\d+\.\d+)', content)
+              if latavg_match:
+                  results['latency_avg'] = float(latavg_match.group(1))
+              
+              # 提取总时间
+              time_match = re.search(r'total time:\s+(\d+\.\d+)s', content)
+              if time_match:
+                  results['total_time'] = float(time_match.group(1))
+              
+              # 提取总事务数
+              events_match = re.search(r'total number of events:\s+(\d+)', content)
+              if events_match:
+                  results['total_events'] = int(events_match.group(1))
+              
+              # 提取读写操作数
+              read_match = re.search(r'read:\s+(\d+)', content)
+              if read_match:
+                  results['read_queries'] = int(read_match.group(1))
+              
+              write_match = re.search(r'write:\s+(\d+)', content)
+              if write_match:
+                  results['write_queries'] = int(write_match.group(1))
+              
+              return results
+          
+          def generate_report(report_dir):
+              """生成性能对比报告"""
+              
+              # 收集所有测试结果
+              results = {}
+              for filename in os.listdir(report_dir):
+                  if filename.endswith('.txt'):
+                      filepath = os.path.join(report_dir, filename)
+                      # 解析文件名: {db}_{test_type}_threads_{n}.txt
+                      parts = filename.replace('.txt', '').split('_')
+                      
+                      db = parts[0]  # pg 或 mysql
+                      test_type = '_'.join(parts[1:-2])  # oltp_read_write 等
+                      threads = parts[-1]
+                      
+                      key = f"{db}_{test_type}_{threads}"
+                      results[key] = parse_sysbench_result(filepath)
+              
+              # 生成 Markdown 报告
+              report_lines = []
+              report_lines.append("# PostgreSQL vs MySQL (Percona Server) 性能对比报告")
+              report_lines.append("")
+              report_lines.append(f"**测试日期**: {datetime.now().strftime('%Y年%m月%d日 %H:%M:%S')}")
+              report_lines.append("")
+              report_lines.append("## 测试环境")
+              report_lines.append("")
+              report_lines.append("- **操作系统**: Ubuntu Latest (GitHub Actions)")
+              report_lines.append("- **CPU**: GitHub Actions Runner (2 核)")
+              report_lines.append("- **内存**: 7 GB")
+              report_lines.append("- **PostgreSQL 版本**: 系统默认版本")
+              report_lines.append("- **MySQL 版本**: Percona Server 最新版")
+              report_lines.append("")
+              report_lines.append("## 测试配置")
+              report_lines.append("")
+              report_lines.append(f"- **测试工具**: Sysbench")
+              report_lines.append(f"- **表数量**: ${{ env.SYSBENCH_TABLES }} 张")
+              report_lines.append(f"- **表大小**: ${{ env.SYSBENCH_TABLE_SIZE }} 行")
+              report_lines.append(f"- **测试时长**: ${{ env.SYSBENCH_TIME }} 秒")
+              report_lines.append(f"- **并发线程**: ${{ env.SYSBENCH_THREADS }}")
+              report_lines.append("")
+              
+              # 定义测试类型
+              test_types = [
+                  ('oltp_read_write', 'OLTP 读写混合测试'),
+                  ('oltp_read_only', 'OLTP 只读测试'),
+                  ('oltp_write_only', 'OLTP 只写测试')
+              ]
+              
+              threads_list = "${{ env.SYSBENCH_THREADS }}".split(',')
+              
+              for test_key, test_name in test_types:
+                  report_lines.append(f"## {test_name}")
+                  report_lines.append("")
+                  
+                  # 创建对比表格
+                  report_lines.append("### 性能指标对比")
+                  report_lines.append("")
+                  report_lines.append("| 线程数 | 数据库 | TPS | QPS | 平均延迟 (ms) | 95%延迟 (ms) | 总事务数 |")
+                  report_lines.append("|:------:|:------:|:----:|:----:|:-------------:|:------------:|:--------:|")
+                  
+                  for threads in threads_list:
+                      pg_key = f"pg_{test_key}_{threads}"
+                      mysql_key = f"mysql_{test_key}_{threads}"
+                      
+                      if pg_key in results:
+                          pg_res = results[pg_key]
+                          report_lines.append(
+                              f"| {threads} | PostgreSQL | {pg_res['tps']:.2f} | {pg_res['qps']:.2f} | "
+                              f"{pg_res['latency_avg']:.2f} | {pg_res['latency_95']:.2f} | {pg_res['total_events']} |"
+                          )
+                      
+                      if mysql_key in results:
+                          mysql_res = results[mysql_key]
+                          report_lines.append(
+                              f"| {threads} | MySQL | {mysql_res['tps']:.2f} | {mysql_res['qps']:.2f} | "
+                              f"{mysql_res['latency_avg']:.2f} | {mysql_res['latency_95']:.2f} | {mysql_res['total_events']} |"
+                          )
+                  
+                  report_lines.append("")
+                  
+                  # 添加性能对比分析
+                  report_lines.append("### 性能对比分析")
+                  report_lines.append("")
+                  
+                  for threads in threads_list:
+                      pg_key = f"pg_{test_key}_{threads}"
+                      mysql_key = f"mysql_{test_key}_{threads}"
+                      
+                      if pg_key in results and mysql_key in results:
+                          pg_res = results[pg_key]
+                          mysql_res = results[mysql_key]
+                          
+                          report_lines.append(f"**{threads} 线程下的对比**:")
+                          report_lines.append("")
+                          
+                          # TPS 对比
+                          if pg_res['tps'] > mysql_res['tps']:
+                              tps_diff = ((pg_res['tps'] - mysql_res['tps']) / mysql_res['tps'] * 100)
+                              report_lines.append(f"- **TPS**: PostgreSQL 比 MySQL 高 {tps_diff:.2f}%")
+                          else:
+                              tps_diff = ((mysql_res['tps'] - pg_res['tps']) / pg_res['tps'] * 100)
+                              report_lines.append(f"- **TPS**: MySQL 比 PostgreSQL 高 {tps_diff:.2f}%")
+                          
+                          # QPS 对比
+                          if pg_res['qps'] > mysql_res['qps']:
+                              qps_diff = ((pg_res['qps'] - mysql_res['qps']) / mysql_res['qps'] * 100)
+                              report_lines.append(f"- **QPS**: PostgreSQL 比 MySQL 高 {qps_diff:.2f}%")
+                          else:
+                              qps_diff = ((mysql_res['qps'] - pg_res['qps']) / pg_res['qps'] * 100)
+                              report_lines.append(f"- **QPS**: MySQL 比 PostgreSQL 高 {qps_diff:.2f}%")
+                          
+                          # 延迟对比 (越低越好)
+                          if pg_res['latency_avg'] < mysql_res['latency_avg']:
+                              lat_diff = ((mysql_res['latency_avg'] - pg_res['latency_avg']) / mysql_res['latency_avg'] * 100)
+                              report_lines.append(f"- **平均延迟**: PostgreSQL 比 MySQL 低 {lat_diff:.2f}%")
+                          else:
+                              lat_diff = ((pg_res['latency_avg'] - mysql_res['latency_avg']) / pg_res['latency_avg'] * 100)
+                              report_lines.append(f"- **平均延迟**: MySQL 比 PostgreSQL 低 {lat_diff:.2f}%")
+                          
+                          report_lines.append("")
+                  
+                  report_lines.append("")
+              
+              # 总结
+              report_lines.append("## 总体性能总结")
+              report_lines.append("")
+              report_lines.append("### PostgreSQL 优势场景")
+              report_lines.append("")
+              report_lines.append("- 复杂查询和分析型工作负载")
+              report_lines.append("- 需要强 ACID 保证的场景")
+              report_lines.append("- 支持丰富的数据类型和扩展")
+              report_lines.append("- 地理空间数据处理 (PostGIS)")
+              report_lines.append("")
+              report_lines.append("### MySQL (Percona) 优势场景")
+              report_lines.append("")
+              report_lines.append("- 简单的读写密集型 Web 应用")
+              report_lines.append("- 需要主从复制的高可用架构")
+              report_lines.append("- 与 PHP/WordPress 等生态系统集成")
+              report_lines.append("- 较低的资源占用")
+              report_lines.append("")
+              report_lines.append("## 建议")
+              report_lines.append("")
+              report_lines.append("根据实际测试结果，建议:")
+              report_lines.append("")
+              report_lines.append("1. **如果追求吞吐量 (TPS/QPS)**，选择在该指标下表现更好的数据库")
+              report_lines.append("2. **如果追求低延迟**，选择平均延迟和 95% 延迟更低的数据库")
+              report_lines.append("3. **考虑实际业务场景**，OLTP 场景可能更接近读写混合或只读测试")
+              report_lines.append("4. **评估资源消耗**，在生产环境中还需考虑内存、磁盘 I/O 等因素")
+              report_lines.append("")
+              report_lines.append("---")
+              report_lines.append("")
+              report_lines.append(f"*报告生成时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}*")
+              
+              return '\n'.join(report_lines)
+          
+          if __name__ == '__main__':
+              report_dir = sys.argv[1] if len(sys.argv) > 1 else 'reports'
+              final_report = sys.argv[2] if len(sys.argv) > 2 else 'performance_report.md'
+              
+              report_content = generate_report(report_dir)
+              
+              with open(final_report, 'w', encoding='utf-8') as f:
+                  f.write(report_content)
+              
+              print(f"报告已生成: {final_report}")
+          EOF
+          
+          chmod +x /tmp/generate_report.py
+          python3 /tmp/generate_report.py "$REPORT_DIR" "$FINAL_REPORT"
+          
+          echo "生成的报告:"
+          cat "$FINAL_REPORT"
+
+      - name: 上传性能报告
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-reports
+          path: |
+            ${{ github.workspace }}/reports/*.txt
+            ${{ github.workspace }}/reports/*.md
+          retention-days: 30
+
+      - name: 输出报告摘要
+        run: |
+          REPORT_DIR="${{ github.workspace }}/reports"
+          FINAL_REPORT=$(find "$REPORT_DIR" -name "性能对比报告_*.md" | head -1)
+          
+          if [ -f "$FINAL_REPORT" ]; then
+            echo "## 性能测试完成 ✅" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            cat "$FINAL_REPORT" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ 报告生成失败" >> $GITHUB_STEP_SUMMARY
+          fi
