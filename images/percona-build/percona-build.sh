@@ -86,7 +86,6 @@ make install || true
 
 cd ..
 
-yum install -y help2man
 # 克隆官方仓库（或镜像）
 git clone https://git.savannah.gnu.org/git/autoconf.git
 cd autoconf
