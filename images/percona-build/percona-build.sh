@@ -97,8 +97,8 @@ make install
 cd ..
 
 
-wget https://www.freedesktop.org/software/pkg-config/releases/pkg-config-0.29.2.tar.gz 
-tar xzf pkg-config-0.29.2.tar.gz 
+wget https://pkgconfig.freedesktop.org/releases/pkg-config-0.29.2.tar.gz
+tar xzf pkg-config-0.29.2.tar.gz
 cd pkg-config-0.29.2
 ./configure --prefix=/usr/local 
 make -j$(nproc) 
