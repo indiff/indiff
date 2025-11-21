@@ -97,6 +97,17 @@ make install
 cd ..
 
 
+wget https://www.freedesktop.org/software/pkg-config/releases/pkg-config-0.29.2.tar.gz 
+tar xzf pkg-config-0.29.2.tar.gz 
+cd pkg-config-0.29.2
+./configure --prefix=/usr/local 
+make -j$(nproc) 
+make install
+/usr/local/bin/pkg-config --version
+pkg-config --version
+
+
+
 # yum install pkgconfig -y
 git clone --filter=blob:none --depth 1 https://git.openldap.org/openldap/openldap.git
 cd openldap
