@@ -87,7 +87,7 @@ make install || true
 cd ..
 
 # 克隆官方仓库（或镜像）
-git clone https://git.savannah.gnu.org/git/autoconf.git
+git clone http://git.sv.gnu.org/r/autoconf.git
 cd autoconf
 ./bootstrap     # 如果存在
 ./configure --prefix=/usr/local
@@ -107,13 +107,12 @@ make install
 pkg-config --version
 
 
-
 # yum install pkgconfig -y
 git clone --filter=blob:none --depth 1 https://git.openldap.org/openldap/openldap.git
 cd openldap
 git submodule update --init --recursive
 # autoreconf -fi
-/usr/local/bin/autoreconf
+/usr/local/bin/autoreconf -fi
 mkdir obj
 cd obj
 env CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ CPPFLAGS="-I$DEPS_DST/include " \
