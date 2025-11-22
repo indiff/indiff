@@ -68,7 +68,6 @@ export LD_LIBRARY_PATH="/opt/gcc-indiff/lib64:$DEPS_DST/lib:$DEPS_DST/lib64${LD_
 git clone --filter=blob:none --depth 1 https://github.com/cyrusimap/cyrus-sasl.git
 cd cyrus-sasl
 # sh autogen.sh
-
 # export CFLAGS="-Wall "
 ./autogen.sh --with-openssl="$DEPS_DST" --prefix="$DEPS_DST"
     # --with-staticsasl
@@ -76,50 +75,45 @@ env LDFLAGS="/opt/gcc-indiff/lib64:$DEPS_DST/lib:$DEPS_DST/lib64${LD_LIBRARY_PAT
 make install || true
 # make -j$(nproc)
 # make install
-
 cd ..
 
 # 克隆官方仓库（或镜像）
 git clone https://github.com/autotools-mirror/autoconf.git
 cd autoconf
-git submodule update --init --recursive
 ./bootstrap     # 如果存在
-./configure --prefix=/usr/local
+./configure --prefix=/usr
 make -j$(nproc)
 make install
-/usr/local/bin/autoconf --version
 cd ..
 
 pkg-config --version || true
 wget https://pkgconfig.freedesktop.org/releases/pkg-config-0.29.2.tar.gz
 tar xzf pkg-config-0.29.2.tar.gz
 cd pkg-config-0.29.2
-./configure --prefix=/usr/local --with-internal-glib
+./configure --prefix=/usr --with-internal-glib
 make CFLAGS="-Ubool -std=gnu11 -O2" -j$(nproc)
 make install
-/usr/local/bin/pkg-config --version
-rm -f /usr/bin/pkg-config
-ln -sf /usr/local/bin/pkg-config /usr/bin/pkg-config
 pkg-config --version
 cd ..
 
 # insatll automake
 git clone --depth=1 https://github.com/autotools-mirror/automake.git
 cd automake
-git submodule update --init --recursive
 ./bootstrap
-./configure --prefix=/usr/local
+./configure --prefix=/usr
 make -j$(nproc)
 make install
 cd ..
 
 
- # insatll libtool
-git clone --depth=1 https://github.com/autotools-mirror/libtool.git
-cd libtool
-git submodule update --init --recursive
-./bootstrap
-./configure --prefix=/usr/local
+# insatll libtool
+# git clone --depth=1 https://https.git.savannah.gnu.org/git/libtool.git
+wget http://mirrors.tencent.com/gnu/libtool/libtool-2.5.4.tar.gz
+tar -xzf libtool-2.5.4.tar.gz
+cd libtool-2.5.4
+./bootstrap     # 如果存在
+env CC=/opt/mygcc/bin/gcc CXX=/opt/mygcc/bin/g++ CFLAGS="$OPT_FLAGS" CXXFLAGS="$OPT_FLAGS" \
+./configure --prefix=/usr
 make -j$(nproc)
 make install
 cd ..
