@@ -97,6 +97,8 @@ cd pkg-config-0.29.2
 make CFLAGS="-Ubool -std=gnu11 -O2" -j$(nproc)
 make install
 /usr/local/bin/pkg-config --version
+rm -f /usr/bin/pkg-config
+ln -sf /usr/local/bin/pkg-config /usr/bin/pkg-config
 pkg-config --version
 
 
