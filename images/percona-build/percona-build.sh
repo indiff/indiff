@@ -97,10 +97,12 @@ pkg-config --version
 cd ..
 
 # insatll automake
-git clone --depth=1 https://github.com/autotools-mirror/automake.git
-cd automake
-./bootstrap
-./configure --prefix=/usr
+# git clone --depth=1 https://github.com/autotools-mirror/automake.git
+wget https://ftp.gnu.org/gnu/automake/automake-1.18.1.tar.gz
+tar -xzf automake-1.18.1.tar.gz
+cd automake-1.18.1
+./bootstrap     # 如果存在
+./configure --prefix=$PREFIX_DIR
 make -j$(nproc)
 make install
 cd ..
@@ -111,8 +113,7 @@ cd ..
 wget http://mirrors.tencent.com/gnu/libtool/libtool-2.5.4.tar.gz
 tar -xzf libtool-2.5.4.tar.gz
 cd libtool-2.5.4
-./bootstrap     # 如果存在
-env CC=/opt/mygcc/bin/gcc CXX=/opt/mygcc/bin/g++ CFLAGS="$OPT_FLAGS" CXXFLAGS="$OPT_FLAGS" \
+./bootstrap  --force     # 如果存在
 ./configure --prefix=/usr
 make -j$(nproc)
 make install
