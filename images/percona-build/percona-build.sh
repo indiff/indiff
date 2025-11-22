@@ -118,6 +118,16 @@ cd libtool-2.5.4
 make -j$(nproc)
 make install
 cd ..
+
+wget https://ftp.gnu.org/gnu/m4/m4-1.4.20.tar.gz
+tar -xzf m4-1.4.20.tar.gz
+cd m4-1.4.20
+env CC=/opt/gcc-indiff/bin/gcc CFLAGS="-I/opt/mygcc/include " \
+./configure --prefix=/usr
+make -j$(nproc)
+make install
+cd ..
+m4 --version
           
 # yum install pkgconfig -y
 git clone --filter=blob:none --depth 1 https://git.openldap.org/openldap/openldap.git
