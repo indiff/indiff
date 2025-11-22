@@ -89,11 +89,11 @@ make install
 /usr/local/bin/autoconf --version
 cd ..
 
-
+pkg-config --version || true
 wget https://pkgconfig.freedesktop.org/releases/pkg-config-0.29.2.tar.gz
 tar xzf pkg-config-0.29.2.tar.gz
 cd pkg-config-0.29.2
-./configure --prefix=/usr/local 
+./configure --prefix=/usr/local --with-internal-glib
 make -j$(nproc) 
 make install
 /usr/local/bin/pkg-config --version
