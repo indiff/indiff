@@ -11,14 +11,7 @@ DEPS_SRC="$VCPKG_ROOT/installed/$TRIPLET"
 DEPS_DST="$PERCONA_INSTALL_PREFIX"
 mkdir -p "$DEPS_DST"/{include,lib,lib64}
 
-if [[ -z "$PERCONA_BRANCH" ]]; then
-    git clone --filter=blob:none --depth 1 https://github.com/percona/percona-server.git -b 8.0 server
-else
-    git clone --filter=blob:none --depth 1 https://github.com/percona/percona-server.git -b $PERCONA_BRANCH server
-fi
 
-cd server
-git submodule update --init --recursive
 
 
 DEPS_SRC="$VCPKG_ROOT/installed/x64-linux"
@@ -87,7 +80,7 @@ make install || true
 cd ..
 
 # 克隆官方仓库（或镜像）
-git clone http://git.sv.gnu.org/r/autoconf.git
+git clone https://https.git.savannah.gnu.org/git/autoconf.git
 cd autoconf
 ./bootstrap     # 如果存在
 ./configure --prefix=/usr/local
@@ -125,6 +118,14 @@ make -j$(nproc)
 make install
 
 
+if [[ -z "$PERCONA_BRANCH" ]]; then
+    git clone --filter=blob:none --depth 1 https://github.com/percona/percona-server.git -b 8.0 /workspace/server
+else
+    git clone --filter=blob:none --depth 1 https://github.com/percona/percona-server.git -b $PERCONA_BRANCH /workspace/server
+fi
+
+cd /workspace/server
+git submodule update --init --recursive
 
 # build persona mysql
 mkdir -p /workspace/server/build /workspace/server/boost
