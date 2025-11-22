@@ -80,8 +80,9 @@ make install || true
 cd ..
 
 # 克隆官方仓库（或镜像）
-git clone https://git.savannah.gnu.org/git/autoconf.git
+git clone https://github.com/autotools-mirror/autoconf.git
 cd autoconf
+git submodule update --init --recursive
 ./bootstrap     # 如果存在
 ./configure --prefix=/usr/local
 make -j$(nproc)
@@ -103,8 +104,9 @@ pkg-config --version
 cd ..
 
 # insatll automake
-git clone --depth=1 https://git.savannah.gnu.org/git/automake.git
+git clone --depth=1 https://github.com/autotools-mirror/automake.git
 cd automake
+git submodule update --init --recursive
 ./bootstrap
 ./configure --prefix=/usr/local
 make -j$(nproc)
@@ -113,8 +115,9 @@ cd ..
 
 
  # insatll libtool
-git clone --depth=1 https://git.savannah.gnu.org/git/libtool.git
+git clone --depth=1 https://github.com/autotools-mirror/libtool.git
 cd libtool
+git submodule update --init --recursive
 ./bootstrap
 ./configure --prefix=/usr/local
 make -j$(nproc)
