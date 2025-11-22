@@ -80,7 +80,7 @@ make install || true
 cd ..
 
 # 克隆官方仓库（或镜像）
-git clone https://https.git.savannah.gnu.org/git/autoconf.git
+git clone https://git.savannah.gnu.org/git/autoconf.git
 cd autoconf
 ./bootstrap     # 如果存在
 ./configure --prefix=/usr/local
@@ -103,7 +103,7 @@ pkg-config --version
 cd ..
 
 # insatll automake
-git clone --depth=1 https://https.git.savannah.gnu.org/git/automake.git
+git clone --depth=1 https://git.savannah.gnu.org/git/automake.git
 cd automake
 ./bootstrap
 ./configure --prefix=/usr/local
@@ -113,7 +113,7 @@ cd ..
 
 
  # insatll libtool
-git clone --depth=1 https://https.git.savannah.gnu.org/git/libtool.git
+git clone --depth=1 https://git.savannah.gnu.org/git/libtool.git
 cd libtool
 ./bootstrap
 ./configure --prefix=/usr/local
