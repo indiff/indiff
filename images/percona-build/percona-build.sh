@@ -101,7 +101,15 @@ rm -f /usr/bin/pkg-config
 ln -sf /usr/local/bin/pkg-config /usr/bin/pkg-config
 pkg-config --version
 
-
+# insatll automake
+git clone --depth=1 https://https.git.savannah.gnu.org/git/automake.git
+cd automake
+./bootstrap     # 如果存在
+./configure --prefix=/usr/local
+make -j$(nproc)
+make install
+cd ..
+          
 # yum install pkgconfig -y
 git clone --filter=blob:none --depth 1 https://git.openldap.org/openldap/openldap.git
 cd openldap
