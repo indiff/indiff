@@ -135,7 +135,7 @@ cmake .. -G Ninja \
     -DCMAKE_INSTALL_RPATH='$ORIGIN/../lib64:$ORIGIN/../lib' \
     -DCMAKE_BUILD_RPATH='$ORIGIN/../lib64:$ORIGIN/../lib' \
     -DBUILD_CONFIG=mysql_release \
-    -DWITH_DOCS=OFF -DWITH_MAN_PAGES=OFF
+    -DWITH_DOCS=OFF -DWITH_MAN_PAGES=OFF -DMYSQL_SERVER_SUFFIX="-indiff"
 
 # cmake .. -LH | tee /workspace/cmake-cache-vars-centos7.txt
 
