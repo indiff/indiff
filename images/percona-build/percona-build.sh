@@ -221,7 +221,7 @@ cmake .. -G Ninja \
     -DWITH_XPLUGIN_TESTS=0 \
     -DWITH_NUMA=1 \
     -DALLOW_NO_SSE42=ON \
-    -DWITH_DOCS=OFF -DWITH_MAN_PAGES=OFF
+    -DWITH_DOCS=OFF -DWITH_MAN_PAGES=OFF -DMYSQL_SERVER_SUFFIX="-indiff"
 
 cmake -LAH -N . | tee /workspace/cmake-cache-vars-centos7.txt
 
