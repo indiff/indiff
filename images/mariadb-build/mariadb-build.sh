@@ -104,7 +104,7 @@ cmake .. -G Ninja \
     -DCONC_WITH_{UNITTEST,SSL}=OFF \
     -DWITH_TESTS=0 \
     -DWITH_XPLUGIN_TESTS=0 \
-    -DWITH_DOCS=OFF -DWITH_MAN_PAGES=OFF
+    -DWITH_DOCS=OFF -DWITH_MAN_PAGES=OFF -DMYSQL_SERVER_SUFFIX="-indiff"
 
 # cmake .. -LH | tee /workspace/cmake-cache-vars-omysql-centos7.txt
 
