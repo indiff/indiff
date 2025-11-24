@@ -193,6 +193,8 @@ cd /workspace/server/build
 # 避免外部 protobuf 干扰
 unset PROTOC
 cmake .. -G Ninja \
+    -DCMAKE_C_FLAGS="-I$DEPS_DST/include " \
+    -DCMAKE_CXX_FLAGS="-I$DEPS_DST/include " \
     -DCMAKE_INSTALL_PREFIX=$DEPS_DST \
     -DCMAKE_EXE_LINKER_FLAGS="-L/usr/lib64 -L/opt/gcc-indiff/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--no-as-needed -ldl" \
     -DCMAKE_SHARED_LINKER_FLAGS="-L/usr/lib64 -L/opt/gcc-indiff/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--no-as-needed -ldl" \
@@ -210,9 +212,12 @@ cmake .. -G Ninja \
     -DCMAKE_BUILD_RPATH='/opt/gcc-indiff/lib64:$ORIGIN/../lib:$ORIGIN/../lib64' \
     -DCMAKE_INSTALL_RPATH_USE_LINK_PATH=ON \
     -DWITH_AUTHENTICATION_LDAP=ON \
+    -DWITH_PAM=ON \
+    -DWITH_INNODB_MEMCACHED=1 \
     -DWITH_UNIT_TESTS=0 \
     -DWITH_TESTS=0 \
     -DWITH_XPLUGIN_TESTS=0 \
+    -DALLOW_NO_SSE42=ON \
     -DWITH_DOCS=OFF -DWITH_MAN_PAGES=OFF
 
 cmake -LAH -N . | tee /workspace/cmake-cache-vars-centos7.txt
