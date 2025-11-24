@@ -130,10 +130,13 @@ cd ..
 m4 --version
           
 # yum install pkgconfig -y
-git clone --filter=blob:none --depth 1 https://git.openldap.org/openldap/openldap.git
-cd openldap
+# git clone --filter=blob:none --depth 1 https://git.openldap.org/openldap/openldap.git
+# cd openldap
+wget https://openldap.org/software/download/OpenLDAP/openldap-release/openldap-2.6.9.tgz
+tar -xzf openldap-2.6.9.tgz
+cd openldap-2.6.9
 OPENLADP_DIR=$(pwd)
-git submodule update --init --recursive
+# git submodule update --init --recursive
 #autoreconf -fi
 mkdir obj
 cd obj
@@ -148,6 +151,7 @@ env CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ CPPFLAGS="-I$DEPS_DST
     --enable-mdb \
     --enable-dynamic \
     --enable-modules \
+    --enable-versioning \
     --enable-slapd \
     --enable-overlays \
     --enable-debug \
@@ -155,11 +159,15 @@ env CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ CPPFLAGS="-I$DEPS_DST
     --enable-accesslog \
     --enable-rlookups \
     --enable-crypt \
+    --enable-lmpasswd \
     --enable-spasswd \
     --enable-homedir=mod \
     --enable-memberof=mod  \
     --enable-refint=mod \
-    --enable-syncprov=mod
+    --enable-syncprov=mod \
+    --enable-balancer=mod \
+    --with-pic \
+    --with-gnu-ld
 # env LDFLAGS="/opt/gcc-indiff/lib64:$DEPS_DST/lib:$DEPS_DST/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++  \
 make depend
 make -j$(nproc) LDAP_INC="-I$OPENLADP_DIR/include \
