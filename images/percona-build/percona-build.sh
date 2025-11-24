@@ -139,7 +139,23 @@ cd obj
 env CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ CPPFLAGS="-I$DEPS_DST/include " \
     CFLAGS="-I$DEPS_DST/include " \
     LDFLAGS="-L$DEPS_DST/lib " \
-    ../configure --prefix=$DEPS_DST --with-cyrus-sasl --with-tls="openssl"
+    ../configure --prefix=$DEPS_DST --with-cyrus-sasl --with-tls="openssl" \
+    --enable-mdb \
+    --disable-bdb \
+    --disable-hdb \
+    --enable-dynamic \
+    --enable-modules \
+    --enable-slapd \
+    --enable-overlays \
+    --enable-debug \
+    --enable-syslog  \
+    --enable-rlookups \
+    --enable-crypt \
+    --enable-spasswd \
+    --enable-homedir=mod \
+    --enable-memberof=mod  \
+    --enable-refint=mod \
+    --enable-syncprov=mod 
 # env LDFLAGS="/opt/gcc-indiff/lib64:$DEPS_DST/lib:$DEPS_DST/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++  \
 make depend
 make -j$(nproc)
