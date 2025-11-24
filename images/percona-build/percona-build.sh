@@ -132,15 +132,16 @@ m4 --version
 # yum install pkgconfig -y
 git clone --filter=blob:none --depth 1 https://git.openldap.org/openldap/openldap.git
 cd openldap
+OPENLADP_DIR=$(pwd)
 git submodule update --init --recursive
 #autoreconf -fi
 mkdir obj
 cd obj
 env CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ CPPFLAGS="-I$DEPS_DST/include " \
-    CFLAGS="-I$DEPS_DST/include -I../include \
- -I../servers/slapd \
- -I../servers/lloadd \
- -I../clients/tools" \
+    CFLAGS="-I$DEPS_DST/include -I$OPENLADP_DIR/include \
+ -I$OPENLADP_DIR/servers/slapd \
+ -I$OPENLADP_DIR/servers/lloadd \
+ -I$OPENLADP_DIR/clients/tools" \
     LDFLAGS="-L$DEPS_DST/lib " \
     ../configure --prefix=$DEPS_DST --with-cyrus-sasl --with-tls="openssl" \
     --build=x86_64-pc-linux-gnu --host=x86_64-pc-linux-gnu --target=x86_64-pc-linux-gnu \
@@ -161,10 +162,10 @@ env CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ CPPFLAGS="-I$DEPS_DST
     --enable-syncprov=mod
 # env LDFLAGS="/opt/gcc-indiff/lib64:$DEPS_DST/lib:$DEPS_DST/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++  \
 make depend
-make -j$(nproc) LDAP_INC="-I../include \
- -I../servers/slapd \
- -I../servers/lloadd \
- -I../clients/tools"
+make -j$(nproc) LDAP_INC="-I$OPENLADP_DIR/include \
+ -I$OPENLADP_DIR/servers/slapd \
+ -I$OPENLADP_DIR/servers/lloadd \
+ -I$OPENLADP_DIR/clients/tools"
 make install
 
 
