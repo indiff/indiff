@@ -157,7 +157,10 @@ env CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ CPPFLAGS="-I$DEPS_DST
     --enable-syncprov=mod 
 # env LDFLAGS="/opt/gcc-indiff/lib64:$DEPS_DST/lib:$DEPS_DST/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++  \
 make depend
-make -j$(nproc)
+make -j$(nproc) LDAP_INC="-I../include \
+ -I../servers/slapd \
+ -I../servers/lloadd \
+ -I../clients/tools"
 make install
 
 
