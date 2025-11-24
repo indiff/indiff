@@ -192,10 +192,12 @@ cd /workspace/server/build
 
 # 避免外部 protobuf 干扰
 unset PROTOC
+export PKG_CONFIG_PATH=$DEPS_DST/lib/lib/pkgconfig:$PKG_CONFIG_PATH
 cmake .. -G Ninja \
     -DCMAKE_C_FLAGS="-I$DEPS_DST/include " \
     -DCMAKE_CXX_FLAGS="-I$DEPS_DST/include " \
-    -DCMAKE_INSTALL_PREFIX=$DEPS_DST \
+    -DCMAKE_PREFIX_PATH="$DEPS_DST/lib" \
+    -DCMAKE_INSTALL_PREFIX="$DEPS_DST" \
     -DCMAKE_EXE_LINKER_FLAGS="-L/usr/lib64 -L/opt/gcc-indiff/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--no-as-needed -ldl" \
     -DCMAKE_SHARED_LINKER_FLAGS="-L/usr/lib64 -L/opt/gcc-indiff/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--no-as-needed -ldl" \
     -DCMAKE_MODULE_LINKER_FLAGS="-L/usr/lib64 -L/opt/gcc-indiff/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--no-as-needed -ldl" \
@@ -217,6 +219,7 @@ cmake .. -G Ninja \
     -DWITH_UNIT_TESTS=0 \
     -DWITH_TESTS=0 \
     -DWITH_XPLUGIN_TESTS=0 \
+    -DWITH_NUMA=1 \
     -DALLOW_NO_SSE42=ON \
     -DWITH_DOCS=OFF -DWITH_MAN_PAGES=OFF
 
