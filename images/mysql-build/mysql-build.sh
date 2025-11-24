@@ -158,7 +158,7 @@ cmake .. -G Ninja \
     -DWITH_LIBEVENT=system -DWITH_LZ4=system -DWITH_ZLIB=system -DWITH_ZSTD=system \
     -DCMAKE_INSTALL_RPATH='$ORIGIN/../lib64:$ORIGIN/../lib' \
     -DCMAKE_BUILD_RPATH='$ORIGIN/../lib64:$ORIGIN/../lib' \
-    -DWITH_DOCS=OFF -DWITH_MAN_PAGES=OFF
+    -DWITH_DOCS=OFF -DWITH_MAN_PAGES=OFF -DMYSQL_SERVER_SUFFIX="-indiff" 
 
 # cmake .. -LH | tee /workspace/cmake-cache-vars-omysql-centos7.txt
 
