@@ -137,9 +137,13 @@ git submodule update --init --recursive
 mkdir obj
 cd obj
 env CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ CPPFLAGS="-I$DEPS_DST/include " \
-    CFLAGS="-I$DEPS_DST/include " \
+    CFLAGS="-I$DEPS_DST/include -I../include \
+ -I../servers/slapd \
+ -I../servers/lloadd \
+ -I../clients/tools" \
     LDFLAGS="-L$DEPS_DST/lib " \
     ../configure --prefix=$DEPS_DST --with-cyrus-sasl --with-tls="openssl" \
+    --build=x86_64-pc-linux-gnu --host=x86_64-pc-linux-gnu --target=x86_64-pc-linux-gnu \
     --enable-mdb \
     --enable-dynamic \
     --enable-modules \
@@ -154,7 +158,7 @@ env CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ CPPFLAGS="-I$DEPS_DST
     --enable-homedir=mod \
     --enable-memberof=mod  \
     --enable-refint=mod \
-    --enable-syncprov=mod 
+    --enable-syncprov=mod
 # env LDFLAGS="/opt/gcc-indiff/lib64:$DEPS_DST/lib:$DEPS_DST/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++  \
 make depend
 make -j$(nproc) LDAP_INC="-I../include \
