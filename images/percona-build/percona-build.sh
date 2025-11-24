@@ -141,14 +141,13 @@ env CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ CPPFLAGS="-I$DEPS_DST
     LDFLAGS="-L$DEPS_DST/lib " \
     ../configure --prefix=$DEPS_DST --with-cyrus-sasl --with-tls="openssl" \
     --enable-mdb \
-    --disable-bdb \
-    --disable-hdb \
     --enable-dynamic \
     --enable-modules \
     --enable-slapd \
     --enable-overlays \
     --enable-debug \
     --enable-syslog  \
+    --enable-accesslog \
     --enable-rlookups \
     --enable-crypt \
     --enable-spasswd \
