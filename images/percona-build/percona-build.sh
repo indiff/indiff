@@ -3,9 +3,7 @@
 set -xe
 
 
-PROTOC_BASENAME=$(basename $VCPKG_ROOT/installed/x64-linux-dynamic/tools/protobuf/protoc-*)
-PROTOC_LIB_BASENAME=$(basename $VCPKG_ROOT/installed/x64-linux-dynamic/lib/libprotoc.so.*)
-chmod +x $VCPKG_ROOT/installed/x64-linux-dynamic/tools/protobuf/$PROTOC_BASENAME
+
 TRIPLET=x64-linux
 DEPS_SRC="$VCPKG_ROOT/installed/$TRIPLET"
 DEPS_DST="$PERCONA_INSTALL_PREFIX"
@@ -24,6 +22,14 @@ rsync -a --copy-links "$DEPS_SRC/lib/"      "$DEPS_DST/lib/"      || true
 # rsync -a --copy-links "$DEPS_SRC/lib64/"    "$DEPS_DST/lib64/"    || true
 rsync -a --copy-links "$DEPS_SRC/tools/protobuf/"    "$DEPS_DST/tools/"    || true
 
+# PROTOC_BASENAME=$(basename $VCPKG_ROOT/installed/x64-linux-dynamic/tools/protobuf/protoc-*)
+# PROTOC_LIB_BASENAME=$(basename $VCPKG_ROOT/installed/x64-linux-dynamic/lib/libprotoc.so.*)
+# chmod +x $VCPKG_ROOT/installed/x64-linux-dynamic/tools/protobuf/$PROTOC_BASENAME
+
+PROTOC_BASENAME=$(basename $DEPS_DST/tools/protobuf/protoc-*)
+PROTOC_LIB_BASENAME=$(basename $DEPS_DST/lib/libprotoc.so.*)
+chmod +x $DEPS_DST/tools/protobuf/$PROTOC_BASENAME
+
 rsync -a "/opt/gcc-indiff/include/" "$DEPS_DST/include/"
 rsync -a --copy-links "/opt/gcc-indiff/lib64/"    "$DEPS_DST/lib64/"    || true
 
@@ -33,9 +39,8 @@ DEPS_SRC="$VCPKG_ROOT/installed/x64-linux-dynamic"
 rsync -a "$DEPS_SRC/include/" "$DEPS_DST/include/"
 rsync -a "$DEPS_SRC/lib/"      "$DEPS_DST/lib/"      || true
 # rsync -a "$DEPS_SRC/lib64/"    "$DEPS_DST/lib64/"    || true
-        
-rsync -a "/opt/gcc-indiff/include/" "$DEPS_DST/include/"
-rsync -a "/opt/gcc-indiff/lib64/"    "$DEPS_DST/lib64/"    || true
+ls "$DEPS_SRC/lib/*.a" || true
+ls "$DEPS_DST/lib/*.a" || true
 
 # 如果宿主镜像/系统有 /lib64/libjemalloc.so.1 同步到目标目录
 if [ -f /lib64/libjemalloc.so.1 ]; then
@@ -49,7 +54,6 @@ for d in lib lib64; do
 [[ -d "$DEPS_DST/$d/pkgconfig" ]] || mkdir -p "$DEPS_DST/$d/pkgconfig"
 rsync -a "$DEPS_SRC/$d/pkgconfig/" "$DEPS_DST/$d/pkgconfig/" 2>/dev/null || true
 done
-
 
 # 供 CMake/ld 查找 vcpkg 拷贝到 /opt 的头文件与库
 export CMAKE_PREFIX_PATH="$DEPS_DST${CMAKE_PREFIX_PATH:+:$CMAKE_PREFIX_PATH}"
