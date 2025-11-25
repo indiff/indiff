@@ -32,10 +32,11 @@ DEPS_SRC="$VCPKG_ROOT/installed/x64-linux-dynamic"
 # 2) 复制头文件与动态库（.so 与 .so.*）及 pkgconfig
 rsync -a "$DEPS_SRC/include/" "$DEPS_DST/include/"
 rsync -a "$DEPS_SRC/lib/"      "$DEPS_DST/lib/"      || true
-rsync -a --copy-links "$DEPS_SRC/tools/protobuf/"    "$DEPS_DST/tools/"    || true
-PROTOC_BASENAME=$(basename $DEPS_DST/tools/protoc-*)
-PROTOC_LIB_BASENAME=$(basename $DEPS_DST/lib/libprotoc.so.*)
-chmod +x $DEPS_DST/tools/$PROTOC_BASENAME
+
+# rsync -a --copy-links "$DEPS_SRC/tools/protobuf/"    "$DEPS_DST/tools/"    || true
+# PROTOC_BASENAME=$(basename $DEPS_DST/tools/protoc-*)
+# PROTOC_LIB_BASENAME=$(basename $DEPS_DST/lib/libprotoc.so.*)
+# chmod +x $DEPS_DST/tools/$PROTOC_BASENAME
 
 # rsync -a "$DEPS_SRC/lib64/"    "$DEPS_DST/lib64/"    || true
 ls "$DEPS_SRC/lib/*.a" || true
@@ -196,12 +197,14 @@ cd /workspace/server/build
 # 避免外部 protobuf 干扰
 unset PROTOC
 export PKG_CONFIG_PATH=$DEPS_DST/lib/pkgconfig:$PKG_CONFIG_PATH
+# -DPROTOBUF_PROTOC_LIBRARY="$DEPS_DST/lib/$PROTOC_LIB_BASENAME"  \
+# -DPROTOBUF_PROTOC_EXECUTABLE="$VCPKG_ROOT/installed/x64-linux-dynamic/tools/protobuf/$PROTOC_BASENAME"  \
 cmake .. -G Ninja \
     -DCMAKE_C_FLAGS="-I$DEPS_DST/include " \
     -DCMAKE_CXX_FLAGS="-I$DEPS_DST/include " \
     -DCMAKE_PREFIX_PATH="$DEPS_DST/lib" \
     -DCMAKE_INSTALL_PREFIX="$DEPS_DST" \
-    -DCMAKE_EXE_LINKER_FLAGS="-L/usr/lib64 -L/opt/gcc-indiff/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 $DEPS_DST/lib/libabsl_base.a $DEPS_DST/lib/libabsl_synchronization.a -Wl,--no-as-needed -ldl -labsl_raw_hash_set" \
+    -DCMAKE_EXE_LINKER_FLAGS="-L/usr/lib64 -L/opt/gcc-indiff/lib64 -L$DEPS_DST/lib -Wl,--no-as-needed -ldl " \
     -DCMAKE_SHARED_LINKER_FLAGS="-L/usr/lib64 -L/opt/gcc-indiff/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--no-as-needed -ldl" \
     -DCMAKE_MODULE_LINKER_FLAGS="-L/usr/lib64 -L/opt/gcc-indiff/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--no-as-needed -ldl" \
     -DWITH_BOOST=boost -DDOWNLOAD_BOOST=1 -DWITH_BOOST=../boost \
@@ -209,9 +212,7 @@ cmake .. -G Ninja \
     -DWITH_LZ4=system -DWITH_ZSTD=system -DWITH_SNAPPY=system -DWITH_JEMALLOC=system \
     -DWITH_SSL=system -DOPENSSL_ROOT_DIR="$DEPS_DST" \
     -DWITH_ICU=system \
-    -DWITH_PROTOBUF=system  \
-    -DPROTOBUF_PROTOC_LIBRARY="$DEPS_DST/lib/$PROTOC_LIB_BASENAME"  \
-    -DPROTOBUF_PROTOC_EXECUTABLE="$VCPKG_ROOT/installed/x64-linux-dynamic/tools/protobuf/$PROTOC_BASENAME"  \
+    -DWITH_PROTOBUF=bundle  \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_INSTALL_RPATH='$ORIGIN/../lib:$ORIGIN/../lib64' \
     -DCMAKE_BUILD_RPATH='/opt/gcc-indiff/lib64:$ORIGIN/../lib:$ORIGIN/../lib64' \
