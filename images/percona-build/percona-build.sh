@@ -33,9 +33,9 @@ DEPS_SRC="$VCPKG_ROOT/installed/x64-linux-dynamic"
 rsync -a "$DEPS_SRC/include/" "$DEPS_DST/include/"
 rsync -a "$DEPS_SRC/lib/"      "$DEPS_DST/lib/"      || true
 rsync -a --copy-links "$DEPS_SRC/tools/protobuf/"    "$DEPS_DST/tools/"    || true
-PROTOC_BASENAME=$(basename $DEPS_DST/tools/protobuf/protoc-*)
+PROTOC_BASENAME=$(basename $DEPS_DST/tools/protoc-*)
 PROTOC_LIB_BASENAME=$(basename $DEPS_DST/lib/libprotoc.so.*)
-chmod +x $DEPS_DST/tools/protobuf/$PROTOC_BASENAME
+chmod +x $DEPS_DST/tools/$PROTOC_BASENAME
 
 # rsync -a "$DEPS_SRC/lib64/"    "$DEPS_DST/lib64/"    || true
 ls "$DEPS_SRC/lib/*.a" || true
