@@ -192,13 +192,13 @@ cd /workspace/server/build
 
 # 避免外部 protobuf 干扰
 unset PROTOC
-export PKG_CONFIG_PATH=$DEPS_DST/lib/lib/pkgconfig:$PKG_CONFIG_PATH
+export PKG_CONFIG_PATH=$DEPS_DST/lib/pkgconfig:$PKG_CONFIG_PATH
 cmake .. -G Ninja \
     -DCMAKE_C_FLAGS="-I$DEPS_DST/include " \
     -DCMAKE_CXX_FLAGS="-I$DEPS_DST/include " \
     -DCMAKE_PREFIX_PATH="$DEPS_DST/lib" \
     -DCMAKE_INSTALL_PREFIX="$DEPS_DST" \
-    -DCMAKE_EXE_LINKER_FLAGS="-L/usr/lib64 -L/opt/gcc-indiff/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 $DEPS_DSTlib/lib/libabsl_base.a $DEPS_DST/lib/libabsl_container.a $DEPS_DST/lib/libabsl_synchronization.a -Wl,--no-as-needed -ldl" \
+    -DCMAKE_EXE_LINKER_FLAGS="-L/usr/lib64 -L/opt/gcc-indiff/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 $DEPS_DST/lib/libabsl_base.a $DEPS_DST/lib/libabsl_container.a $DEPS_DST/lib/libabsl_synchronization.a -Wl,--no-as-needed -ldl" \
     -DCMAKE_SHARED_LINKER_FLAGS="-L/usr/lib64 -L/opt/gcc-indiff/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--no-as-needed -ldl" \
     -DCMAKE_MODULE_LINKER_FLAGS="-L/usr/lib64 -L/opt/gcc-indiff/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--no-as-needed -ldl" \
     -DWITH_BOOST=boost -DDOWNLOAD_BOOST=1 -DWITH_BOOST=../boost \
