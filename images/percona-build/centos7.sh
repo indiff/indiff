@@ -90,7 +90,7 @@ yum install -y zip unzip rsync ninja-build curl wget tar xz unzip bzip2 which rs
 make cmake3 gcc gcc-c++ flex bison gettext \
 autoconf automake libtool patchelf \
 readline-devel \
-perl-ExtUtils-Embed tree
+perl-ExtUtils-Embed tree libtirpc libtirpc-devel
 
 # Install development tools and dependencies
 yum groupinstall -y "Development tools"
