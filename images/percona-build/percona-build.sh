@@ -25,7 +25,7 @@ rsync -a --copy-links "$DEPS_SRC/lib/"      "$DEPS_DST/lib/"      || true
 # PROTOC_LIB_BASENAME=$(basename $VCPKG_ROOT/installed/x64-linux-dynamic/lib/libprotoc.so.*)
 # chmod +x $VCPKG_ROOT/installed/x64-linux-dynamic/tools/protobuf/$PROTOC_BASENAME
 rsync -a "/opt/gcc-indiff/include/" "$DEPS_DST/include/"
-rsync -a --copy-links "/opt/gcc-indiff/lib64/"    "$DEPS_DST/lib64/"    || true
+rsync -a --copy-links "/opt/gcc-indiff/lib64/" "$DEPS_DST/lib64/" || true
 
 DEPS_SRC="$VCPKG_ROOT/installed/x64-linux-dynamic"
 
@@ -235,16 +235,16 @@ cmake --build . -j"$(nproc)" --target install
 cmake --install .
 
 cd $DEPS_DST
-rm -rf $DEPS_DST0/man
-rm -rf $DEPS_DST0/mysql-test
-rm -rf $DEPS_DST0/bin/mysqld-debug
-rm -rf $DEPS_DST0/sbin/mysqld-debug
-rm -f $DEPS_DST0/bin/mysqltest_safe_process
-rm -f $DEPS_DST0/bin/ps_mysqld_helper
-rm -f $DEPS_DST0/bin/ps-admin
-rm -f $DEPS_DST0/bin/mysqltest
-rm -f $DEPS_DST0/bin/mysqlxtest
-rm -f $DEPS_DST0/bin/mytap
+rm -rf $DEPS_DST/man
+rm -rf $DEPS_DST/mysql-test
+rm -rf $DEPS_DST/bin/mysqld-debug
+rm -rf $DEPS_DST/sbin/mysqld-debug
+rm -f $DEPS_DST/bin/mysqltest_safe_process
+rm -f $DEPS_DST/bin/ps_mysqld_helper
+rm -f $DEPS_DST/bin/ps-admin
+rm -f $DEPS_DST/bin/mysqltest
+rm -f $DEPS_DST/bin/mysqlxtest
+rm -f $DEPS_DST/bin/mytap
 zip -r -q -9 /workspace/percona80-centos7-x86_64-$(date +'%Y%m%d_%H%M').xz .
 
 # free memory
