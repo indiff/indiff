@@ -180,7 +180,7 @@ rm -f $DEPS_DST/bin/ps-admin
 rm -f $DEPS_DST/bin/mysqltest
 rm -f $DEPS_DST/bin/mysqlxtest
 rm -f $DEPS_DST/bin/mytap
-zip -r -q -9 /workspace/omysql-centos7-x86_64-$MYSQL_BRANCH-$(date +'%Y%m%d_%H%M').xz .
+zip -r -q -9 /workspace/mysql-centos7-x86_64-$MYSQL_BRANCH-$(date +'%Y%m%d_%H%M').xz .
 
 # free memory
 free -h
