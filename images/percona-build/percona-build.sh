@@ -246,6 +246,9 @@ rm -f $DEPS_DST/bin/ps-admin
 rm -f $DEPS_DST/bin/mysqltest
 rm -f $DEPS_DST/bin/mysqlxtest
 rm -f $DEPS_DST/bin/mytap
+rm -f $DEPS_DST/lib/*.a
+rm -f $DEPS_DST/lib64/*.a
+
 zip -r -q -9 /workspace/percona80-centos7-x86_64-$(date +'%Y%m%d_%H%M').xz .
 
 # free memory
