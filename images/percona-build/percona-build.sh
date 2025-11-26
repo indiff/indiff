@@ -212,7 +212,7 @@ cmake .. -G Ninja \
     -DWITH_LZ4=system -DWITH_ZSTD=system -DWITH_SNAPPY=system -DWITH_JEMALLOC=system \
     -DWITH_SSL=system -DOPENSSL_ROOT_DIR="$DEPS_DST" \
     -DWITH_ICU=system \
-    -DWITH_PROTOBUF=bundle  \
+    -DWITH_PROTOBUF=bundled  \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_INSTALL_RPATH='$ORIGIN/../lib:$ORIGIN/../lib64' \
     -DCMAKE_BUILD_RPATH='/opt/gcc-indiff/lib64:$ORIGIN/../lib:$ORIGIN/../lib64' \
