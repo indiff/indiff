@@ -455,11 +455,11 @@ jobs:
             curl -#Lo /opt/omysql.zip "https://github.com/indiff/indiff/releases/download/${{ env.TAG_NAME }}/shit6centos7"
             ```
             EOF
-            centos7_fbmysql_bname="$(basename artifacts/*mysql*/*fbmysql*centos7*.xz)"
-            centos7_omysql_bname="$(basename artifacts/*mysql*/mysql*centos7*.xz)"
-            centos7_percona_bname="$(basename artifacts/*mysql*/*percona*centos7*.xz)"
-            centos7_mariadb_bname="$(basename artifacts/*mysql*/*mariadb*centos7*.xz)"
-            ubuntu_percona_bname="$(basename artifacts/*mysql*/*percona*ubuntu*.xz)"
+            centos7_fbmysql_bname="$(basename artifacts/*/*fbmysql*centos7*.xz)"
+            centos7_omysql_bname="$(basename artifacts/*/mysql*centos7*.xz)"
+            centos7_percona_bname="$(basename artifacts/*/*percona*centos7*.xz)"
+            centos7_mariadb_bname="$(basename artifacts/*/*mariadb*centos7*.xz)"
+            ubuntu_percona_bname="$(basename artifacts/*/*percona*ubuntu*.xz)"
             sed -i "s/shit1centos7/${centos7_percona_bname}/g" hello.md
             sed -i "s/shit2centos7/${centos7_mariadb_bname}/g" hello.md
             sed -i "s/shit3ubuntu/${ubuntu_percona_bname}/g" hello.md
