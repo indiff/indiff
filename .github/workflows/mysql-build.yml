@@ -445,15 +445,18 @@ jobs:
             ```bash         
             curl -#Lo /opt/percona80.zip "https://github.com/indiff/indiff/releases/download/${{ env.TAG_NAME }}/shit1centos7"
             ```
-             ```bash         
+            ```bash         
             curl -#Lo /opt/mariadb.zip "https://github.com/indiff/indiff/releases/download/${{ env.TAG_NAME }}/shit2centos7"
             ```
-             ```bash         
-            curl -#Lo /opt/percona80.zip "https://github.com/indiff/indiff/releases/download/${{ env.TAG_NAME }}/shit3ubuntu"
+            ```bash         
+            curl -#Lo /opt/fbmysql.zip "https://github.com/indiff/indiff/releases/download/${{ env.TAG_NAME }}/shit5centos7"
+            ```
+            ```bash         
+            curl -#Lo /opt/omysql.zip "https://github.com/indiff/indiff/releases/download/${{ env.TAG_NAME }}/shit6centos7"
             ```
             EOF
             centos7_fbmysql_bname="$(basename artifacts/*mysql*/*fbmysql*centos7*.xz)"
-            centos7_omysql_bname="$(basename artifacts/*mysql*/*omysql*centos7*.xz)"
+            centos7_omysql_bname="$(basename artifacts/*mysql*/mysql*centos7*.xz)"
             centos7_percona_bname="$(basename artifacts/*mysql*/*percona*centos7*.xz)"
             centos7_mariadb_bname="$(basename artifacts/*mysql*/*mariadb*centos7*.xz)"
             ubuntu_percona_bname="$(basename artifacts/*mysql*/*percona*ubuntu*.xz)"
