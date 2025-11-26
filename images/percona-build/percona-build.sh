@@ -26,6 +26,7 @@ rsync -a --copy-links "$DEPS_SRC/lib/"      "$DEPS_DST/lib/"      || true
 # chmod +x $VCPKG_ROOT/installed/x64-linux-dynamic/tools/protobuf/$PROTOC_BASENAME
 rsync -a "/opt/gcc-indiff/include/" "$DEPS_DST/include/"
 rsync -a --copy-links "/opt/gcc-indiff/lib64/" "$DEPS_DST/lib64/" || true
+rsync -a --copy-links "/opt/gcc-indiff/lib64/" "$DEPS_DST/lib/" || true
 
 DEPS_SRC="$VCPKG_ROOT/installed/x64-linux-dynamic"
 
