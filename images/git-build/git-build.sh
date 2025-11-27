@@ -9,11 +9,10 @@ mkdir -p  "$DEPS_DST"/{include,lib,share}
 rsync -a  --copy-links "$DEPS_SRC/include/" "$DEPS_DST/include/"
 rsync -a  --copy-links "$DEPS_SRC/lib/" "$DEPS_DST/lib/" || true
 
-DEPS_SRC="/opt/vcpkg/installed/${VCPKG_TRIPLET}"
-DEPS_DST="${INSTALL_PREFIX}"
+DEPS_SRC="/opt/vcpkg/installed/x64-linux-dynamic"
 rsync -a  --copy-links "$DEPS_SRC/include/" "$DEPS_DST/include/"
 rsync -a  --copy-links "$DEPS_SRC/lib/" "$DEPS_DST/lib/" || true
-rsync -a  --copy-links "$DEPS_SRC/share/" "$DEPS_DST/share/" || true
+# rsync -a  --copy-links "$DEPS_SRC/share/" "$DEPS_DST/share/" || true
 # rsync -a  --copy-links "$DEPS_SRC/lib64/" "$DEPS_DST/lib64/" || true
 for d in lib lib64; do
 if [ -d "$DEPS_SRC/$d/pkgconfig" ]; then
@@ -29,13 +28,6 @@ export PATH="$PREFIX/bin:/usr/bin/core_perl:$PATH"
 # export OPT_FLAGS="-flto -flto-compression-level=10 -O3 -pipe -ffunction-sections -fdata-sections"
 export OPT_FLAGS="-flto-compression-level=10 -O2 -pipe -ffunction-sections -fdata-sections"
 
-# update my gcc
-curl -sLo /opt/gcc-indiff.zip ${{ env.gcc_indiff_centos7_url }}
-unzip /opt/gcc-indiff.zip -d /opt/gcc-indiff
-yum install -y zstd zstd-devel
-# export LD_LIBRARY_PATH=$(find /usr -name libzstd.so.1):$LD_LIBRARY_PATH
-
-
 
 
 SETUP_INSTALL_PREFIX="/opt/git"
@@ -49,20 +41,20 @@ mkdir -p $SETUP_INSTALL_PREFIX/git ;
 cd $SETUP_INSTALL_PREFIX ;
 
 export PATH="$SETUP_INSTALL_PREFIX/bin:$PATH"
-if [[ ! -e "re2c-${{ env.RE2C_VERSION }}.tar.xz" ]]; then
-wget https://github.com/skvadrik/re2c/releases/download/${{ env.RE2C_VERSION }}/re2c-${{ env.RE2C_VERSION }}.tar.xz;
+if [[ ! -e "re2c-$RE2C_VERSION.tar.xz" ]]; then
+wget https://github.com/skvadrik/re2c/releases/download/$RE2C_VERSION/re2c-$RE2C_VERSION.tar.xz;
 if [[ $? -ne 0 ]]; then
-    rm -f re2c-${{ env.RE2C_VERSION }}.tar.xz;
+    rm -f re2c-$RE2C_VERSION.tar.xz;
 fi
 fi
-tar -axvf re2c-${{ env.RE2C_VERSION }}.tar.xz ;
-cd re2c-${{ env.RE2C_VERSION }} ;
-./configure --prefix=$SETUP_INSTALL_PREFIX/re2c/${{ env.RE2C_VERSION }} --with-pic=yes;
+tar -axvf re2c-$RE2C_VERSION.tar.xz ;
+cd re2c-$RE2C_VERSION ;
+./configure --prefix=$SETUP_INSTALL_PREFIX/re2c/$RE2C_VERSION --with-pic=yes;
 make CC=/opt/gcc-indiff/bin/gcc -j$(nproc) ;
 make install;
 
-if [[ -e "$SETUP_INSTALL_PREFIX/re2c/${{ env.RE2C_VERSION }}/bin" ]]; then
-for UPDATE_LNK in $SETUP_INSTALL_PREFIX/re2c/${{ env.RE2C_VERSION }}/bin/*; do
+if [[ -e "$SETUP_INSTALL_PREFIX/re2c/$RE2C_VERSION/bin" ]]; then
+for UPDATE_LNK in $SETUP_INSTALL_PREFIX/re2c/$RE2C_VERSION/bin/*; do
     UNDATE_LNK_BASENAME="$(basename "$UPDATE_LNK")";
     if [ -e "$SETUP_INSTALL_PREFIX/bin/$UNDATE_LNK_BASENAME" ]; then
         rm -rf "$SETUP_INSTALL_PREFIX/bin/$UNDATE_LNK_BASENAME";
@@ -75,34 +67,27 @@ cd ..;
 
 
 
-git clone https://github.com/Microsoft/vcpkg.git --depth 1 /opt/vcpkg
-cd /opt/vcpkg
-export VCPKG_ROOT=$(pwd)
-export PATH=$VCPKG_ROOT:$PATH
-./bootstrap-vcpkg.sh
-./vcpkg integrate install
-./vcpkg install curl[openssl] openssl zlib expat pcre2 --triplet x64-linux-dynamic
 
 cd $SETUP_INSTALL_PREFIX
 # -z "${{ github.event.inputs.build_ver }}" || 
 # git 代码仓库直接在 centos7 编译， 会出现不兼容 glibc 问题,所以默认不使用 git 代码仓库编译
-if [[ "${{ github.event.inputs.build_ver }}" == "nightly" ]]; then
+if [[ "$GIT_VERSION" == "nightly" ]]; then
 git clone --depth 1 https://github.com/git/git.git
 cd git
 make configure
 else
-if [[ ! -e "git-${{ env.GIT_VERSION }}.tar.xz" ]]; then
-wget https://mirrors.edge.kernel.org/pub/software/scm/git/git-${{ env.GIT_VERSION }}.tar.xz ;
+if [[ ! -e "git-$GIT_VERSION.tar.xz" ]]; then
+wget https://mirrors.edge.kernel.org/pub/software/scm/git/git-$GIT_VERSION.tar.xz ;
 if [[ $? -ne 0 ]]; then
-    rm -f git-${{ env.GIT_VERSION }}.tar.xz;
+    rm -f git-$GIT_VERSION.tar.xz;
 fi
 fi
-tar -axvf git-${{ env.GIT_VERSION }}.tar.xz ;
-cd git-${{ env.GIT_VERSION }};
+tar -axvf git-$GIT_VERSION.tar.xz ;
+cd git-$GIT_VERSION;
 fi
 
 # -L${VCPKG_ROOT}/installed/x64-linux/include/lib
-GIT_INSTALL_DIR=$SETUP_INSTALL_PREFIX/git/${{ needs.before_build.outputs.GIT_DEF_VER }}
+GIT_INSTALL_DIR=$SETUP_INSTALL_PREFIX/git/$GIT_DEF_VER
 mkdir -p $GIT_INSTALL_DIR/lib
 mkdir -p $GIT_INSTALL_DIR/lib64
 mkdir -p $GIT_INSTALL_DIR/include
@@ -139,23 +124,23 @@ mkdir -p git-lfs;
 cd git-lfs;
 
 # git lfs
-if [[ ! -e "git-lfs-linux-amd64-v${{ env.GIT_LFS_VERSION }}.tar.gz" ]]; then
-wget https://github.com/git-lfs/git-lfs/releases/download/v${{ env.GIT_LFS_VERSION }}/git-lfs-linux-amd64-v${{ env.GIT_LFS_VERSION }}.tar.gz ;
+if [[ ! -e "git-lfs-linux-amd64-v$GIT_LFS_VERSION.tar.gz" ]]; then
+wget https://github.com/git-lfs/git-lfs/releases/download/v$GIT_LFS_VERSION/git-lfs-linux-amd64-v$GIT_LFS_VERSION.tar.gz ;
 if [[ $? -ne 0 ]]; then
-    rm -f git-lfs-linux-amd64-v${{ env.GIT_LFS_VERSION }}.tar.gz;
+    rm -f git-lfs-linux-amd64-v$GIT_LFS_VERSION.tar.gz;
 fi
 fi
 
-mkdir git-lfs-v${{ env.GIT_LFS_VERSION }};
-cd git-lfs-v${{ env.GIT_LFS_VERSION }} ; 
-tar -axvf ../git-lfs-linux-amd64-v${{ env.GIT_LFS_VERSION }}.tar.gz ;
+mkdir git-lfs-v$GIT_LFS_VERSION;
+cd git-lfs-v$GIT_LFS_VERSION ; 
+tar -axvf ../git-lfs-linux-amd64-v$GIT_LFS_VERSION.tar.gz ;
 ls -lh
-chmod +x ./git-lfs-${{ env.GIT_LFS_VERSION }}/install.sh
-mkdir -p $SETUP_INSTALL_PREFIX/git-lfs/v${{ env.GIT_LFS_VERSION }}
-env CC=/opt/gcc-indiff/bin/gcc PREFIX=$SETUP_INSTALL_PREFIX/git-lfs/v${{ env.GIT_LFS_VERSION }} ./git-lfs-${{ env.GIT_LFS_VERSION }}/install.sh ;
+chmod +x ./git-lfs-$GIT_LFS_VERSION/install.sh
+mkdir -p $SETUP_INSTALL_PREFIX/git-lfs/v$GIT_LFS_VERSION
+env CC=/opt/gcc-indiff/bin/gcc PREFIX=$SETUP_INSTALL_PREFIX/git-lfs/v$GIT_LFS_VERSION ./git-lfs-$GIT_LFS_VERSION/install.sh ;
 
-if [[ -e "$SETUP_INSTALL_PREFIX/git-lfs/v${{ env.GIT_LFS_VERSION }}/bin" ]]; then
-for UPDATE_LNK in $SETUP_INSTALL_PREFIX/git-lfs/v${{ env.GIT_LFS_VERSION }}/bin/*; do
+if [[ -e "$SETUP_INSTALL_PREFIX/git-lfs/v$GIT_LFS_VERSION/bin" ]]; then
+for UPDATE_LNK in $SETUP_INSTALL_PREFIX/git-lfs/v$GIT_LFS_VERSION/bin/*; do
     UNDATE_LNK_BASENAME="$(basename "$UPDATE_LNK")";
     if [ -e "$SETUP_INSTALL_PREFIX/bin/$UNDATE_LNK_BASENAME" ]; then
         rm -rf "$SETUP_INSTALL_PREFIX/bin/$UNDATE_LNK_BASENAME";
@@ -198,7 +183,7 @@ source ~/.bash_profile
 echo "执行成功, 请执行 source ~/.bash_profile! 测试  git clone https://gitee.com/qwop/test_git.git" 
 ' > load_git.sh
 
-zname=/workspace/git-indiff-centos7-${{ env.GIT_VERSION }}-x86_64-$(date +'%Y%m%d_%H%M')
+zname=/workspace/git-indiff-centos7-$GIT_VERSION-x86_64-$(date +'%Y%m%d_%H%M')
 zip -r -q -9 $zname.zip .
 mv $zname.zip $zname.xz
 # ls -lh *.xz
