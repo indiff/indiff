@@ -5,6 +5,7 @@ set -xe
 
 DEPS_SRC="/opt/vcpkg/installed/x64-linux"
 DEPS_DST="${INSTALL_PREFIX}"
+VCPKG_ROOT="/opt/vcpkg"
 mkdir -p  "$DEPS_DST"/{include,lib,share}
 rsync -a  --copy-links "$DEPS_SRC/include/" "$DEPS_DST/include/"
 rsync -a  --copy-links "$DEPS_SRC/lib/" "$DEPS_DST/lib/" || true
@@ -91,11 +92,14 @@ GIT_INSTALL_DIR=$SETUP_INSTALL_PREFIX/git/$GIT_DEF_VER
 mkdir -p $GIT_INSTALL_DIR/lib
 mkdir -p $GIT_INSTALL_DIR/lib64
 mkdir -p $GIT_INSTALL_DIR/include
+export LD_LIBRARY_PATH=/opt/gcc-indiff/lib:/opt/gcc-indiff/lib64:$LD_LIBRARY_PATH
+
 cp -v $VCPKG_ROOT/installed/x64-linux-dynamic/lib/*.so* $GIT_INSTALL_DIR/lib/ || true
 cp -v $VCPKG_ROOT/installed/x64-linux-dynamic/lib/*.so* $GIT_INSTALL_DIR/lib64/ || true
 cp -v $VCPKG_ROOT/installed/x64-linux-dynamic/lib/*.a* $GIT_INSTALL_DIR/lib/ || true
 cp -v $VCPKG_ROOT/installed/x64-linux-dynamic/lib/*.a* $GIT_INSTALL_DIR/lib64/ || true
 cp -rv $VCPKG_ROOT/installed/x64-linux-dynamic/include/* $GIT_INSTALL_DIR/include/ || true
+
 
 ./configure --prefix=$GIT_INSTALL_DIR \
 CFLAGS="-Os -s -m64 -flto -flto-compression-level=9 -ffunction-sections -fdata-sections -pipe -w -fPIC" \
