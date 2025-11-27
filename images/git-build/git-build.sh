@@ -11,24 +11,7 @@ ln -sf /opt/gcc-indiff/bin/ld.lld /usr/bin/ld.lld
 export LDFLAGS="-fuse-ld=lld "
 
 
-DEPS_SRC="/opt/vcpkg/installed/x64-linux"
-DEPS_DST="${INSTALL_PREFIX}"
-VCPKG_ROOT="/opt/vcpkg"
-mkdir -p  "$DEPS_DST"/{include,lib,share}
-rsync -a  --copy-links "$DEPS_SRC/include/" "$DEPS_DST/include/"
-rsync -a  --copy-links "$DEPS_SRC/lib/" "$DEPS_DST/lib/" || true
 
-DEPS_SRC="/opt/vcpkg/installed/x64-linux-dynamic"
-rsync -a  --copy-links "$DEPS_SRC/include/" "$DEPS_DST/include/"
-rsync -a  --copy-links "$DEPS_SRC/lib/" "$DEPS_DST/lib/" || true
-# rsync -a  --copy-links "$DEPS_SRC/share/" "$DEPS_DST/share/" || true
-# rsync -a  --copy-links "$DEPS_SRC/lib64/" "$DEPS_DST/lib64/" || true
-for d in lib lib64; do
-if [ -d "$DEPS_SRC/$d/pkgconfig" ]; then
-    mkdir -p "$DEPS_DST/$d/pkgconfig"
-    rsync -a  --copy-links "$DEPS_SRC/$d/pkgconfig/" "$DEPS_DST/$d/pkgconfig/"
-fi
-done
 
 
 export WORK_DIR="$PWD"
@@ -80,7 +63,7 @@ cd ..;
 cd $SETUP_INSTALL_PREFIX
 # -z "${{ github.event.inputs.build_ver }}" || 
 # git 代码仓库直接在 centos7 编译， 会出现不兼容 glibc 问题,所以默认不使用 git 代码仓库编译
-if [[ "$GIT_VERSION" == "nightly" ]]; then
+if [[ "$build_ver" == "nightly" ]]; then
 git clone --depth 1 https://github.com/git/git.git
 cd git
 make configure
@@ -106,6 +89,25 @@ cp -v $VCPKG_ROOT/installed/x64-linux-dynamic/lib/*.so* $GIT_INSTALL_DIR/lib64/ 
 cp -v $VCPKG_ROOT/installed/x64-linux-dynamic/lib/*.a* $GIT_INSTALL_DIR/lib/ || true
 cp -v $VCPKG_ROOT/installed/x64-linux-dynamic/lib/*.a* $GIT_INSTALL_DIR/lib64/ || true
 cp -rv $VCPKG_ROOT/installed/x64-linux-dynamic/include/* $GIT_INSTALL_DIR/include/ || true
+
+DEPS_SRC="/opt/vcpkg/installed/x64-linux"
+DEPS_DST="${GIT_INSTALL_DIR}"
+VCPKG_ROOT="/opt/vcpkg"
+mkdir -p  "$DEPS_DST"/{include,lib,share}
+rsync -a  --copy-links "$DEPS_SRC/include/" "$DEPS_DST/include/"
+rsync -a  --copy-links "$DEPS_SRC/lib/" "$DEPS_DST/lib/" || true
+
+DEPS_SRC="/opt/vcpkg/installed/x64-linux-dynamic"
+rsync -a  --copy-links "$DEPS_SRC/include/" "$DEPS_DST/include/"
+rsync -a  --copy-links "$DEPS_SRC/lib/" "$DEPS_DST/lib/" || true
+# rsync -a  --copy-links "$DEPS_SRC/share/" "$DEPS_DST/share/" || true
+# rsync -a  --copy-links "$DEPS_SRC/lib64/" "$DEPS_DST/lib64/" || true
+for d in lib lib64; do
+if [ -d "$DEPS_SRC/$d/pkgconfig" ]; then
+    mkdir -p "$DEPS_DST/$d/pkgconfig"
+    rsync -a  --copy-links "$DEPS_SRC/$d/pkgconfig/" "$DEPS_DST/$d/pkgconfig/"
+fi
+done
 
 
 ./configure --prefix=$GIT_INSTALL_DIR \
