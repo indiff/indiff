@@ -11,9 +11,6 @@ ln -sf /opt/gcc-indiff/bin/ld.lld /usr/bin/ld.lld
 export LDFLAGS="-fuse-ld=lld "
 
 
-
-
-
 export WORK_DIR="$PWD"
 export PREFIX="$WORK_DIR/gcc-${arch}"
 export PATH="$PREFIX/bin:/usr/bin/core_perl:$PATH"
@@ -79,6 +76,7 @@ cd git-$GIT_VERSION;
 fi
 
 # -L${VCPKG_ROOT}/installed/x64-linux/include/lib
+VCPKG_ROOT="/opt/vcpkg"
 GIT_INSTALL_DIR=$SETUP_INSTALL_PREFIX/git/$GIT_DEF_VER
 mkdir -p $GIT_INSTALL_DIR/lib
 mkdir -p $GIT_INSTALL_DIR/lib64
@@ -92,7 +90,7 @@ cp -rv $VCPKG_ROOT/installed/x64-linux-dynamic/include/* $GIT_INSTALL_DIR/includ
 
 DEPS_SRC="/opt/vcpkg/installed/x64-linux"
 DEPS_DST="${GIT_INSTALL_DIR}"
-VCPKG_ROOT="/opt/vcpkg"
+
 mkdir -p  "$DEPS_DST"/{include,lib,share}
 rsync -a  --copy-links "$DEPS_SRC/include/" "$DEPS_DST/include/"
 rsync -a  --copy-links "$DEPS_SRC/lib/" "$DEPS_DST/lib/" || true
