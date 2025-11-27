@@ -12,7 +12,7 @@ curl -#Lo lld-indiff.zip "https://github.com/indiff/gcc-build/releases/download/
 unzip lld-indiff.zip -d /opt/gcc-indiff
 export LD_LIBRARY_PATH="/opt/gcc-indiff/lib64:/opt/gcc-indiff/lib:$LD_LIBRARY_PATH"
 ln -sf /opt/gcc-indiff/bin/ld.lld /usr/bin/ld.lld
-/opt/gcc-indiff/gcc -fuse-ld=lld -Wl,--version -xc - <<< 'int main(){return 0;}'
+/opt/gcc-indiff/bin/gcc -fuse-ld=lld -Wl,--version -xc - <<< 'int main(){return 0;}'
 export LDFLAGS="-fuse-ld=lld"
 
 mkdir -p "$DEPS_DST"/{include,lib,lib64}
