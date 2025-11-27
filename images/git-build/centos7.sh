@@ -188,11 +188,10 @@ git clone --filter=blob:none --depth 1 https://github.com/microsoft/vcpkg.git /o
 export VCPKG_ROOT=/opt/vcpkg
 
 CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ $VCPKG_ROOT/vcpkg install \
-            zlib \
-            zstd \
+            apr \
             --triplet x64-linux --clean-after-build	|| cat $VCPKG_ROOT/installed/vcpkg/issue_body.md || true
-            
+# curl[openssl] openssl zlib expat pcre2           
 CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ $VCPKG_ROOT/vcpkg install \
-            openssl curl[core,non-http,ssl,openssl,zstd] jemalloc --triplet x64-linux-dynamic --clean-after-build || cat $VCPKG_ROOT/installed/vcpkg/issue_body.md || true
+            openssl curl[core,non-http,ssl,openssl,zstd] zlib expat pcre2 --triplet x64-linux-dynamic --clean-after-build || cat $VCPKG_ROOT/installed/vcpkg/issue_body.md || true
             
 echo "CentOS 7 git-build environment setup completed successfully!"
