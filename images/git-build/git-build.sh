@@ -2,6 +2,14 @@
 # author: indiff
 set -xe
 
+curl -sLo /opt/lld-indiff.zip https://github.com/indiff/gcc-build/releases/download/20251127_1456_16.0.0/lld-indiff-centos7-x86_64-20251127_1456.xz
+unzip /opt/lld-indiff.zip -d /opt/gcc-indiff
+
+export LD_LIBRARY_PATH="/opt/gcc-indiff/lib64:/opt/gcc-indiff/lib:$LD_LIBRARY_PATH"
+ln -sf /opt/gcc-indiff/bin/ld.lld /usr/bin/ld.lld
+/opt/gcc-indiff/bin/gcc -fuse-ld=lld -Wl,--version -xc - <<< 'int main(){return 0;}'
+export LDFLAGS="-fuse-ld=lld "
+
 
 DEPS_SRC="/opt/vcpkg/installed/x64-linux"
 DEPS_DST="${INSTALL_PREFIX}"
@@ -92,7 +100,6 @@ GIT_INSTALL_DIR=$SETUP_INSTALL_PREFIX/git/$GIT_DEF_VER
 mkdir -p $GIT_INSTALL_DIR/lib
 mkdir -p $GIT_INSTALL_DIR/lib64
 mkdir -p $GIT_INSTALL_DIR/include
-export LD_LIBRARY_PATH=/opt/gcc-indiff/lib:/opt/gcc-indiff/lib64:$LD_LIBRARY_PATH
 
 cp -v $VCPKG_ROOT/installed/x64-linux-dynamic/lib/*.so* $GIT_INSTALL_DIR/lib/ || true
 cp -v $VCPKG_ROOT/installed/x64-linux-dynamic/lib/*.so* $GIT_INSTALL_DIR/lib64/ || true
@@ -103,7 +110,7 @@ cp -rv $VCPKG_ROOT/installed/x64-linux-dynamic/include/* $GIT_INSTALL_DIR/includ
 
 ./configure --prefix=$GIT_INSTALL_DIR \
 CFLAGS="-Os -s -m64 -flto -flto-compression-level=9 -ffunction-sections -fdata-sections -pipe -w -fPIC" \
-LDFLAGS="-flto -flto-compression-level=9 -Wl,--gc-sections -Wl,-O2 -Wl,--compress-debug-sections=zlib -Wl,-rpath=\$\$ORIGIN/../../lib64:\$\$ORIGIN/../../lib" \
+LDFLAGS="-fuse-ld=lld -flto -flto-compression-level=9 -Wl,--gc-sections -Wl,-O2 -Wl,--compress-debug-sections=zlib -Wl,-rpath=\$\$ORIGIN/../../lib64:\$\$ORIGIN/../../lib" \
 --with-curl=$GIT_INSTALL_DIR --with-openssl=$GIT_INSTALL_DIR --with-libpcre2=$GIT_INSTALL_DIR \
 --with-zlib=$GIT_INSTALL_DIR --with-expat=$GIT_INSTALL_DIR --with-editor=vim  || cat config.log ;
 # NO_GETTEXT=1  Set NO_GETTEXT to disable localization support and make Git only
