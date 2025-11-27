@@ -495,6 +495,7 @@ jobs:
             INSTALL_PREFIX=${{ env.INSTALL_PREFIX }}
             gcc_indiff_centos7_url=${{ env.gcc_indiff_centos7_url }}
             GIT_DEF_VER=${{ needs.before_build.outputs.GIT_DEF_VER }}
+            build_ver=${{ github.event.inputs.build_ver }}
 
       - name: Build PG in Docker
         run: |
@@ -507,6 +508,7 @@ jobs:
             -e RE2C_VERSION=${{ env.RE2C_VERSION }} \
             -e GIT_LFS_VERSION=${{ env.GIT_LFS_VERSION }} \
             -e GIT_VERSION=${{ env.GIT_VERSION }} \
+            -e build_ver=${{ github.event.inputs.build_ver }} \
             -e GIT_DEF_VER=${{ needs.before_build.outputs.GIT_DEF_VER }} \
             -e gcc_indiff_centos7_url=${{ env.gcc_indiff_centos7_url }} \
             ghcr.io/${{ github.repository_owner }}/git-build-centos7:latest \
@@ -593,6 +595,7 @@ jobs:
           gh release create ${{ env.TAG_NAME }} -F hello.md "$pkgpath"
         env:
           GITHUB_TOKEN: ${{ github.token }}
+
 
 
 
