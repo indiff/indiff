@@ -10,9 +10,6 @@ DEPS_DST="$PERCONA_INSTALL_PREFIX"
 ## use lld-indiff
 curl -#Lo lld-indiff.zip "https://github.com/indiff/gcc-build/releases/download/20251126_1903_16.0.0/lld-indiff-centos7-x86_64-20251126_1903.xz"
 unzip lld-indiff.zip -d /opt/gcc-indiff
-
-unzip gcc-indiff.zip -d /opt/gcc-indiff
-unzip lld-indiff.zip -d /opt/gcc-indiff
 export LD_LIBRARY_PATH="/opt/gcc-indiff/lib64:/opt/gcc-indiff/lib:$LD_LIBRARY_PATH"
 ln -sf /opt/gcc-indiff/bin/ld.lld /usr/bin/ld.lld
 /opt/gcc-indiff/gcc -fuse-ld=lld -Wl,--version -xc - <<< 'int main(){return 0;}'
