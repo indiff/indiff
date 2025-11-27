@@ -31,7 +31,7 @@ env:
   POSTGIS_VERSION_TAG: "3.4.2"             # PostGIS 版本标签（或 master）
   gcc_indiff_centos7_url: "https://github.com/indiff/gcc-build/releases/download/20250908_0934_16.0.0/gcc-indiff-centos7-16.0.0-x86_64-20250908_0931.xz"
   # 打包前安装根目录
-  INSTALL_PREFIX: "/opt/pg"
+  INSTALL_PREFIX: "/opt/git"
   # vcpkg 目标 triplet（统一使用动态库，方便减少静态链接冲突）
   VCPKG_TRIPLET: "x64-linux-dynamic"
 
@@ -490,6 +490,7 @@ jobs:
             RE2C_VERSION=${{ env.RE2C_VERSION }}
             GIT_LFS_VERSION=${{ env.GIT_LFS_VERSION }}
             GIT_VERSION=${{ env.GIT_VERSION }}
+            INSTALL_PREFIX=${{ env.INSTALL_PREFIX }}
             gcc_indiff_centos7_url=${{ env.gcc_indiff_centos7_url }}
 
       - name: Build PG in Docker
@@ -499,6 +500,7 @@ jobs:
           docker run --rm \
             -v ${{ github.workspace }}:/workspace \
             -w /workspace \
+            -e INSTALL_PREFIX=${{ env.INSTALL_PREFIX }} \
             -e RE2C_VERSION=${{ env.RE2C_VERSION }} \
             -e GIT_LFS_VERSION=${{ env.GIT_LFS_VERSION }} \
             -e GIT_VERSION=${{ env.GIT_VERSION }} \
@@ -506,7 +508,7 @@ jobs:
             ghcr.io/${{ github.repository_owner }}/git-build-centos7:latest \
             /bin/bash -c "ls -ll && sh ./images/git-build/git-build.sh"
 
-      - name: Upload pg package
+      - name: Upload git package
         uses: actions/upload-artifact@v4
         with:
           name: git-centos7-x86_64
@@ -587,3 +589,4 @@ jobs:
           gh release create ${{ env.TAG_NAME }} -F hello.md "$pkgpath"
         env:
           GITHUB_TOKEN: ${{ github.token }}
+
