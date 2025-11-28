@@ -73,7 +73,7 @@ mkdir -p $GIT_INSTALL_DIR/include
 # cp -v $VCPKG_ROOT/installed/x64-linux-dynamic/lib/*.a* $GIT_INSTALL_DIR/lib/ || true
 # cp -v $VCPKG_ROOT/installed/x64-linux-dynamic/lib/*.a* $GIT_INSTALL_DIR/lib64/ || true
 # cp -rv $VCPKG_ROOT/installed/x64-linux-dynamic/include/* $GIT_INSTALL_DIR/include/ || true
-DEPS_SRC="/opt/vcpkg/installed/x64-mingw-static"
+DEPS_SRC="/opt/vcpkg/installed/x64-linux"
 DEPS_DST="${GIT_INSTALL_DIR}"
 
 mkdir -p  "$DEPS_DST"/{include,lib,share}
