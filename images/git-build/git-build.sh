@@ -107,10 +107,10 @@ if [ -d "$DEPS_SRC/$d/pkgconfig" ]; then
 fi
 done
 
-
+# -fuse-ld=lld 
 ./configure --prefix=$GIT_INSTALL_DIR \
 CFLAGS="-Os -s -m64 -flto -flto-compression-level=9 -ffunction-sections -fdata-sections -pipe -w -fPIC" \
-LDFLAGS="-fuse-ld=lld -flto -flto-compression-level=9 -Wl,--gc-sections -Wl,-O2 -Wl,--compress-debug-sections=zlib -Wl,-rpath=\$\$ORIGIN/../../lib64:\$\$ORIGIN/../../lib" \
+LDFLAGS="-flto -flto-compression-level=9 -Wl,--gc-sections -Wl,-O2 -Wl,--compress-debug-sections=zlib -Wl,-rpath=\$\$ORIGIN/../../lib64:\$\$ORIGIN/../../lib" \
 --with-curl=$GIT_INSTALL_DIR --with-openssl=$GIT_INSTALL_DIR --with-libpcre2=$GIT_INSTALL_DIR \
 --with-zlib=$GIT_INSTALL_DIR --with-expat=$GIT_INSTALL_DIR --with-editor=vim  || cat config.log ;
 # NO_GETTEXT=1  Set NO_GETTEXT to disable localization support and make Git only
