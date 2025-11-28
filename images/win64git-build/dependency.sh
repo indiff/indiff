@@ -8,16 +8,15 @@ echo 'LC_ALL=zh_CN.UTF-8' >> /etc/environment
 echo 'LC_CTYPE=zh_CN.UTF-8' >> /etc/environment
 
 
-git clone --filter=blob:none https://github.com/ninja-build/ninja.git --depth=1
-cd ninja
-cmake -Bbuild-cmake -DBUILD_TESTING=OFF -DCMAKE_EXE_LINKER_FLAGS="-static-libstdc++ -static-libgcc" -DCMAKE_BUILD_TYPE=release 
-cmake --build build-cmake
-rm -f /usr/bin/ninja
-cp build-cmake/ninja /usr/bin/ninja
-cd ..
-rm -rf ninja
-
-/usr/bin/ninja --version
+# git clone --filter=blob:none https://github.com/ninja-build/ninja.git --depth=1
+# cd ninja
+# cmake -Bbuild-cmake -DBUILD_TESTING=OFF -DCMAKE_EXE_LINKER_FLAGS="-static-libstdc++ -static-libgcc" -DCMAKE_BUILD_TYPE=release 
+# cmake --build build-cmake
+# rm -f /usr/bin/ninja
+# cp build-cmake/ninja /usr/bin/ninja
+# cd ..
+# rm -rf ninja
+# /usr/bin/ninja --version
 
 git clone --filter=blob:none --depth 1 https://github.com/microsoft/vcpkg.git /opt/vcpkg
 export VCPKG_ROOT=/opt/vcpkg
