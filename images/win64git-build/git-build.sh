@@ -3,7 +3,7 @@
 set -xe
 
 
-tree -d /opt/vcpkg
+tree -d /opt/vcpkg/installed
 
 SETUP_INSTALL_PREFIX="/opt/git"
 # Require asciidoc and xmlto to build documents
