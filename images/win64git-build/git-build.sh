@@ -2,22 +2,6 @@
 # author: indiff
 set -xe
 
-curl -sLo /opt/lld-indiff.zip https://github.com/indiff/gcc-build/releases/download/20251127_1456_16.0.0/lld-indiff-centos7-x86_64-20251127_1456.xz
-unzip /opt/lld-indiff.zip -d /opt/gcc-indiff
-
-export LD_LIBRARY_PATH="/opt/gcc-indiff/lib64:/opt/gcc-indiff/lib:$LD_LIBRARY_PATH"
-ln -sf /opt/gcc-indiff/bin/ld.lld /usr/bin/ld.lld
-/opt/gcc-indiff/bin/gcc -fuse-ld=lld -Wl,--version -xc - <<< 'int main(){return 0;}'
-export LDFLAGS="-fuse-ld=lld "
-
-
-export WORK_DIR="$PWD"
-export PREFIX="$WORK_DIR/gcc-${arch}"
-export PATH="$PREFIX/bin:/usr/bin/core_perl:$PATH"
-# export OPT_FLAGS="-flto -flto-compression-level=10 -O3 -pipe -ffunction-sections -fdata-sections"
-export OPT_FLAGS="-flto-compression-level=10 -O2 -pipe -ffunction-sections -fdata-sections"
-
-
 
 SETUP_INSTALL_PREFIX="/opt/git"
 # Require asciidoc and xmlto to build documents
@@ -115,7 +99,7 @@ LDFLAGS="-flto -flto-compression-level=9 -Wl,--gc-sections -Wl,-O2 -Wl,--compres
 --with-zlib=$GIT_INSTALL_DIR --with-expat=$GIT_INSTALL_DIR --with-editor=vim  || cat config.log ;
 # NO_GETTEXT=1  Set NO_GETTEXT to disable localization support and make Git only
 # NO_GITWEB=1 
-make CC=/opt/gcc-indiff/bin/gcc NO_TCLTK=1 NO_PERL=1 \
+make NO_TCLTK=1 NO_PERL=1 \
 NO_SVN_TESTS=1 NO_IPV6=1 \
 NO_PYTHON=1 NO_TEST=1 \
 -j$(nproc) all ;
@@ -148,7 +132,7 @@ tar -axvf ../git-lfs-linux-amd64-v$GIT_LFS_VERSION.tar.gz ;
 ls -lh
 chmod +x ./git-lfs-$GIT_LFS_VERSION/install.sh
 mkdir -p $SETUP_INSTALL_PREFIX/git-lfs/v$GIT_LFS_VERSION
-env CC=/opt/gcc-indiff/bin/gcc PREFIX=$SETUP_INSTALL_PREFIX/git-lfs/v$GIT_LFS_VERSION ./git-lfs-$GIT_LFS_VERSION/install.sh ;
+env PREFIX=$SETUP_INSTALL_PREFIX/git-lfs/v$GIT_LFS_VERSION ./git-lfs-$GIT_LFS_VERSION/install.sh ;
 
 if [[ -e "$SETUP_INSTALL_PREFIX/git-lfs/v$GIT_LFS_VERSION/bin" ]]; then
 for UPDATE_LNK in $SETUP_INSTALL_PREFIX/git-lfs/v$GIT_LFS_VERSION/bin/*; do
@@ -194,7 +178,7 @@ source ~/.bash_profile
 echo "执行成功, 请执行 source ~/.bash_profile! 测试  git clone https://gitee.com/qwop/test_git.git" 
 ' > load_git.sh
 
-zname=/workspace/git-indiff-centos7-$GIT_VERSION-x86_64-$(date +'%Y%m%d_%H%M')
+zname=/workspace/git-indiff-$GIT_VERSION-x86_64-$(date +'%Y%m%d_%H%M')
 zip -r -q -9 $zname.zip .
 mv $zname.zip $zname.xz
 # ls -lh *.xz
