@@ -192,6 +192,6 @@ CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ $VCPKG_ROOT/vcpkg install
             --triplet x64-linux --clean-after-build	|| cat $VCPKG_ROOT/installed/vcpkg/issue_body.md || true
 # curl[openssl] openssl zlib expat pcre2           
 CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ $VCPKG_ROOT/vcpkg install \
-            openssl curl[core,non-http,ssl,openssl,zstd] zlib expat pcre2 --triplet x64-linux-dynamic --clean-after-build || cat $VCPKG_ROOT/installed/vcpkg/issue_body.md || true
+            openssl curl[openssl] openssl zlib expat pcre2 --triplet x64-linux-dynamic --clean-after-build || cat $VCPKG_ROOT/installed/vcpkg/issue_body.md || true
             
 echo "CentOS 7 git-build environment setup completed successfully!"
