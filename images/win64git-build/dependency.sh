@@ -10,7 +10,7 @@ echo 'LC_CTYPE=zh_CN.UTF-8' >> /etc/environment
 
 git clone --filter=blob:none https://github.com/ninja-build/ninja.git --depth=1
 cd ninja
-cmake -Bbuild-cmake -DBUILD_TESTING=OFF -DCMAKE_EXE_LINKER_FLAGS="-static-libstdc++ -static-libgcc" -DCMAKE_BUILD_TYPE=release -DCMAKE_CXX_COMPILER=/opt/gcc-indiff/bin/g++
+cmake -Bbuild-cmake -DBUILD_TESTING=OFF -DCMAKE_EXE_LINKER_FLAGS="-static-libstdc++ -static-libgcc" -DCMAKE_BUILD_TYPE=release 
 cmake --build build-cmake
 rm -f /usr/bin/ninja
 cp build-cmake/ninja /usr/bin/ninja
