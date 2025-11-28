@@ -16,7 +16,12 @@ echo 'LC_CTYPE=zh_CN.UTF-8' >> /etc/environment
 # cp build-cmake/ninja /usr/bin/ninja
 # cd ..
 # rm -rf ninja
-# /usr/bin/ninja --version
+
+wget https://github.com/ninja-build/ninja/releases/download/v1.13.2/ninja-linux.zip
+unzip ninja-linux.zip -d .
+cp ninja /usr/bin/ninja
+rm -f ninja-linux.zip
+/usr/bin/ninja --version
 
 git clone --filter=blob:none --depth 1 https://github.com/microsoft/vcpkg.git /opt/vcpkg
 export VCPKG_ROOT=/opt/vcpkg
