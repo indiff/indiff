@@ -597,7 +597,7 @@ jobs:
             -e build_ver=${{ github.event.inputs.build_ver }} \
             -e GIT_DEF_VER=${{ needs.before_build.outputs.GIT_DEF_VER }} \
             -e gcc_indiff_centos7_url=${{ env.gcc_indiff_centos7_url }} \
-            ghcr.io/${{ github.repository_owner }}/git-build-centos7:latest \
+            ghcr.io/${{ github.repository_owner }}/win64git-build:latest \
             /bin/bash -c "ls -ll && sh ./images/win64git-build/git-build.sh"
 
       - name: Upload git package
