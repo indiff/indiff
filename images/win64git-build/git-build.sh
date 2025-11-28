@@ -73,14 +73,14 @@ mkdir -p $GIT_INSTALL_DIR/include
 # cp -v $VCPKG_ROOT/installed/x64-linux-dynamic/lib/*.a* $GIT_INSTALL_DIR/lib/ || true
 # cp -v $VCPKG_ROOT/installed/x64-linux-dynamic/lib/*.a* $GIT_INSTALL_DIR/lib64/ || true
 # cp -rv $VCPKG_ROOT/installed/x64-linux-dynamic/include/* $GIT_INSTALL_DIR/include/ || true
-DEPS_SRC="/opt/vcpkg/installed/x64-linux"
+DEPS_SRC="/opt/vcpkg/installed/x64-mingw-static"
 DEPS_DST="${GIT_INSTALL_DIR}"
 
 mkdir -p  "$DEPS_DST"/{include,lib,share}
 rsync -a  --copy-links "$DEPS_SRC/include/" "$DEPS_DST/include/"
 rsync -a  --copy-links "$DEPS_SRC/lib/" "$DEPS_DST/lib/" || true
 
-DEPS_SRC="/opt/vcpkg/installed/x64-linux-dynamic"
+DEPS_SRC="/opt/vcpkg/installed/x64-mingw-dynamic"
 rsync -a  --copy-links "$DEPS_SRC/include/" "$DEPS_DST/include/"
 rsync -a  --copy-links "$DEPS_SRC/lib/" "$DEPS_DST/lib/" || true
 # rsync -a  --copy-links "$DEPS_SRC/share/" "$DEPS_DST/share/" || true
