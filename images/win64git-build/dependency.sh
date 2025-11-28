@@ -16,8 +16,8 @@ export VCPKG_ROOT=/opt/vcpkg
 
 $VCPKG_ROOT/vcpkg install \
             apr \
-            --triplet x64-linux --clean-after-build	|| cat $VCPKG_ROOT/installed/vcpkg/issue_body.md || true
+            --triplet x64-mingw-static --clean-after-build	|| cat $VCPKG_ROOT/installed/vcpkg/issue_body.md || true
 $VCPKG_ROOT/vcpkg install \
-            openssl curl[openssl] openssl zlib expat pcre2 --triplet x64-linux-dynamic --clean-after-build || cat $VCPKG_ROOT/installed/vcpkg/issue_body.md || true
+            openssl curl[openssl] openssl zlib expat pcre2 --triplet x64-mingw-dynamic --clean-after-build || cat $VCPKG_ROOT/installed/vcpkg/issue_body.md || true
             
 echo "Win64 git-build environment setup completed successfully!"
