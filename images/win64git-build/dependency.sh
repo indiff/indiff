@@ -37,6 +37,12 @@ $VCPKG_ROOT/vcpkg install \
             apr \
             --triplet x64-mingw-static --clean-after-build	|| cat $VCPKG_ROOT/installed/vcpkg/issue_body.md || true
 $VCPKG_ROOT/vcpkg install \
-            openssl curl[openssl] openssl zlib expat pcre2 --triplet x64-mingw-dynamic --clean-after-build || cat $VCPKG_ROOT/installed/vcpkg/issue_body.md || true
+            openssl curl[openssl] openssl zlib expat pcre2 --triplet x64-mingw-dynamic --clean-after-build || cat $VCPKG_ROOT/installed/vcpkg/issue_body.md 
+# 查看配置输出日志
+cat /opt/vcpkg/buildtrees/curl/config-x64-mingw-dynamic-out.log
+
+# 查看错误日志
+cat /opt/vcpkg/buildtrees/curl/config-x64-mingw-dynamic-rel-CMakeConfigureLog.yaml.log
+cat /opt/vcpkg/buildtrees/curl/config-x64-mingw-dynamic-dbg-CMakeConfigureLog.yaml.log
             
 echo "Win64 git-build environment setup completed successfully!"
