@@ -77,8 +77,8 @@ DEPS_SRC="/opt/vcpkg/installed/x64-linux"
 DEPS_DST="${GIT_INSTALL_DIR}"
 
 mkdir -p  "$DEPS_DST"/{include,lib,share}
-rsync -a  --copy-links "$DEPS_SRC/include/" "$DEPS_DST/include/"
-rsync -a  --copy-links "$DEPS_SRC/lib/" "$DEPS_DST/lib/" || true
+# rsync -a  --copy-links "$DEPS_SRC/include/" "$DEPS_DST/include/"
+# rsync -a  --copy-links "$DEPS_SRC/lib/" "$DEPS_DST/lib/" || true
 
 DEPS_SRC="/opt/vcpkg/installed/x64-mingw-dynamic"
 rsync -a  --copy-links "$DEPS_SRC/include/" "$DEPS_DST/include/"
