@@ -7,13 +7,13 @@ echo 'LANGUAGE=zh_CN.UTF-8' >> /etc/environment
 echo 'LC_ALL=zh_CN.UTF-8' >> /etc/environment
 echo 'LC_CTYPE=zh_CN.UTF-8' >> /etc/environment
 
-# 在 Ubuntu/Debian 上
-sudo apt-get update
-# sudo apt-get install pkg-config-mingw-w64
+# 检查已安装的 pkg-config 版本
+ls /usr/bin/*pkg-config*
 
+# 创建符号链接
+sudo ln -s /usr/bin/x86_64-w64-mingw32-pkg-config /usr/bin/pkg-config
 
-sudo apt-get -y install pkg-config perl
-
+export PKG_CONFIG=/usr/bin/x86_64-w64-mingw32-pkg-config
 
 # git clone --filter=blob:none https://github.com/ninja-build/ninja.git --depth=1
 # cd ninja
