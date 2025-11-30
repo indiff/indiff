@@ -12,7 +12,8 @@ sudo apt-get update
 # sudo apt-get install pkg-config-mingw-w64
 
 
-sudo apt-get -y install pkg-config
+sudo apt-get -y install pkg-config perl
+
 
 # git clone --filter=blob:none https://github.com/ninja-build/ninja.git --depth=1
 # cd ninja
