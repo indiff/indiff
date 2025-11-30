@@ -9,7 +9,7 @@ echo 'LC_CTYPE=zh_CN.UTF-8' >> /etc/environment
 
 # 检查已安装的 pkg-config 版本
 ls /usr/bin/*pkg-config*
-
+sudo rm -f /usr/bin/pkg-config
 # 创建符号链接
 sudo ln -s /usr/bin/x86_64-w64-mingw32-pkg-config /usr/bin/pkg-config
 
