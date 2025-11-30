@@ -22,9 +22,11 @@ tar -xzf pkg-config-0.29.2.tar.gz
 cd pkg-config-0.29.2
 
 # 配置为交叉编译版本
-./configure --host=x86_64-w64-mingw32 --prefix=/usr/local/mingw-pkg-config
-make -j$(nproc)
+./configure --host=x86_64-w64-mingw32 --prefix=/usr --with-internal-glib
+make CFLAGS="-Ubool -O3" -j$(nproc)
 sudo make install
+pkg-config --version
+cd ..
 
 # git clone --filter=blob:none https://github.com/ninja-build/ninja.git --depth=1
 # cd ninja
