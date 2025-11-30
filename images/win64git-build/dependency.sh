@@ -23,8 +23,9 @@ tar -xzf pkg-config-0.29.2.tar.gz
 cd pkg-config-0.29.2
 
 # 配置为交叉编译版本
-env CFLAGS="-Ubool -O3" ./configure --host=x86_64-w64-mingw32 --target=x86_64-w64-mingw32 --prefix=/usr --with-internal-glib
+env CFLAGS="-Ubool -std=gnu11 -O3" ./configure --host=x86_64-w64-mingw32 --target=x86_64-w64-mingw32 --prefix=/usr --with-internal-glib
 make -j$(nproc)
+# make CFLAGS="-Ubool -std=gnu11 -O2" -j$(nproc)
 sudo make install
 pkg-config --version
 cd ..
