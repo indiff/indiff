@@ -15,6 +15,17 @@ sudo ln -s /usr/bin/x86_64-w64-mingw32-pkg-config /usr/bin/pkg-config
 
 export PKG_CONFIG=/usr/bin/x86_64-w64-mingw32-pkg-config
 
+
+# 下载 pkg-config 源码
+wget https://pkg-config.freedesktop.org/releases/pkg-config-0.29.2.tar.gz
+tar -xzf pkg-config-0.29.2.tar.gz
+cd pkg-config-0.29.2
+
+# 配置为交叉编译版本
+./configure --host=x86_64-w64-mingw32 --prefix=/usr/local/mingw-pkg-config
+make -j$(nproc)
+sudo make install
+
 # git clone --filter=blob:none https://github.com/ninja-build/ninja.git --depth=1
 # cd ninja
 # cmake -Bbuild-cmake -DBUILD_TESTING=OFF -DCMAKE_EXE_LINKER_FLAGS="-static-libstdc++ -static-libgcc" -DCMAKE_BUILD_TYPE=release 
