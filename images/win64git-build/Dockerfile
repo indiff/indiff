@@ -54,6 +54,8 @@ ENV CC="${GIT_TOOLCHAIN}-gcc" \
 	CMAKE_C_COMPILER_TARGET=x86_64-w64-mingw32 \
     CMAKE_CXX_COMPILER_TARGET=x86_64-w64-mingw32 \
     CMAKE_SYSTEM_NAME=Windows \
+    CMAKE_SYSTEM_PROCESSOR=x86_64 \
+    CMAKE_SYSTEM_VERSION=6.1 \
     CFLAGS="-static-libgcc -static-libstdc++ -I/opt/git/include -O3 -pipe -D_FORTIFY_SOURCE=2 -fstack-protector-strong" \
     CXXFLAGS="-static-libgcc -static-libstdc++ -I/opt/git/include -O3 -pipe -D_FORTIFY_SOURCE=2 -fstack-protector-strong" \
     LDFLAGS="-static-libgcc -static-libstdc++ -L/opt/git/lib -O3 -pipe -fstack-protector-strong" \
