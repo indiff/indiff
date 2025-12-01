@@ -3,7 +3,7 @@
 set -xe
 
 
-tree -d /opt/vcpkg/installed
+tree /opt/vcpkg/installed
 
 SETUP_INSTALL_PREFIX="/opt/git"
 # Require asciidoc and xmlto to build documents
@@ -25,7 +25,7 @@ fi
 tar -axvf re2c-$RE2C_VERSION.tar.xz ;
 cd re2c-$RE2C_VERSION ;
 ./configure --prefix=$SETUP_INSTALL_PREFIX/re2c/$RE2C_VERSION --with-pic=yes --host=x86_64-w64-mingw32 ;
-make CC=/opt/gcc-indiff/bin/gcc -j$(nproc) ;
+make -j$(nproc) ;
 make install;
 
 if [[ -e "$SETUP_INSTALL_PREFIX/re2c/$RE2C_VERSION/bin" ]]; then
@@ -96,8 +96,11 @@ done
 ./configure --prefix=$GIT_INSTALL_DIR \
 CFLAGS="-Os -s -m64 -flto -flto-compression-level=9 -ffunction-sections -fdata-sections -pipe -w -fPIC" \
 LDFLAGS="-flto -flto-compression-level=9 -Wl,--gc-sections -Wl,-O2 -Wl,--compress-debug-sections=zlib -Wl,-rpath=\$\$ORIGIN/../../lib64:\$\$ORIGIN/../../lib" \
---with-curl=$GIT_INSTALL_DIR --with-openssl=$GIT_INSTALL_DIR --with-libpcre2=$GIT_INSTALL_DIR \
---with-zlib=$GIT_INSTALL_DIR --with-expat=$GIT_INSTALL_DIR --with-editor=vim --host=x86_64-w64-mingw32  || cat config.log ;
+--with-curl=$GIT_INSTALL_DIR \
+--with-openssl=$GIT_INSTALL_DIR \
+--with-libpcre2=$GIT_INSTALL_DIR \
+--with-zlib=$GIT_INSTALL_DIR \ --with-expat=$GIT_INSTALL_DIR \
+--with-editor=vim \ --host=x86_64-w64-mingw32  || cat config.log ;
 # NO_GETTEXT=1  Set NO_GETTEXT to disable localization support and make Git only
 # NO_GITWEB=1 
 make NO_TCLTK=1 NO_PERL=1 \
