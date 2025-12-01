@@ -33,16 +33,17 @@ ADD cross.meson /cross.meson
 LABEL maintainer="indiff"
 LABEL description="CentOS 7 build environment for git compilation"
 
-ENV PATH="/opt/ct-ng/bin:${PATH}" \
-    GIT_TARGET_FLAGS="--pkg-config=pkg-config --cross-prefix=${GIT_TOOLCHAIN}- --arch=x86_64 --target-os=mingw32" \
-    GIT_CROSS_PREFIX=${GIT_TOOLCHAIN}- \
-    GIT_PREFIX=/opt/git \
-    GIT_DESTDIR=/opt/ffdest \
-    GIT_DESTPREFIX=/opt/ffdest/opt/git \
-    GIT_CMAKE_TOOLCHAIN=/toolchain.cmake \
-    PKG_CONFIG=pkg-config \
-    PKG_CONFIG_LIBDIR=/opt/git/lib/pkgconfig:/opt/git/share/pkgconfig \
-    CC="${GIT_TOOLCHAIN}-gcc" \
+# PATH="/opt/ct-ng/bin:${PATH}" \
+#     GIT_TARGET_FLAGS="--pkg-config=pkg-config --cross-prefix=${GIT_TOOLCHAIN}- --arch=x86_64 --target-os=mingw32" \
+#     GIT_CROSS_PREFIX=${GIT_TOOLCHAIN}- \
+#     GIT_PREFIX=/opt/git \
+#     GIT_DESTDIR=/opt/ffdest \
+#     GIT_DESTPREFIX=/opt/ffdest/opt/git \
+#     GIT_CMAKE_TOOLCHAIN=/toolchain.cmake \
+#     PKG_CONFIG=pkg-config \
+#     PKG_CONFIG_LIBDIR=/opt/git/lib/pkgconfig:/opt/git/share/pkgconfig \
+
+ENV CC="${GIT_TOOLCHAIN}-gcc" \
     CXX="${GIT_TOOLCHAIN}-g++" \
     LD="${GIT_TOOLCHAIN}-ld" \
     AR="${GIT_TOOLCHAIN}-gcc-ar" \
