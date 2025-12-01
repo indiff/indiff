@@ -39,6 +39,9 @@ echo 'LC_CTYPE=zh_CN.UTF-8' >> /etc/environment
 # cd ..
 # rm -rf ninja
 
+whereis pkg-config
+export PKG_CONFIG_EXECUTABLE=/usr/bin/pkg-config
+
 wget https://github.com/ninja-build/ninja/releases/download/v1.13.2/ninja-linux.zip
 unzip ninja-linux.zip -d .
 cp ninja /usr/bin/ninja
