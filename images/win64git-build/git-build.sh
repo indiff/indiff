@@ -99,8 +99,10 @@ LDFLAGS="-flto -flto-compression-level=9 -Wl,--gc-sections -Wl,-O2 -Wl,--compres
 --with-curl=$GIT_INSTALL_DIR \
 --with-openssl=$GIT_INSTALL_DIR \
 --with-libpcre2=$GIT_INSTALL_DIR \
---with-zlib=$GIT_INSTALL_DIR \ --with-expat=$GIT_INSTALL_DIR \
---with-editor=vim \ --host=x86_64-w64-mingw32  || cat config.log ;
+--with-zlib=$GIT_INSTALL_DIR \
+--with-expat=$GIT_INSTALL_DIR \
+--with-editor=vim \
+--host=x86_64-w64-mingw32 || cat config.log ;
 # NO_GETTEXT=1  Set NO_GETTEXT to disable localization support and make Git only
 # NO_GITWEB=1 
 make NO_TCLTK=1 NO_PERL=1 \
