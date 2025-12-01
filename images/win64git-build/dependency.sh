@@ -22,7 +22,7 @@ cd pkg-config-0.29.2
 
 # 配置为交叉编译版本  -D_USE_32BIT_TIME_T=0
 ./configure \
-CFLAGS="-Ubool -std=gnu11 -D_WIN32_WINNT=0x0600 -O2 " \
+CFLAGS="-Ubool -std=gnu11 -D_WIN32_WINNT=0x0600 -O2 -Wno-error=incompatible-pointer-types" \
 --enable-static \
 --disable-shared \
 --host=x86_64-w64-mingw32 --target=x86_64-w64-mingw32 --prefix=/usr --with-internal-glib
