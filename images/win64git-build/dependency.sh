@@ -8,23 +8,23 @@ echo 'LC_ALL=zh_CN.UTF-8' >> /etc/environment
 echo 'LC_CTYPE=zh_CN.UTF-8' >> /etc/environment
 
 # 检查已安装的 pkg-config 版本
-ls /usr/bin/*pkg-config*
-sudo rm -f /usr/bin/pkg-config
-# 创建符号链接
-sudo ln -s /usr/bin/x86_64-w64-mingw32-pkg-config /usr/bin/pkg-config
-
-export PKG_CONFIG=/usr/bin/x86_64-w64-mingw32-pkg-config
+# ls /usr/bin/*pkg-config*
+# sudo rm -f /usr/bin/pkg-config
+# # 创建符号链接
+# sudo ln -s /usr/bin/x86_64-w64-mingw32-pkg-config /usr/bin/pkg-config
+# export PKG_CONFIG=/usr/bin/x86_64-w64-mingw32-pkg-config
 
 
 # 下载 pkg-config 源码
 wget https://pkg-config.freedesktop.org/releases/pkg-config-0.29.2.tar.gz
-
 tar -xzf pkg-config-0.29.2.tar.gz
 cd pkg-config-0.29.2
 
-# 配置为交叉编译版本
+# 配置为交叉编译版本  -D_USE_32BIT_TIME_T=0
 ./configure \
-CFLAGS="-Ubool -std=gnu17 -D_WIN32_WINNT=0x0600 -D_USE_32BIT_TIME_T=0 -O2 " \
+CFLAGS="-Ubool -std=gnu11 -D_WIN32_WINNT=0x0600 -O2 " \
+--enable-static \
+--disable-shared \
 --host=x86_64-w64-mingw32 --target=x86_64-w64-mingw32 --prefix=/usr --with-internal-glib
 make -j$(nproc)
 # make CFLAGS="-Ubool -std=gnu11 -O2" -j$(nproc)
