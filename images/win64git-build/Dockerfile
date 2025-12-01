@@ -33,17 +33,21 @@ ADD cross.meson /cross.meson
 LABEL maintainer="indiff"
 LABEL description="CentOS 7 build environment for git compilation"
 
-# PATH="/opt/ct-ng/bin:${PATH}" \
-#     GIT_TARGET_FLAGS="--pkg-config=pkg-config --cross-prefix=${GIT_TOOLCHAIN}- --arch=x86_64 --target-os=mingw32" \
-#     GIT_CROSS_PREFIX=${GIT_TOOLCHAIN}- \
-#     GIT_PREFIX=/opt/git \
-#     GIT_DESTDIR=/opt/ffdest \
-#     GIT_DESTPREFIX=/opt/ffdest/opt/git \
-#     GIT_CMAKE_TOOLCHAIN=/toolchain.cmake \
-#     PKG_CONFIG=pkg-config \
-#     PKG_CONFIG_LIBDIR=/opt/git/lib/pkgconfig:/opt/git/share/pkgconfig \
 
-ENV CC="${GIT_TOOLCHAIN}-gcc" \
+# PKG_CONFIG=pkg-config \
+# PKG_CONFIG_LIBDIR=/opt/git/lib/pkgconfig:/opt/git/share/pkgconfig \
+
+ENV PATH="/opt/ct-ng/bin:${PATH}" \
+    GIT_TARGET_FLAGS="--pkg-config=pkg-config --cross-prefix=${GIT_TOOLCHAIN}- --arch=x86_64 --target-os=mingw32" \
+    GIT_CROSS_PREFIX=${GIT_TOOLCHAIN}- \
+    GIT_PREFIX=/opt/git \
+    GIT_DESTDIR=/opt/ffdest \
+    GIT_DESTPREFIX=/opt/ffdest/opt/git \
+    GIT_CMAKE_TOOLCHAIN=/toolchain.cmake \
+    CMAKE_SYSTEM_NAME=Windows \
+    CMAKE_SYSTEM_PROCESSOR=x86_64 \
+    CMAKE_SYSTEM_VERSION=6.1 \
+    CC="${GIT_TOOLCHAIN}-gcc" \
     CXX="${GIT_TOOLCHAIN}-g++" \
     LD="${GIT_TOOLCHAIN}-ld" \
     AR="${GIT_TOOLCHAIN}-gcc-ar" \
@@ -51,11 +55,6 @@ ENV CC="${GIT_TOOLCHAIN}-gcc" \
     NM="${GIT_TOOLCHAIN}-gcc-nm" \
     DLLTOOL="${GIT_TOOLCHAIN}-dlltool" \
     GENDEF="${GIT_TOOLCHAIN}-gendef" \
-	CMAKE_C_COMPILER_TARGET=x86_64-w64-mingw32 \
-    CMAKE_CXX_COMPILER_TARGET=x86_64-w64-mingw32 \
-    CMAKE_SYSTEM_NAME=Windows \
-    CMAKE_SYSTEM_PROCESSOR=x86_64 \
-    CMAKE_SYSTEM_VERSION=6.1 \
     CFLAGS="-static-libgcc -static-libstdc++ -I/opt/git/include -O3 -pipe -D_FORTIFY_SOURCE=2 -fstack-protector-strong" \
     CXXFLAGS="-static-libgcc -static-libstdc++ -I/opt/git/include -O3 -pipe -D_FORTIFY_SOURCE=2 -fstack-protector-strong" \
     LDFLAGS="-static-libgcc -static-libstdc++ -L/opt/git/lib -O3 -pipe -fstack-protector-strong" \
