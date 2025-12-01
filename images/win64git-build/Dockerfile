@@ -51,6 +51,10 @@ ENV CC="${GIT_TOOLCHAIN}-gcc" \
     NM="${GIT_TOOLCHAIN}-gcc-nm" \
     DLLTOOL="${GIT_TOOLCHAIN}-dlltool" \
     GENDEF="${GIT_TOOLCHAIN}-gendef" \
+	CMAKE_C_COMPILER_TARGET=x86_64-w64-mingw32 \
+    CMAKE_CXX_COMPILER_TARGET=x86_64-w64-mingw32 \
+    CMAKE_SYSTEM_NAME=Windows \
+    PKG_CONFIG_EXECUTABLE=$(which pkg-config) \
     CFLAGS="-static-libgcc -static-libstdc++ -I/opt/git/include -O3 -pipe -D_FORTIFY_SOURCE=2 -fstack-protector-strong" \
     CXXFLAGS="-static-libgcc -static-libstdc++ -I/opt/git/include -O3 -pipe -D_FORTIFY_SOURCE=2 -fstack-protector-strong" \
     LDFLAGS="-static-libgcc -static-libstdc++ -L/opt/git/lib -O3 -pipe -fstack-protector-strong" \
