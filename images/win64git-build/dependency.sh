@@ -16,21 +16,19 @@ echo 'LC_CTYPE=zh_CN.UTF-8' >> /etc/environment
 
 
 # 下载 pkg-config 源码
-wget https://pkg-config.freedesktop.org/releases/pkg-config-0.29.2.tar.gz
-tar -xzf pkg-config-0.29.2.tar.gz
-cd pkg-config-0.29.2
-
-# 配置为交叉编译版本  -D_USE_32BIT_TIME_T=0
-./configure \
-CFLAGS="-Ubool -std=gnu11 -D_WIN32_WINNT=0x0600 -O2 -Wno-error=incompatible-pointer-types" \
---enable-static \
---disable-shared \
---host=x86_64-w64-mingw32 --target=x86_64-w64-mingw32 --prefix=/usr --with-internal-glib
-make -j$(nproc)
-# make CFLAGS="-Ubool -std=gnu11 -O2" -j$(nproc)
-sudo make install
-pkg-config --version
-cd ..
+# wget https://pkg-config.freedesktop.org/releases/pkg-config-0.29.2.tar.gz
+# tar -xzf pkg-config-0.29.2.tar.gz
+# cd pkg-config-0.29.2
+# # 配置为交叉编译版本  -D_USE_32BIT_TIME_T=0
+# ./configure \
+# CFLAGS="-Ubool -std=gnu11 -D_WIN32_WINNT=0x0600 -O2 -Wno-error=incompatible-pointer-types" \
+# --enable-static \
+# --disable-shared \
+# --host=x86_64-w64-mingw32 --target=x86_64-w64-mingw32 --prefix=/usr --with-internal-glib
+# make -j$(nproc)
+# sudo make install
+# pkg-config --version
+# cd ..
 
 # git clone --filter=blob:none https://github.com/ninja-build/ninja.git --depth=1
 # cd ninja
@@ -55,7 +53,9 @@ $VCPKG_ROOT/vcpkg install \
             apr \
             --triplet x64-mingw-static --clean-after-build	|| cat $VCPKG_ROOT/installed/vcpkg/issue_body.md || true
 $VCPKG_ROOT/vcpkg install \
-            openssl curl[openssl] openssl zlib expat pcre2 --triplet x64-mingw-dynamic --clean-after-build || cat $VCPKG_ROOT/installed/vcpkg/issue_body.md 
+            openssl zlib expat pcre2 --triplet x64-mingw-dynamic --clean-after-build || cat $VCPKG_ROOT/installed/vcpkg/issue_body.md 
+$VCPKG_ROOT/vcpkg install \
+            curl[openssl] --triplet x64-mingw-dynamic --clean-after-build || cat $VCPKG_ROOT/installed/vcpkg/issue_body.md 
 # 查看配置输出日志
 cat /opt/vcpkg/buildtrees/curl/config-x64-mingw-dynamic-out.log
 
