@@ -98,6 +98,7 @@ tree $DEPS_DST
 PKG_CONFIG_PATH="$DEPS_DST/lib/pkgconfig:$PKG_CONFIG_PATH" \
 CFLAGS="-I$DEPS_DST/include/ -Os -s -m64 -pipe -w" \
 LDFLAGS="-L$DEPS_DST/lib -Wl,-rpath=\$\$ORIGIN/../../lib64:\$\$ORIGIN/../../lib" \
+ac_cv_type_socklen_t=yes \
 --with-curl=$GIT_INSTALL_DIR \
 --with-openssl=$GIT_INSTALL_DIR \
 --with-libpcre2=$GIT_INSTALL_DIR \
