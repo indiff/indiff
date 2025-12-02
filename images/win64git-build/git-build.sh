@@ -91,11 +91,11 @@ done
 
 tree $DEPS_DST
 
-
 # -fuse-ld=lld 
 ./configure --prefix=$GIT_INSTALL_DIR \
-CFLAGS="-Os -s -m64 -flto -flto-compression-level=9 -ffunction-sections -fdata-sections -pipe -w -fPIC" \
-LDFLAGS="-flto -flto-compression-level=9 -Wl,--gc-sections -Wl,-O2 -Wl,--compress-debug-sections=zlib -Wl,-rpath=\$\$ORIGIN/../../lib64:\$\$ORIGIN/../../lib" \
+PKG_CONFIG_PATH="$DEPS_DST/lib/pkgconfig:$PKG_CONFIG_PATH" \
+CFLAGS="-I$DEPS_DST/include/ -Os -s -m64 -flto -flto-compression-level=9 -ffunction-sections -fdata-sections -pipe -w -fPIC" \
+LDFLAGS="-L$DEPS_DST/lib -flto -flto-compression-level=9 -Wl,--gc-sections -Wl,-O2 -Wl,--compress-debug-sections=zlib -Wl,-rpath=\$\$ORIGIN/../../lib64:\$\$ORIGIN/../../lib" \
 --with-curl=$GIT_INSTALL_DIR \
 --with-openssl=$GIT_INSTALL_DIR \
 --with-libpcre2=$GIT_INSTALL_DIR \
