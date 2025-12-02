@@ -2,7 +2,6 @@
 # author: indiff
 set -xe
 
-
 tree /opt/vcpkg/installed
 
 SETUP_INSTALL_PREFIX="/opt/git"
@@ -22,7 +21,7 @@ if [[ $? -ne 0 ]]; then
     rm -f re2c-$RE2C_VERSION.tar.xz;
 fi
 fi
-tar -axvf re2c-$RE2C_VERSION.tar.xz ;
+tar -axf re2c-$RE2C_VERSION.tar.xz ;
 cd re2c-$RE2C_VERSION ;
 ./configure --prefix=$SETUP_INSTALL_PREFIX/re2c/$RE2C_VERSION --with-pic=yes --host=x86_64-w64-mingw32 ;
 make -j$(nproc) ;
@@ -41,8 +40,6 @@ fi
 cd ..;
 
 
-
-
 cd $SETUP_INSTALL_PREFIX
 # -z "${{ github.event.inputs.build_ver }}" || 
 # git 代码仓库直接在 centos7 编译， 会出现不兼容 glibc 问题,所以默认不使用 git 代码仓库编译
@@ -57,7 +54,7 @@ if [[ $? -ne 0 ]]; then
     rm -f git-$GIT_VERSION.tar.xz;
 fi
 fi
-tar -axvf git-$GIT_VERSION.tar.xz ;
+tar -axf git-$GIT_VERSION.tar.xz ;
 cd git-$GIT_VERSION;
 fi
 
@@ -91,6 +88,9 @@ if [ -d "$DEPS_SRC/$d/pkgconfig" ]; then
     rsync -a  --copy-links "$DEPS_SRC/$d/pkgconfig/" "$DEPS_DST/$d/pkgconfig/"
 fi
 done
+
+tree $DEPS_DST
+
 
 # -fuse-ld=lld 
 ./configure --prefix=$GIT_INSTALL_DIR \
