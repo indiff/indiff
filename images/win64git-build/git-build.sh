@@ -94,11 +94,24 @@ tree $DEPS_DST
 # -fuse-ld=lld  -Wl,--compress-debug-sections=zlib 
 # -flto-compression-level=9 -ffunction-sections -fdata-sections 
 # -flto -flto-compression-level=9 -Wl,--gc-sections -Wl,-O2
+ # AR=x86_64-w64-mingw32-ar \
+ #  RANLIB=x86_64-w64-mingw32-ranlib \
+ #  CFLAGS="-I/opt/git/git/2.49.0/include -Os -s -m64 -pipe" \
+ #  LDFLAGS="-L/opt/git/git/2.49.0/lib" \
+ #  # 添加必要的缓存变量
+ #  ac_cv_type_socklen_t=yes \
+ #  gl_cv_func_getcwd_null=yes \
+ #  gl_cv_func_getcwd_path_max=yes
 ./configure --prefix=$GIT_INSTALL_DIR \
 PKG_CONFIG_PATH="$DEPS_DST/lib/pkgconfig:$PKG_CONFIG_PATH" \
-CFLAGS="-I$DEPS_DST/include/ -Os -s -m64 -pipe -w" \
+CFLAGS="-I$DEPS_DST/include -Os -s -m64 -pipe -w" \
 LDFLAGS="-L$DEPS_DST/lib -Wl,-rpath=\$\$ORIGIN/../../lib64:\$\$ORIGIN/../../lib" \
 ac_cv_type_socklen_t=yes \
+AR=x86_64-w64-mingw32-ar \
+RANLIB=x86_64-w64-mingw32-ranlib \
+ac_cv_type_socklen_t=yes \
+gl_cv_func_getcwd_null=yes \
+gl_cv_func_getcwd_path_max=yes \
 --with-curl=$GIT_INSTALL_DIR \
 --with-openssl=$GIT_INSTALL_DIR \
 --with-libpcre2=$GIT_INSTALL_DIR \
