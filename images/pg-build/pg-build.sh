@@ -54,10 +54,10 @@ rsync -a --copy-links "/opt/gcc-indiff/lib64/"    "$DEPS_DST/lib64/"    || true
 git clone --depth 1 -b "${PG_VERSION_TAG}" https://github.com/postgres/postgres.git postgresql
 cd postgresql
 mkdir build && cd build
-export CPPFLAGS="-I${DEPS_DST}/include"
-export CXXFLAGS="-I${DEPS_DST}/include"
-export CFLAGS="-I${DEPS_DST}/include"
-export LDFLAGS="-L${DEPS_DST}/lib -Wl,-rpath,'\$ORIGIN/../lib:${DEPS_DST}/lib'"
+export CPPFLAGS="-I${DEPS_DST}/include -O2 -march=native "
+export CXXFLAGS="-I${DEPS_DST}/include -O2 -march=native "
+export CFLAGS="-I${DEPS_DST}/include -O2 -march=native "
+export LDFLAGS="-L${DEPS_DST}/lib -Wl,-rpath,'\$ORIGIN/../lib:${DEPS_DST}/lib' -Wl,--strip-all -Wl,--gc-sections "
 export LZ4_CFLAGS="-I${DEPS_DST}/include"
 export LZ4_LIBS="-L${DEPS_DST}/lib -llz4"
 export PKG_CONFIG_PATH=${DEPS_DST}/lib/pkgconfig:${DEPS_DST}/share/pkgconfig
