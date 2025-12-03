@@ -15,6 +15,29 @@ I'm A software developer .
 - [DBCHM](https://github.com/indiff/DBCHM)
 - [Jutils](https://github.com/indiff/Jutils_Plugin)
 
+## 🚀 Database Performance Benchmark Tool
+
+This repository includes a comprehensive Java-based performance benchmark tool for comparing custom-built databases against standard Java data sources.
+
+### Features
+- ✅ Support for MySQL, PostgreSQL, MariaDB
+- ✅ 8 performance test scenarios
+- ✅ Automatic report generation (Console, JSON, Markdown)
+- ✅ HikariCP connection pooling
+- ✅ Detailed performance metrics
+
+### Quick Start
+
+```bash
+cd performance-benchmark
+mvn clean package
+./run-benchmark.sh benchmark.properties
+```
+
+📖 [View Benchmark Guide](BENCHMARK_GUIDE.md) | 📊 [Sample Report](performance-benchmark/SAMPLE_REPORT.md)
+
+---
+
 🌱 I’m currently learning:
 
 &ensp;&ensp;&ensp;![Java](https://img.shields.io/badge/-Java-007396?style=flat-square&logo=Java&logoColor=fff) ![TypeScript](https://img.shields.io/badge/-TypeScript-007ACC?style=flat-square&logo=TypeScript&logoColor=fff) ![JavaScript](https://img.shields.io/badge/-JavaScript-F7DF1E?style=flat-square&logo=JavaScript&logoColor=000)
