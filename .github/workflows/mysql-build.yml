@@ -66,7 +66,7 @@ on:
     - cron: '3 7 * * *' # UTC 时间 1:00 对应中国时间 9:00          
 env:
   gcc_indiff_ubuntu_url: "https://github.com/indiff/gcc-build/releases/download/20250416_1126/gcc-indiff-ubuntu-x86_64-20250416_1125.xz"
-  gcc_indiff_centos7_url: "https://github.com/indiff/gcc-build/releases/download/20250908_0934_16.0.0/gcc-indiff-centos7-16.0.0-x86_64-20250908_0931.xz"
+  gcc_indiff_centos7_url: "https://github.com/qwop/gcc-build/releases/download/20251217_1252_16.0.0/gcc-indiff-centos7-16.0.0-x86_64-20251217_1046.xz"
   MYSQL_BRANCH: "${{ github.event.inputs.mysql_build_branch }}"          # mysql
   VCPKG_ROOT: "/opt/vcpkg"
   # 打包前安装根目录
