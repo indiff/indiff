@@ -221,10 +221,15 @@ export TRIPLET=x64-linux
 
 # 用 vcpkg 安装动态 curl （会生成 libcurl.so 并自动依赖 libssl/libcrypto)
 # cyrus-sasl openldap  use bundle protobuf
-CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ $VCPKG_ROOT/vcpkg install jemalloc --triplet x64-linux-dynamic --clean-after-build || cat /opt/vcpkg/buildtrees/jemalloc/make-all-x64-linux-dynamic-dbg-err.log
-CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ LDOPTS="-fuse-ld=mold" $VCPKG_ROOT/vcpkg install numactl openssl curl[core,non-http,ssl,openssl,zstd] snappy krb5 lmdb --triplet x64-linux-dynamic --clean-after-build \
+CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ \
+    LDFLAGS="-fuse-ld=mold -Wl,--strip-all -Wl,--gc-sections -L/opt/gcc-indiff/lib64 -L/opt/gcc-indiff/lib -Wl,-rpath,/opt/gcc-indiff/lib64 -Wl,-rpath,/opt/gcc-indiff/lib" \
+    CFLAGS="-I/opt/gcc-indiff/include" \
+    CXXFLAGS="-I/opt/gcc-indiff/include" \
+    $VCPKG_ROOT/vcpkg install jemalloc --triplet x64-linux-dynamic --clean-after-build || cat /opt/vcpkg/buildtrees/jemalloc/make-all-x64-linux-dynamic-dbg-err.log
+    
+CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ LDOPTS="-fuse-ld=mold -Wl,--strip-all -Wl,--gc-sections " $VCPKG_ROOT/vcpkg install numactl openssl curl[core,non-http,ssl,openssl,zstd] snappy krb5 lmdb --triplet x64-linux-dynamic --clean-after-build \
             || cat /workspace/vcpkg/installed/vcpkg/issue_body.md
-CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ LDOPTS="-fuse-ld=mold" $VCPKG_ROOT/vcpkg install \
+CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ LDOPTS="-fuse-ld=mold -Wl,--strip-all -Wl,--gc-sections " $VCPKG_ROOT/vcpkg install \
             zlib \
             lz4 \
             zstd \
