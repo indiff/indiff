@@ -221,7 +221,7 @@ export TRIPLET=x64-linux
 
 # 用 vcpkg 安装动态 curl （会生成 libcurl.so 并自动依赖 libssl/libcrypto)
 # cyrus-sasl openldap  use bundle protobuf
-# CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ $VCPKG_ROOT/vcpkg install jemalloc --triplet x64-linux-dynamic --clean-after-build || cat /opt/vcpkg/buildtrees/jemalloc/aclocal-x64-linux-dynamic-err.log
+CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ $VCPKG_ROOT/vcpkg install jemalloc --triplet x64-linux-dynamic --clean-after-build || cat /opt/vcpkg/buildtrees/jemalloc/aclocal-x64-linux-dynamic-err.log
 CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ LDOPTS="-fuse-ld=mold" $VCPKG_ROOT/vcpkg install numactl openssl curl[core,non-http,ssl,openssl,zstd] snappy krb5 lmdb --triplet x64-linux-dynamic --clean-after-build \
             || cat /workspace/vcpkg/installed/vcpkg/issue_body.md
 CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ LDOPTS="-fuse-ld=mold" $VCPKG_ROOT/vcpkg install \
@@ -237,13 +237,13 @@ CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ LDOPTS="-fuse-ld=mold" $V
             libaio  \
             --triplet $TRIPLET --clean-after-build	\
             || cat /workspace/vcpkg/installed/vcpkg/issue_body.md
-cd /opt/
-git clone https://github.com/facebook/jemalloc.git --deptch 1
-cd jemalloc
-sh autogen.sh
-env CC=/opt/gcc-indiff/bin/gcc ./configure --prefix=/opt/fbjemalloc
-make -j$(nproc)
-make install
+# cd /opt/
+# git clone https://github.com/facebook/jemalloc.git --depth 1
+# cd jemalloc
+# sh autogen.sh
+# env CC=/opt/gcc-indiff/bin/gcc ./configure --prefix=/opt/fbjemalloc
+# make -j$(nproc)
+# make install
 
 
 cd /opt
