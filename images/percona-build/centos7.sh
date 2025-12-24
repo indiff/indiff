@@ -230,6 +230,7 @@ export TRIPLET=x64-linux
 cd /opt/
 git clone https://github.com/facebook/jemalloc.git --depth 1
 cd jemalloc
+sed -i 's/std::__throw_bad_alloc()/throw std::bad_alloc()/g' src/jemalloc_cpp.cpp
 sh autogen.sh
 env CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ ./configure --prefix=/opt/fbjemalloc
 make -j$(nproc)
