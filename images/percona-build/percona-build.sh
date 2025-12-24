@@ -8,22 +8,27 @@ TRIPLET=x64-linux
 DEPS_SRC="$VCPKG_ROOT/installed/$TRIPLET"
 DEPS_DST="$PERCONA_INSTALL_PREFIX"
 ## use lld-indiff
-curl -#Lo lld-indiff.zip "https://github.com/indiff/gcc-build/releases/download/20251126_1903_16.0.0/lld-indiff-centos7-x86_64-20251126_1903.xz"
-unzip lld-indiff.zip -d /opt/gcc-indiff
+# curl -#Lo lld-indiff.zip "https://github.com/indiff/gcc-build/releases/download/20251126_1903_16.0.0/lld-indiff-centos7-x86_64-20251126_1903.xz"
+# unzip lld-indiff.zip -d /opt/gcc-indiff
 export LD_LIBRARY_PATH="/opt/gcc-indiff/lib64:/opt/gcc-indiff/lib:$LD_LIBRARY_PATH"
-ln -sf /opt/gcc-indiff/bin/ld.lld /usr/bin/ld.lld
-/opt/gcc-indiff/bin/gcc -fuse-ld=lld -Wl,--version -xc - <<< 'int main(){return 0;}'
-export LDFLAGS="-fuse-ld=lld"
+rm -f /usr/bin/ld.mold
+ln -sf /opt/gcc-indiff/bin/ld.mold /usr/bin/ld.mold
+/opt/gcc-indiff/bin/gcc -fuse-ld=mold -Wl,--version -xc - <<< 'int main(){return 0;}'
+# export LDFLAGS="-fuse-ld=lld"
+export LDFLAGS="-fuse-ld=mold"
 
 mkdir -p "$DEPS_DST"/{include,lib,lib64}
-
-
 
 
 DEPS_SRC="$VCPKG_ROOT/installed/x64-linux"
 # sync icu68
 rsync -a "/usr/local/icu68/include/" "$DEPS_DST/include/"
 rsync -a "/usr/local/icu68/lib/"    "$DEPS_DST/lib64/"    || true
+
+# sync jemalloc 
+
+rsync -a "/opt/fbjemalloc/include/" "$DEPS_DST/include/"
+rsync -a "/opt/fbjemalloc/lib/"    "$DEPS_DST/lib64/"    || true
 
 rsync -a "$DEPS_SRC/include/" "$DEPS_DST/include/"
 rsync -a --copy-links "$DEPS_SRC/lib/"      "$DEPS_DST/lib/"      || true
@@ -158,7 +163,7 @@ env CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ CPPFLAGS="-I$DEPS_DST
  -I$OPENLADP_DIR/servers/slapd \
  -I$OPENLADP_DIR/servers/lloadd \
  -I$OPENLADP_DIR/clients/tools" \
-    LDFLAGS="-L$DEPS_DST/lib -fuse-ld=lld " \
+    LDFLAGS="-L$DEPS_DST/lib -fuse-ld=mold  -Wl,--strip-all -Wl,--gc-sections " \
     ../configure --prefix=$DEPS_DST --with-cyrus-sasl --with-tls="openssl" \
     --build=x86_64-pc-linux-gnu --host=x86_64-pc-linux-gnu --target=x86_64-pc-linux-gnu \
     --enable-mdb \
@@ -213,7 +218,7 @@ cmake .. -G Ninja \
     -DCMAKE_CXX_FLAGS="-I$DEPS_DST/include  -O2 -march=native " \
     -DCMAKE_PREFIX_PATH="$DEPS_DST/lib" \
     -DCMAKE_INSTALL_PREFIX="$DEPS_DST" \
-    -DCMAKE_EXE_LINKER_FLAGS="-L/usr/lib64 -L/opt/gcc-indiff/lib64 -L$DEPS_DST/lib -fuse-ld=lld -Wl,--strip-all -Wl,--gc-sections -Wl,--no-as-needed -ldl " \
+    -DCMAKE_EXE_LINKER_FLAGS="-L/usr/lib64 -L/opt/gcc-indiff/lib64 -L$DEPS_DST/lib -fuse-ld=mold -Wl,--strip-all -Wl,--gc-sections -Wl,--no-as-needed -ldl " \
     -DCMAKE_SHARED_LINKER_FLAGS="-L/usr/lib64 -L/opt/gcc-indiff/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--strip-all -Wl,--gc-sections -Wl,--no-as-needed -ldl" \
     -DCMAKE_MODULE_LINKER_FLAGS="-L/usr/lib64 -L/opt/gcc-indiff/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--strip-all -Wl,--gc-sections -Wl,--no-as-needed -ldl" \
     -DWITH_BOOST=boost -DDOWNLOAD_BOOST=1 -DWITH_BOOST=../boost \
