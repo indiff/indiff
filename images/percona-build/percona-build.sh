@@ -213,6 +213,10 @@ unset PROTOC
 export PKG_CONFIG_PATH=$DEPS_DST/lib/pkgconfig:$PKG_CONFIG_PATH
 # -DPROTOBUF_PROTOC_LIBRARY="$DEPS_DST/lib/$PROTOC_LIB_BASENAME"  \
 # -DPROTOBUF_PROTOC_EXECUTABLE="$VCPKG_ROOT/installed/x64-linux-dynamic/tools/protobuf/$PROTOC_BASENAME"  \
+# 临时修复方案
+cp /opt/gcc-indiff/include/c++/16/bits/intcmp.h /opt/gcc-indiff/include/c++/16/bits/intcmp.h.bak
+sed -i 's/\bin_range\b/__in_range/g' /opt/gcc-indiff/include/c++/16/bits/intcmp.h
+
 cmake .. -G Ninja \
     -DCMAKE_C_FLAGS="-I$DEPS_DST/include  -O2 -march=native " \
     -DCMAKE_CXX_FLAGS="-I$DEPS_DST/include  -O2 -march=native " \
