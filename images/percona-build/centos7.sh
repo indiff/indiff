@@ -149,6 +149,10 @@ yum -y install git
 # build ninja 
 curl -sLo /opt/gcc-indiff.zip "${gcc_indiff_centos7_url}"
 unzip /opt/gcc-indiff.zip -d /opt/gcc-indiff
+ln -sf /opt/gcc-indiff/bin/ld.mold /usr/bin/ld.mold
+export LD_LIBRARY_PATH=/opt/gcc-indiff/lib64:/opt/gcc-indiff/lib
+export LDOPTS="-fuse-ld=mold "
+
 git clone --filter=blob:none https://github.com/ninja-build/ninja.git --depth=1
 cd ninja
 cmake -Bbuild-cmake -DBUILD_TESTING=OFF -DCMAKE_EXE_LINKER_FLAGS="-static-libstdc++ -static-libgcc" -DCMAKE_BUILD_TYPE=release -DCMAKE_CXX_COMPILER=/opt/gcc-indiff/bin/g++
@@ -189,7 +193,6 @@ cmake --version || true
 ninja --version || true
 
 export PATH=/opt/gcc-indiff/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-export LD_LIBRARY_PATH=/opt/gcc-indiff/lib64:/opt/gcc-indiff/lib
 git clone --filter=blob:none --depth 1 https://github.com/microsoft/vcpkg.git /opt/vcpkg
 /opt/vcpkg/bootstrap-vcpkg.sh
 export VCPKG_ROOT=/opt/vcpkg
@@ -218,9 +221,25 @@ export TRIPLET=x64-linux
 
 # 用 vcpkg 安装动态 curl （会生成 libcurl.so 并自动依赖 libssl/libcrypto)
 # cyrus-sasl openldap  use bundle protobuf
-CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ $VCPKG_ROOT/vcpkg install numactl openssl curl[core,non-http,ssl,openssl,zstd] snappy jemalloc krb5 lmdb --triplet x64-linux-dynamic --clean-after-build \
+# CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ \
+#     LDFLAGS="-fuse-ld=mold -Wl,--strip-all -Wl,--gc-sections -L/opt/gcc-indiff/lib64 -L/opt/gcc-indiff/lib -Wl,-rpath,/opt/gcc-indiff/lib64 -Wl,-rpath,/opt/gcc-indiff/lib" \
+#     CFLAGS="-I/opt/gcc-indiff/include" \
+#     CXXFLAGS="-I/opt/gcc-indiff/include" \
+#     $VCPKG_ROOT/vcpkg install jemalloc --triplet x64-linux-dynamic --clean-after-build || cat /opt/vcpkg/buildtrees/jemalloc/make-all-x64-linux-dynamic-dbg-err.log
+
+cd /opt/
+git clone https://github.com/facebook/jemalloc.git --depth 1
+cd jemalloc
+sed -i 's/std::__throw_bad_alloc()/throw std::bad_alloc()/g' src/jemalloc_cpp.cpp
+sh autogen.sh
+env CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ ./configure --prefix=/opt/fbjemalloc
+make -j$(nproc)
+make install
+
+cd /opt/vcpkg/
+CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ LDOPTS="-fuse-ld=mold -Wl,--strip-all -Wl,--gc-sections " $VCPKG_ROOT/vcpkg install numactl openssl curl[core,non-http,ssl,openssl,zstd] snappy krb5 lmdb --triplet x64-linux-dynamic --clean-after-build \
             || cat /workspace/vcpkg/installed/vcpkg/issue_body.md
-CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ $VCPKG_ROOT/vcpkg install \
+CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ LDOPTS="-fuse-ld=mold -Wl,--strip-all -Wl,--gc-sections " $VCPKG_ROOT/vcpkg install \
             zlib \
             lz4 \
             zstd \
@@ -234,6 +253,9 @@ CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ $VCPKG_ROOT/vcpkg install
             --triplet $TRIPLET --clean-after-build	\
             || cat /workspace/vcpkg/installed/vcpkg/issue_body.md
 
+
+
+cd /opt
 # install icu  
 wget https://github.com/unicode-org/icu/releases/download/release-68-2/icu4c-68_2-src.tgz
 tar -xzf icu4c-68_2-src.tgz

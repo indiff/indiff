@@ -8,22 +8,27 @@ TRIPLET=x64-linux
 DEPS_SRC="$VCPKG_ROOT/installed/$TRIPLET"
 DEPS_DST="$PERCONA_INSTALL_PREFIX"
 ## use lld-indiff
-curl -#Lo lld-indiff.zip "https://github.com/indiff/gcc-build/releases/download/20251126_1903_16.0.0/lld-indiff-centos7-x86_64-20251126_1903.xz"
-unzip lld-indiff.zip -d /opt/gcc-indiff
+# curl -#Lo lld-indiff.zip "https://github.com/indiff/gcc-build/releases/download/20251126_1903_16.0.0/lld-indiff-centos7-x86_64-20251126_1903.xz"
+# unzip lld-indiff.zip -d /opt/gcc-indiff
 export LD_LIBRARY_PATH="/opt/gcc-indiff/lib64:/opt/gcc-indiff/lib:$LD_LIBRARY_PATH"
-ln -sf /opt/gcc-indiff/bin/ld.lld /usr/bin/ld.lld
-/opt/gcc-indiff/bin/gcc -fuse-ld=lld -Wl,--version -xc - <<< 'int main(){return 0;}'
-export LDFLAGS="-fuse-ld=lld"
+rm -f /usr/bin/ld.mold
+ln -sf /opt/gcc-indiff/bin/ld.mold /usr/bin/ld.mold
+/opt/gcc-indiff/bin/gcc -fuse-ld=mold -Wl,--version -xc - <<< 'int main(){return 0;}'
+# export LDFLAGS="-fuse-ld=lld"
+export LDFLAGS="-fuse-ld=mold"
 
 mkdir -p "$DEPS_DST"/{include,lib,lib64}
-
-
 
 
 DEPS_SRC="$VCPKG_ROOT/installed/x64-linux"
 # sync icu68
 rsync -a "/usr/local/icu68/include/" "$DEPS_DST/include/"
 rsync -a "/usr/local/icu68/lib/"    "$DEPS_DST/lib64/"    || true
+
+# sync jemalloc 
+
+rsync -a "/opt/fbjemalloc/include/" "$DEPS_DST/include/"
+rsync -a "/opt/fbjemalloc/lib/"    "$DEPS_DST/lib64/"    || true
 
 rsync -a "$DEPS_SRC/include/" "$DEPS_DST/include/"
 rsync -a --copy-links "$DEPS_SRC/lib/"      "$DEPS_DST/lib/"      || true
@@ -99,6 +104,11 @@ make -j$(nproc)
 make install
 cd ..
 
+function wget_gnu(){
+     local suffix=$1
+     wget https://ftp.gnu.org/gnu/$suffix || wget https://mirrors.aliyun.com/gnu/$suffix || wget http://mirrors.tencent.com/gnu/$suffix
+}
+          
 pkg-config --version || true
 wget https://pkgconfig.freedesktop.org/releases/pkg-config-0.29.2.tar.gz
 tar xzf pkg-config-0.29.2.tar.gz
@@ -111,7 +121,8 @@ cd ..
 
 # insatll automake
 # git clone --depth=1 https://github.com/autotools-mirror/automake.git
-wget https://ftp.gnu.org/gnu/automake/automake-1.18.1.tar.gz
+# wget https://ftp.gnu.org/gnu/automake/automake-1.18.1.tar.gz
+wget_gnu automake/automake-1.18.1.tar.gz
 tar -xzf automake-1.18.1.tar.gz
 cd automake-1.18.1
 ./bootstrap     # 如果存在
@@ -123,7 +134,8 @@ cd ..
 
 # insatll libtool
 # git clone --depth=1 https://https.git.savannah.gnu.org/git/libtool.git
-wget http://mirrors.tencent.com/gnu/libtool/libtool-2.5.4.tar.gz
+# wget http://mirrors.tencent.com/gnu/libtool/libtool-2.5.4.tar.gz
+wget_gnu libtool/libtool-2.5.4.tar.gz
 tar -xzf libtool-2.5.4.tar.gz
 cd libtool-2.5.4
 ./bootstrap  --force     # 如果存在
@@ -132,7 +144,8 @@ make -j$(nproc)
 make install
 cd ..
 
-wget https://ftp.gnu.org/gnu/m4/m4-1.4.20.tar.gz
+# wget https://ftp.gnu.org/gnu/m4/m4-1.4.20.tar.gz
+wget_gnu m4/m4-1.4.20.tar.gz
 tar -xzf m4-1.4.20.tar.gz
 cd m4-1.4.20
 env CC=/opt/gcc-indiff/bin/gcc CFLAGS="-I/opt/mygcc/include " \
@@ -158,7 +171,7 @@ env CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ CPPFLAGS="-I$DEPS_DST
  -I$OPENLADP_DIR/servers/slapd \
  -I$OPENLADP_DIR/servers/lloadd \
  -I$OPENLADP_DIR/clients/tools" \
-    LDFLAGS="-L$DEPS_DST/lib -fuse-ld=lld " \
+    LDFLAGS="-L$DEPS_DST/lib -fuse-ld=mold  -Wl,--strip-all -Wl,--gc-sections " \
     ../configure --prefix=$DEPS_DST --with-cyrus-sasl --with-tls="openssl" \
     --build=x86_64-pc-linux-gnu --host=x86_64-pc-linux-gnu --target=x86_64-pc-linux-gnu \
     --enable-mdb \
@@ -208,12 +221,16 @@ unset PROTOC
 export PKG_CONFIG_PATH=$DEPS_DST/lib/pkgconfig:$PKG_CONFIG_PATH
 # -DPROTOBUF_PROTOC_LIBRARY="$DEPS_DST/lib/$PROTOC_LIB_BASENAME"  \
 # -DPROTOBUF_PROTOC_EXECUTABLE="$VCPKG_ROOT/installed/x64-linux-dynamic/tools/protobuf/$PROTOC_BASENAME"  \
+# 临时修复方案
+cp /opt/gcc-indiff/include/c++/16/bits/intcmp.h /opt/gcc-indiff/include/c++/16/bits/intcmp.h.bak
+sed -i 's/\bin_range\b/__in_range/g' /opt/gcc-indiff/include/c++/16/bits/intcmp.h
+
 cmake .. -G Ninja \
     -DCMAKE_C_FLAGS="-I$DEPS_DST/include  -O2 -march=native " \
     -DCMAKE_CXX_FLAGS="-I$DEPS_DST/include  -O2 -march=native " \
     -DCMAKE_PREFIX_PATH="$DEPS_DST/lib" \
     -DCMAKE_INSTALL_PREFIX="$DEPS_DST" \
-    -DCMAKE_EXE_LINKER_FLAGS="-L/usr/lib64 -L/opt/gcc-indiff/lib64 -L$DEPS_DST/lib -fuse-ld=lld -Wl,--strip-all -Wl,--gc-sections -Wl,--no-as-needed -ldl " \
+    -DCMAKE_EXE_LINKER_FLAGS="-L/usr/lib64 -L/opt/gcc-indiff/lib64 -L$DEPS_DST/lib -fuse-ld=mold -Wl,--strip-all -Wl,--gc-sections -Wl,--no-as-needed -ldl " \
     -DCMAKE_SHARED_LINKER_FLAGS="-L/usr/lib64 -L/opt/gcc-indiff/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--strip-all -Wl,--gc-sections -Wl,--no-as-needed -ldl" \
     -DCMAKE_MODULE_LINKER_FLAGS="-L/usr/lib64 -L/opt/gcc-indiff/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--strip-all -Wl,--gc-sections -Wl,--no-as-needed -ldl" \
     -DWITH_BOOST=boost -DDOWNLOAD_BOOST=1 -DWITH_BOOST=../boost \
