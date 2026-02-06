@@ -1,0 +1,23 @@
+[database]
+host = 127.0.0.1
+port = 1521
+service_name = orcl
+user = your_username
+password = your_password
+
+[export]
+# Output directory for metadata files (will also be the git repo)
+output_dir = ./oracle_metadata_repo
+# Oracle object types to export (comma-separated)
+# Supported: PROCEDURE,FUNCTION,TRIGGER,PACKAGE,PACKAGE_BODY,VIEW,TYPE,TYPE_BODY,SYNONYM,SEQUENCE,TABLE
+object_types = PROCEDURE,FUNCTION,TRIGGER,PACKAGE,PACKAGE_BODY,VIEW
+# Schemas to export (comma-separated, leave empty for current user)
+schemas =
+# File encoding
+encoding = utf-8
+
+[git]
+# Whether to auto-commit changes
+auto_commit = true
+# Commit message prefix
+commit_prefix = [oracle-meta]
