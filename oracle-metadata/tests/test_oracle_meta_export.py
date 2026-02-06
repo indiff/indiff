@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Tests for oracle_meta_export – all Oracle interactions are mocked."""
+"""Tests for oracle_meta_export -- all Oracle interactions are mocked."""
 
 import configparser
 import os

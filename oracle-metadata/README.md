@@ -1,5 +1,7 @@
 # Oracle Metadata Export Tool
 
+Export stored procedures, triggers, packages, functions, views and other metadata from an Oracle database (compatible with 11.2.0.4+) and save them as `.sql` files in a local Git repository. The first run initialises the repository and creates an initial commit; subsequent runs detect changes and commit them automatically, leveraging Git's diff capabilities to track metadata evolution.
+
 通过 Oracle 数据库（兼容 11.2.0.4+）获取存储过程、触发器、包、函数、视图等元数据，以 `.sql` 文件形式保存到本地 Git 仓库。首次运行自动初始化仓库并提交；后续每次运行自动检测变更并提交，借助 Git 的 diff 能力追踪元数据变化。
 
 ## Features / 功能
