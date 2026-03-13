@@ -154,9 +154,9 @@ yum clean all
 
 
 # install cmake v4.1.1
-curl -sLo cmake3.tar.gz https://github.com/Kitware/CMake/releases/download/v4.1.1/cmake-4.1.1-linux-x86_64.tar.gz
+curl -sLo cmake3.tar.gz https://github.com/Kitware/CMake/releases/download/v4.2.3/cmake-4.2.3-linux-x86_64.tar.gz
 tar -xzf cmake3.tar.gz
-mv cmake-4.1.1-linux-x86_64 /opt/cmake
+mv cmake-4.2.3-linux-x86_64 /opt/cmake
 rm -f /usr/bin/cmake
 ln -sf /opt/cmake/bin/cmake /usr/bin/cmake
 
