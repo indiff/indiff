@@ -1,0 +1,9 @@
+---
+# Variables for standalone ADG primary node
+cluster_name:  ""
+scan_name:     ""
+domain_name:   "localdomain"
+db_type:       "SI"
+orestart:      true
+adg_role:      "primary"
+prefix_name:   "ora-primary"

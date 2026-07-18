@@ -1,0 +1,16 @@
+---
+# Execute the GI configuration tool (configToolAllCommands) as the grid user.
+# Only required for cluster (CRS_CONFIG) installs; HA_CONFIG includes config in gridSetup.
+
+- name: Run GI configuration tool (gridSetup.sh -executeConfigTools)
+  become: true
+  become_user: grid
+  shell: |
+    "{{ gi_home }}/gridSetup.sh" \
+      -executeConfigTools -silent -ignorePrereq \
+      oracle.install.asm.SYSASMPassword="{{ sys_password }}" \
+      oracle.install.asm.monitorPassword="{{ sys_password }}"
+  register: gi_config_result
+  failed_when: gi_config_result.rc not in [0, 6]
+  changed_when: gi_config_result.rc in [0, 6]
+  when: not orestart

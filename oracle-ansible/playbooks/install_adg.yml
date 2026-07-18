@@ -1,0 +1,99 @@
+---
+# install_adg.yml — Deploy Oracle 19c standalone primary + standalone standby (ADG).
+#
+# Usage:
+#   ansible-playbook -i inventory/hosts.yml playbooks/install_adg.yml
+#
+# Requires inventory groups: adg_primary (1 node), adg_standby (1 node)
+
+- name: OS baseline — ADG primary
+  hosts: adg_primary
+  become: true
+  gather_facts: true
+  vars:
+    arch_type: adg
+    orestart: true
+    db_type: SI
+    adg_role: primary
+  roles:
+    - role: common
+
+- name: OS baseline — ADG standby
+  hosts: adg_standby
+  become: true
+  gather_facts: true
+  vars:
+    arch_type: adg
+    orestart: true
+    db_type: SI
+    adg_role: standby
+  roles:
+    - role: common
+
+- name: Oracle Restart (GI) — ADG primary
+  hosts: adg_primary
+  become: true
+  gather_facts: true
+  vars:
+    arch_type: adg
+    orestart: true
+    db_type: SI
+    adg_role: primary
+  roles:
+    - role: oracle_gi
+
+- name: Oracle Restart (GI) — ADG standby
+  hosts: adg_standby
+  become: true
+  gather_facts: true
+  vars:
+    arch_type: adg
+    orestart: true
+    db_type: SI
+    adg_role: standby
+  roles:
+    - role: oracle_gi
+
+- name: Oracle RDBMS software — ADG primary (create DB)
+  hosts: adg_primary
+  become: true
+  gather_facts: true
+  vars:
+    arch_type: adg
+    orestart: true
+    db_type: SI
+    adg_role: primary
+  roles:
+    - role: oracle_db
+
+- name: Oracle RDBMS software — ADG standby (software only, no DB create)
+  hosts: adg_standby
+  become: true
+  gather_facts: true
+  vars:
+    arch_type: adg
+    orestart: true
+    db_type: SI
+    adg_role: standby
+  roles:
+    - role: oracle_db
+
+- name: Configure ADG — primary
+  hosts: adg_primary
+  become: true
+  gather_facts: true
+  vars:
+    arch_type: adg
+    adg_role: primary
+  roles:
+    - role: oracle_adg
+
+- name: Configure ADG — standby
+  hosts: adg_standby
+  become: true
+  gather_facts: true
+  vars:
+    arch_type: adg
+    adg_role: standby
+  roles:
+    - role: oracle_adg

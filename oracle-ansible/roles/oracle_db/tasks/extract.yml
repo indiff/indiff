@@ -1,0 +1,39 @@
+---
+- name: Verify DB installer exists locally
+  stat:
+    path: "{{ oracle_software_local_dir }}/{{ db_software }}"
+  register: db_zip_stat
+  delegate_to: localhost
+  run_once: true
+
+- name: Fail if DB installer not found locally
+  fail:
+    msg: "DB installer not found at {{ oracle_software_local_dir }}/{{ db_software }}"
+  when: not db_zip_stat.stat.exists
+  delegate_to: localhost
+  run_once: true
+
+- name: Copy DB installer to target node
+  copy:
+    src:   "{{ oracle_software_local_dir }}/{{ db_software }}"
+    dest:  "{{ oracle_stage_dir }}/{{ db_software }}"
+    owner: oracle
+    group: oinstall
+    mode:  "0644"
+
+- name: Create DB home directory
+  file:
+    path:  "{{ db_home }}"
+    state: directory
+    owner: oracle
+    group: oinstall
+    mode:  "0775"
+
+- name: Extract DB software into DB home
+  become: true
+  become_user: oracle
+  unarchive:
+    src:        "{{ oracle_stage_dir }}/{{ db_software }}"
+    dest:       "{{ db_home }}"
+    remote_src: true
+    creates:    "{{ db_home }}/runInstaller"

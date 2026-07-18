@@ -1,0 +1,23 @@
+---
+- name: Verify ADG Data Guard status on primary
+  become: true
+  become_user: oracle
+  shell: |
+    export ORACLE_HOME="{{ db_home }}"
+    export ORACLE_SID="{{ db_name }}1"
+    sqlplus -s / as sysdba <<'EOF'
+    SET LINESIZE 200
+    SELECT DB_UNIQUE_NAME, ROLE, OPEN_MODE, PROTECTION_MODE, PROTECTION_LEVEL
+    FROM V$DATABASE;
+    SELECT DEST_ID, STATUS, TARGET, ARCHIVER, SCHEDULE, DESTINATION, DB_UNIQUE_NAME
+    FROM V$ARCHIVE_DEST WHERE TARGET='STANDBY' AND STATUS='VALID';
+    EXIT;
+    EOF
+  register: adg_status
+  changed_when: false
+  run_once: true
+
+- name: Display ADG status
+  debug:
+    msg: "{{ adg_status.stdout_lines }}"
+  run_once: true

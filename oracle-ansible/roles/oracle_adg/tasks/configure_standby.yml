@@ -1,0 +1,114 @@
+---
+# Configure the standby database using DUPLICATE ... FOR STANDBY FROM ACTIVE DATABASE.
+# Runs on the standby node as oracle user.
+
+- name: Determine primary node address
+  set_fact:
+    primary_host: >-
+      {{
+        (groups['adg_primary'] | default([]) | first)
+        if groups['adg_primary'] | default([]) | length > 0
+        else (groups['rac_primary'] | default([]) | first)
+      }}
+    standby_sid: "{{ adg_standby_db_name }}1"
+
+- name: Install password file on standby
+  become: true
+  become_user: oracle
+  shell: |
+    cp /tmp/orapw_{{ db_name }} "{{ db_home }}/dbs/orapw{{ standby_sid }}"
+    chmod 640 "{{ db_home }}/dbs/orapw{{ standby_sid }}"
+  args:
+    creates: "{{ db_home }}/dbs/orapw{{ standby_sid }}"
+
+- name: Create standby init parameter file (init)
+  template:
+    src:   init_standby.ora.j2
+    dest:  "{{ db_home }}/dbs/init{{ adg_standby_db_name }}.ora"
+    owner: oracle
+    group: oinstall
+    mode:  "0640"
+
+- name: Create TNS entries on standby
+  template:
+    src:  tnsnames.ora.j2
+    dest: "{{ db_home }}/network/admin/tnsnames.ora"
+    owner: oracle
+    group: oinstall
+    mode:  "0644"
+
+- name: Create listener.ora on standby
+  template:
+    src:  listener.ora.j2
+    dest: "{{ db_home }}/network/admin/listener.ora"
+    owner: oracle
+    group: oinstall
+    mode:  "0644"
+
+- name: Add standby entry to /etc/oratab
+  lineinfile:
+    path:   /etc/oratab
+    line:   "{{ adg_standby_db_name }}:{{ db_home }}:N"
+    create: true
+
+- name: Start standby listener
+  become: true
+  become_user: oracle
+  shell: |
+    export ORACLE_HOME="{{ db_home }}"
+    $ORACLE_HOME/bin/lsnrctl start
+  changed_when: false
+  ignore_errors: true
+
+- name: Start standby instance in NOMOUNT
+  become: true
+  become_user: oracle
+  shell: |
+    export ORACLE_HOME="{{ db_home }}"
+    export ORACLE_SID="{{ standby_sid }}"
+    echo "STARTUP NOMOUNT PFILE='{{ db_home }}/dbs/init{{ adg_standby_db_name }}.ora'; EXIT;" | sqlplus -s / as sysdba
+  register: nomount_result
+  changed_when: nomount_result.rc == 0
+
+- name: Duplicate database for standby (RMAN active duplication)
+  become: true
+  become_user: oracle
+  shell: |
+    export ORACLE_HOME="{{ db_home }}"
+    export ORACLE_SID="{{ standby_sid }}"
+    rman target sys/"{{ sys_password }}"@{{ db_name }} auxiliary sys/"{{ sys_password }}"@{{ adg_standby_db_name }} <<'EOF'
+    DUPLICATE TARGET DATABASE
+      FOR STANDBY
+      FROM ACTIVE DATABASE
+      DORECOVER
+      SPFILE
+        SET DB_UNIQUE_NAME="{{ adg_standby_db_name }}"
+        SET FAL_SERVER="{{ db_name }}"
+        SET FAL_CLIENT="{{ adg_standby_db_name }}"
+        SET STANDBY_FILE_MANAGEMENT="{{ adg_standby_file_manage }}"
+        SET LOG_ARCHIVE_DEST_1="LOCATION=USE_DB_RECOVERY_FILE_DEST VALID_FOR=(ALL_LOGFILES,ALL_ROLES) DB_UNIQUE_NAME={{ adg_standby_db_name }}"
+        SET LOG_ARCHIVE_DEST_2="SERVICE={{ db_name }} ASYNC VALID_FOR=(ONLINE_LOGFILES,PRIMARY_ROLE) DB_UNIQUE_NAME={{ db_name }}"
+        SET LOG_ARCHIVE_CONFIG="DG_CONFIG=({{ db_name }},{{ adg_standby_db_name }})"
+      NOFILENAMECHECK;
+    EXIT;
+    EOF
+  register: rman_dup_result
+  failed_when: rman_dup_result.rc != 0
+  changed_when: rman_dup_result.rc == 0
+  args:
+    creates: /tmp/.adg_standby_duplicated
+
+- name: Create sentinel file after successful duplication
+  file:
+    path:  /tmp/.adg_standby_duplicated
+    state: touch
+    mode:  "0644"
+
+- name: Start Managed Recovery (apply redo) on standby
+  become: true
+  become_user: oracle
+  shell: |
+    export ORACLE_HOME="{{ db_home }}"
+    export ORACLE_SID="{{ standby_sid }}"
+    echo "ALTER DATABASE RECOVER MANAGED STANDBY DATABASE USING CURRENT LOGFILE DISCONNECT FROM SESSION; EXIT;" | sqlplus -s / as sysdba
+  changed_when: false

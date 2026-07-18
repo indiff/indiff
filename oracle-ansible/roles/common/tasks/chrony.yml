@@ -1,0 +1,23 @@
+---
+- name: Enable and start chronyd
+  service:
+    name:    chronyd
+    state:   started
+    enabled: true
+
+- name: Configure chrony — use local node1 as NTP source for other nodes
+  template:
+    src:   chrony.conf.j2
+    dest:  /etc/chrony.conf
+    owner: root
+    group: root
+    mode:  "0644"
+  notify: restart chronyd
+
+- name: Open NTP port in firewalld (if active)
+  firewalld:
+    service:   ntp
+    permanent: true
+    state:     enabled
+  when: ansible_facts.services['firewalld.service'] is defined
+  ignore_errors: true

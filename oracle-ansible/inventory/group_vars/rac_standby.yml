@@ -1,0 +1,12 @@
+---
+# Variables specific to nodes in the rac_standby group
+cluster_name:     "rac2-cluster"
+scan_name:        "rac2-scan"
+scan_port:        1521
+scan_ip1:         "192.168.57.115"
+scan_ip2:         "192.168.57.116"
+scan_ip3:         "192.168.57.117"
+prefix_name:      "rac19-standby"
+domain_name:      "localdomain"
+db_type:          "RAC"
+adg_role:         "standby"

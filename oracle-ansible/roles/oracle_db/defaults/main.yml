@@ -1,0 +1,10 @@
+---
+db_home:          "/u01/app/oracle/product/19.3.0/dbhome_1"
+oracle_base:      "/u01/app/oracle"
+db_software:      "LINUX.X64_193000_db_home.zip"
+oracle_stage_dir: "/tmp/oracle_stage"
+db_name:          "ORCL"
+pdb_name:         "PDB1"
+db_type:          "RAC"
+cdb:              true
+orestart:         false

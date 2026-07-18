@@ -1,0 +1,106 @@
+---
+# ============================================================
+# Global variables — shared by ALL architectures
+# ============================================================
+
+# ── Architecture selection ────────────────────────────────────────────────
+# Supported values:
+#   rac              : RAC cluster (primary only, no standby)
+#   adg              : Standalone primary + standalone standby (Active Data Guard)
+#   rac_adg          : RAC primary cluster + RAC standby cluster (ADG between clusters)
+#   rac_standalone_adg: RAC primary cluster + single-node standby (ADG)
+arch_type: rac
+
+# ── Oracle software versions ──────────────────────────────────────────────
+oracle_version: "19.3.0.0"
+gi_version:     "19.3.0.0"
+db_major:       "19"
+
+gi_software:  "LINUX.X64_193000_grid_home.zip"
+db_software:  "LINUX.X64_193000_db_home.zip"
+
+# Path on the Ansible controller where the installer zips are stored.
+# They will be copied/staged to each target node under oracle_stage_dir.
+oracle_software_local_dir: "{{ playbook_dir }}/../ORCL_software"
+
+# ── Target filesystem layout ──────────────────────────────────────────────
+oracle_base:      "/u01/app/oracle"
+grid_base:        "/u01/app/grid"
+gi_home:          "/u01/app/{{ gi_version.split('.')[0:3] | join('.') }}/grid"
+db_home:          "/u01/app/oracle/product/{{ oracle_version.split('.')[0:3] | join('.') }}/dbhome_1"
+ora_inventory:    "/u01/app/oraInventory"
+oracle_stage_dir: "/tmp/oracle_stage"
+
+# ── OS user / group credentials ───────────────────────────────────────────
+root_password:   "DemoRoot_1"
+grid_password:   "DemoGrid_1"
+oracle_password: "DemoOra_1"
+
+# ── Database credentials ──────────────────────────────────────────────────
+sys_password: "DemoSys_1"
+pdb_password: "DemoPdb_1"
+
+# ── Database layout ───────────────────────────────────────────────────────
+db_name:  "ORCL"
+pdb_name: "PDB1"
+db_type:  "RAC"            # RAC | RACONE | SI (overridden per arch)
+cdb:      true
+
+# ── Locale ───────────────────────────────────────────────────────────────
+ora_languages: "en,zh_CN"
+system_timezone: "Asia/Shanghai"
+
+# ── ASM disk configuration ────────────────────────────────────────────────
+asm_disk_num:   4           # minimum 4 shared disks
+asm_disk_size:  20          # GB per disk
+p1_ratio:       80          # % of disk space for DATA diskgroup (rest goes to RECO)
+asm_discovery_string: "/dev/ORCL_*"
+
+# ── Grid Infrastructure options ───────────────────────────────────────────
+nomgmtdb:  true             # skip Grid Infrastructure Management Repository
+orestart:  false            # true = Oracle Restart (single-instance); false = RAC cluster
+
+# ── Packages ─────────────────────────────────────────────────────────────
+oracle_required_packages:
+  - bc
+  - binutils
+  - compat-libcap1
+  - compat-libstdc++-33
+  - elfutils-libelf
+  - elfutils-libelf-devel
+  - fontconfig-devel
+  - gcc
+  - gcc-c++
+  - glibc
+  - glibc-devel
+  - ksh
+  - libaio
+  - libaio-devel
+  - libX11
+  - libXau
+  - libXi
+  - libXtst
+  - libXrender
+  - libXrender-devel
+  - libgcc
+  - libstdc++
+  - libstdc++-devel
+  - libxcb
+  - make
+  - net-tools
+  - nfs-utils
+  - python
+  - python-configshell
+  - python-rtslib
+  - python-six
+  - targetcli
+  - smartmontools
+  - sysstat
+  - unzip
+  - libnsl
+  - expect
+  - chrony
+
+# ── SSH / connectivity ────────────────────────────────────────────────────
+ansible_user: root
+ansible_ssh_common_args: "-o StrictHostKeyChecking=no"

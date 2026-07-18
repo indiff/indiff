@@ -1,0 +1,12 @@
+# Standby init.ora — managed by Ansible
+# Minimal parameter file to allow startup in NOMOUNT before RMAN duplication.
+DB_NAME={{ db_name }}
+DB_UNIQUE_NAME={{ adg_standby_db_name }}
+ORACLE_BASE={{ oracle_base }}
+
+DB_RECOVERY_FILE_DEST=+RECO
+DB_RECOVERY_FILE_DEST_SIZE=10G
+
+AUDIT_FILE_DEST={{ oracle_base }}/admin/{{ adg_standby_db_name }}/adump
+AUDIT_TRAIL=db
+ENABLE_PLUGGABLE_DATABASE={{ 'TRUE' if cdb else 'FALSE' }}

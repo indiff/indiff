@@ -1,0 +1,12 @@
+---
+# common role defaults
+oracle_base:      "/u01/app/oracle"
+grid_base:        "/u01/app/grid"
+ora_inventory:    "/u01/app/oraInventory"
+oracle_stage_dir: "/tmp/oracle_stage"
+system_timezone:  "Asia/Shanghai"
+ora_languages:    "en,zh_CN"
+root_password:    "DemoRoot_1"
+grid_password:    "DemoGrid_1"
+oracle_password:  "DemoOra_1"
+domain_name:      "localdomain"

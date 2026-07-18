@@ -1,0 +1,10 @@
+---
+adg_role:        "primary"    # primary | standby
+db_name:         "ORCL"
+db_home:         "/u01/app/oracle/product/19.3.0/dbhome_1"
+adg_standby_db_name: "ORCLSTBY"
+adg_log_mode:    "archivelog"
+adg_protection_mode: "MAXIMUM_PERFORMANCE"
+adg_transport_mode: "ASYNC"
+adg_redo_log_size_mb: 50
+adg_standby_file_manage: "AUTO"

@@ -1,0 +1,80 @@
+---
+# Partition and mount /u01 on the second disk (sdb)
+# The first disk (sda) is the OS disk; /u01 goes on sdb.
+- name: Detect u01 disk device
+  shell: lsblk -dno NAME | grep -v "^sda$\|^nvme0n1$\|^vda$" | head -1
+  register: u01_disk_raw
+  changed_when: false
+
+- name: Set u01 disk fact
+  set_fact:
+    u01_disk: "/dev/{{ u01_disk_raw.stdout | trim }}"
+
+- name: Create GPT partition table on u01 disk
+  command: "parted -s {{ u01_disk }} mklabel gpt"
+  args:
+    creates: "/dev/{{ u01_disk_raw.stdout | trim }}1"
+
+- name: Create single partition on u01 disk
+  command: "parted -s {{ u01_disk }} mkpart primary xfs 1MiB 100%"
+  args:
+    creates: "/dev/{{ u01_disk_raw.stdout | trim }}1"
+
+- name: Probe new partition
+  command: "partprobe {{ u01_disk }}"
+  changed_when: false
+
+- name: Format u01 partition as XFS
+  filesystem:
+    fstype: xfs
+    dev:    "{{ u01_disk }}1"
+
+- name: Create /u01 mount point
+  file:
+    path:  /u01
+    state: directory
+    mode:  "0755"
+
+- name: Mount /u01
+  mount:
+    path:   /u01
+    src:    "{{ u01_disk }}1"
+    fstype: xfs
+    opts:   defaults,noatime
+    state:  mounted
+
+# ── ASM shared disks ────────────────────────────────────────────────────────
+# Shared ASM disks start at sdc (index 2). They are partitioned into two
+# parts: P1 (DATA, p1_ratio %) and P2 (RECO, remainder).
+- name: Detect ASM disk devices
+  shell: |
+    lsblk -dno NAME | grep -v "^sda$\|^sdb$\|^nvme0n1$\|^vda$\|^vdb$" | head -{{ asm_disk_num }}
+  register: asm_disks_raw
+  changed_when: false
+
+- name: Set ASM disk list fact
+  set_fact:
+    asm_disks: "{{ asm_disks_raw.stdout_lines | map('trim') | list }}"
+
+- name: Partition ASM disks into P1/P2
+  shell: |
+    DEV="/dev/{{ item }}"
+    P1_SIZE="{{ p1_ratio }}"
+    parted -s "${DEV}" mklabel gpt
+    parted -s "${DEV}" mkpart primary 1MiB ${P1_SIZE}%
+    parted -s "${DEV}" mkpart primary ${P1_SIZE}% 100%
+    partprobe "${DEV}"
+  loop: "{{ asm_disks }}"
+  args:
+    creates: "/dev/{{ item }}1"
+
+- name: Create udev rules for ASM disk labels
+  template:
+    src:  99-oracle-asmdevices.rules.j2
+    dest: /etc/udev/rules.d/99-oracle-asmdevices.rules
+    mode: "0644"
+  notify: reload udev rules
+
+- name: Trigger udev to apply ASM labels
+  shell: udevadm trigger && udevadm settle
+  changed_when: false

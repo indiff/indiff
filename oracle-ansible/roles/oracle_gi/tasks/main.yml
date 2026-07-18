@@ -1,0 +1,15 @@
+---
+- name: Transfer and extract Grid Infrastructure software
+  include_tasks: extract.yml
+
+- name: Install Grid Infrastructure (silent)
+  include_tasks: install.yml
+
+- name: Run GI root scripts
+  include_tasks: root_scripts.yml
+
+- name: Execute GI configuration tool
+  include_tasks: config.yml
+
+- name: Create RECO disk group
+  include_tasks: diskgroup.yml

@@ -1,0 +1,16 @@
+---
+# Run orainstRoot.sh and root.sh on each node in sequence.
+# root.sh must run on node1 first, then node2 (cluster timing requirement).
+
+- name: Run orainstRoot.sh
+  shell: "{{ ora_inventory }}/orainstRoot.sh"
+  args:
+    creates: /etc/oraInst.loc
+
+- name: Run GI root.sh on current node
+  shell: "{{ gi_home }}/root.sh"
+  register: gi_root_result
+  changed_when: gi_root_result.rc == 0
+  failed_when:  gi_root_result.rc != 0
+  args:
+    creates: /etc/oracle/olr.loc

@@ -1,0 +1,28 @@
+# chrony.conf — managed by Ansible
+{% set primary_nodes = groups['rac_primary'] | default([]) %}
+{% set adg_primary_nodes = groups['adg_primary'] | default([]) %}
+{% set ntp_master_ip = '' %}
+{% if primary_nodes | length > 0 %}
+{% set ntp_master_ip = hostvars[primary_nodes[0]]['public_ip'] %}
+{% elif adg_primary_nodes | length > 0 %}
+{% set ntp_master_ip = hostvars[adg_primary_nodes[0]]['public_ip'] %}
+{% endif %}
+
+{% if ntp_master_ip != '' and inventory_hostname != (primary_nodes[0] if primary_nodes else adg_primary_nodes[0]) %}
+# Sync from the primary node
+server {{ ntp_master_ip }} iburst
+{% else %}
+# Primary / standalone node: use public NTP pools
+pool 2.pool.ntp.org iburst
+pool cn.pool.ntp.org iburst
+{% endif %}
+
+driftfile /var/lib/chrony/drift
+makestep 1.0 3
+rtcsync
+logdir /var/log/chrony
+
+{% if (ntp_master_ip == '' or inventory_hostname == (primary_nodes[0] if primary_nodes else adg_primary_nodes[0] if adg_primary_nodes else '')) %}
+# Allow other hosts in the same subnets to synchronise from this host
+allow 192.168.0.0/16
+{% endif %}

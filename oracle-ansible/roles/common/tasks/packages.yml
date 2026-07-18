@@ -1,0 +1,40 @@
+---
+- name: Install Oracle required OS packages
+  yum:
+    name: "{{ oracle_required_packages }}"
+    state: present
+  vars:
+    oracle_required_packages:
+      - bc
+      - binutils
+      - compat-libcap1
+      - compat-libstdc++-33
+      - elfutils-libelf
+      - elfutils-libelf-devel
+      - fontconfig-devel
+      - gcc
+      - gcc-c++
+      - glibc
+      - glibc-devel
+      - ksh
+      - libaio
+      - libaio-devel
+      - libX11
+      - libXau
+      - libXi
+      - libXtst
+      - libXrender
+      - libXrender-devel
+      - libgcc
+      - libstdc++
+      - libstdc++-devel
+      - libxcb
+      - make
+      - net-tools
+      - nfs-utils
+      - python
+      - sysstat
+      - unzip
+      - libnsl
+      - expect
+      - chrony
