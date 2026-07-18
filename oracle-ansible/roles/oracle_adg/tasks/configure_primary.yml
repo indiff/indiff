@@ -21,6 +21,7 @@
     ALTER SYSTEM ARCHIVE LOG CURRENT;
     EXIT;
     EOF
+    touch /tmp/.adg_archivelog_done
   register: archivelog_result
   changed_when: archivelog_result.rc == 0
   run_once: true

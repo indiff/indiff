@@ -19,7 +19,8 @@
       -redundancy EXTERNAL \
       -au_size 4 \
       -sysAsmPassword "{{ sys_password }}" \
-      -asmsnmpPassword "{{ sys_password }}"
+      -asmsnmpPassword "{{ sys_password }}" && \
+    touch /tmp/.reco_dg_created
   register: reco_dg_result
   failed_when: reco_dg_result.rc != 0
   changed_when: reco_dg_result.rc == 0
