@@ -175,23 +175,23 @@ env CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ CPPFLAGS="-I$DEPS_DST
     ../configure --prefix=$DEPS_DST --with-cyrus-sasl --with-tls="openssl" \
     --build=x86_64-pc-linux-gnu --host=x86_64-pc-linux-gnu --target=x86_64-pc-linux-gnu \
     --enable-mdb \
-    --enable-dynamic \
-    --enable-modules \
+    --enable-dynamic \
+    --enable-modules \
     --enable-versioning \
-    --enable-slapd \
-    --enable-overlays \
-    --enable-debug \
-    --enable-syslog  \
+    --enable-slapd \
+    --enable-overlays \
+    --enable-debug \
+    --enable-syslog \
     --enable-accesslog \
-    --enable-rlookups \
-    --enable-crypt \
+    --enable-rlookups \
+    --enable-crypt \
     --enable-lmpasswd \
-    --enable-spasswd \
-    --enable-homedir=mod \
-    --enable-memberof=mod  \
-    --enable-refint=mod \
-    --enable-syncprov=mod \
-    --enable-balancer=mod \
+    --enable-spasswd \
+    --enable-homedir=mod \
+    --enable-memberof=mod \
+    --enable-refint=mod \
+    --enable-syncprov=mod \
+    --enable-balancer=mod \
     --with-pic \
     --with-gnu-ld
 # env LDFLAGS="/opt/gcc-indiff/lib64:$DEPS_DST/lib:$DEPS_DST/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++  \

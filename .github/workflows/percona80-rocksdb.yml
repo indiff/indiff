@@ -10,9 +10,9 @@ on:
   #   branches:
   #     - main
   workflow_dispatch:
-  schedule:
+  #schedule:
     #- cron: '07 10 * * *' # 每天凌晨2点（UTC），对应每天上午10点（CST）, 这里对应的是中国时区的是 18 点
-    - cron: '3 7 * * *' # UTC 时间 1:00 对应中国时间 9:00          
+    #- cron: '3 7 * * *' # UTC 时间 1:00 对应中国时间 9:00          
 env:
   gcc_indiff_ubuntu_url: "https://github.com/indiff/gcc-build/releases/download/20250416_1126/gcc-indiff-ubuntu-x86_64-20250416_1125.xz"
   gcc_indiff_centos7_url: "https://github.com/indiff/gcc-build/releases/download/20250908_0934_16.0.0/gcc-indiff-centos7-16.0.0-x86_64-20250908_0931.xz"

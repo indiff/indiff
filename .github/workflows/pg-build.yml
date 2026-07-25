@@ -577,3 +577,15 @@ jobs:
           gh release create ${{ env.TAG_NAME }} -F hello.md "artifacts/*.xz"
         env:
           GITHUB_TOKEN: ${{ github.token }}
+
+      - name: Retain only the 10 newest releases
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          releases="$(gh release list --limit 1000 --json tagName,createdAt)"
+
+          echo "$releases" | jq -r '.[10:][] | .tagName' | while IFS= read -r tag; do
+            echo "Deleting release and tag: $tag"
+            gh release delete "$tag" --yes --cleanup-tag
+          done
