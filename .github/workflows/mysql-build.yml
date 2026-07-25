@@ -96,7 +96,7 @@ jobs:
       - name: Free Disk-Space
         run: df -h && sudo apt-get clean && docker system prune -a -f && sudo rm -rf /opt/ghc /usr/local/.ghcup /usr/local/lib/android && df -h && docker search ubuntu
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -173,7 +173,7 @@ jobs:
         target: ${{ fromJSON( github.event.inputs.demo_build_flag == 'true' && '["demo"]' || '["mysql","fbmysql","percona","mariadb"]' ) }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -225,7 +225,7 @@ jobs:
         run: df -h && sudo apt-get clean && docker system prune -a -f && sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc && df -h && free -h
 
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -304,7 +304,7 @@ jobs:
         run: df -h && sudo apt-get clean && docker system prune -a -f && sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc && df -h && free -h
 
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -377,7 +377,7 @@ jobs:
       runs-on: ubuntu-latest
 
       steps:
-        - uses: actions/checkout@v5
+        - uses: actions/checkout@v7
         - name: Restoring artifacts
           uses: actions/download-artifact@main
           with:
