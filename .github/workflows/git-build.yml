@@ -479,7 +479,7 @@ jobs:
           echo "Docker cache key: ${CACHE_KEY}"
 
       - name: Build and push Docker image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: images/git-build
           push: true
@@ -564,7 +564,7 @@ jobs:
           echo "Docker cache key: ${CACHE_KEY}"
 
       - name: Build and push Docker image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: images/win64git-build
           push: true
