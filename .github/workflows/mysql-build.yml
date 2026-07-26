@@ -127,7 +127,7 @@ jobs:
           echo "cache_key=${CACHE_KEY}" >> $GITHUB_OUTPUT
           echo "Docker cache key: ${CACHE_KEY}"  build-${{ matrix.target }}-centos7:
       - name: Build and push Docker image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: images/${{ matrix.target }}-build
           push: true
@@ -255,7 +255,7 @@ jobs:
           echo "Docker cache key: ${CACHE_KEY}"
 
       - name: Build and push Docker image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: images/mysql-build
           push: true
@@ -334,7 +334,7 @@ jobs:
           echo "Docker cache key: ${CACHE_KEY}"
 
       - name: Build and push Docker image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: images/fbmysql-build
           push: true
