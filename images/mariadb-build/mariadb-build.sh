@@ -18,6 +18,11 @@ fi
 cd server
 git submodule update --init --recursive
 
+# GCC/glibc headers can define strncmp as a macro; in current MariaDB sources this
+# breaks one STRING_WITH_LEN usage in extra/mariadb_migrate_config_file.c.
+# Patch it in-place to keep the build green for the mariadb target.
+sed -i 's/strncmp(option, STRING_WITH_LEN("audit_log"))/strncmp(option, "audit_log", sizeof("audit_log") - 1)/' extra/mariadb_migrate_config_file.c
+
 
 DEPS_SRC="$VCPKG_ROOT/installed/x64-linux"
 DEPS_DST="$MARIADB_INSTALL_PREFIX"
@@ -130,5 +135,4 @@ zip -r -q -9 /workspace/mariadb-centos7-x86_64-$(date +'%Y%m%d_%H%M').xz .
 
 # free memory
 free -h
-
 
