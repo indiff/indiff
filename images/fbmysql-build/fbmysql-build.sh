@@ -2,10 +2,15 @@
 # author: indiff
 set -xe
 
-tree $VCPKG_ROOT/installed/x64-linux-dynamic
-PROTOC_BASENAME=$(basename $VCPKG_ROOT/installed/x64-linux-dynamic/tools/protobuf/protoc-*)
-PROTOC_LIB_BASENAME=$(basename $VCPKG_ROOT/installed/x64-linux-dynamic/lib/libprotoc.so.*)
-chmod +x "$VCPKG_ROOT/installed/x64-linux-dynamic/tools/protobuf/$PROTOC_BASENAME"
+#tree $VCPKG_ROOT/installed/x64-linux-dynamic
+#PROTOC_BASENAME=$(basename $VCPKG_ROOT/installed/x64-linux-dynamic/tools/protobuf/protoc-*)
+#PROTOC_LIB_BASENAME=$(basename $VCPKG_ROOT/installed/x64-linux-dynamic/lib/libprotoc.so.*)
+#chmod +x "$VCPKG_ROOT/installed/x64-linux-dynamic/tools/protobuf/$PROTOC_BASENAME"
+
+PROTOC_BASENAME=$(basename $(find /opt/vcpkg/installed/x64-linux-dynamic/tools/protobuf -maxdepth 1 -name "protoc-*" | head -1))
+PROTOC_LIB_BASENAME=$(basename $(find /opt/vcpkg/installed/x64-linux-dynamic/lib -maxdepth 1 -name "libprotoc.so.*" | head -1))
+chmod +x /opt/vcpkg/installed/x64-linux-dynamic/tools/protobuf/${PROTOC_BASENAME}
+
 # wget https://archives.boost.io/release/1.89.0/source/boost_1_89_0.tar.bz2
 # mkdir -p /tmp/boost
 # tar -xjf boost_1_89_0.tar.bz2 -C /tmp/boost --strip-components=1
