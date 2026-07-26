@@ -176,7 +176,7 @@ jobs:
           zip -r -q -9 ${{ github.workspace }}/percona80-ubuntu-x86_64-$(date +'%Y%m%d_%H%M').xz .
 
       - name: Upload prebuild git package
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: mysql-percona80-ubuntu
           path: |
@@ -184,7 +184,7 @@ jobs:
             ${{ github.workspace }}/*.zip
 
       - name: Upload percona80 cmake
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: build-info-ubuntu
           path: |
@@ -449,7 +449,7 @@ jobs:
           docker run --cpus="$(nproc --all)" --privileged -u root --rm -v ${{ github.workspace }}:/workspace -w /workspace centos:7 /bin/bash -c "/workspace/build.sh -a x86"
 
       - name: Upload percona80 package
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: mysql-percona80-centos7
           path: |
@@ -457,7 +457,7 @@ jobs:
             ${{ github.workspace }}/*.zip
 
       - name: Upload percona80 cmake
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: build-info-centos7
           path: |
@@ -789,7 +789,7 @@ jobs:
           docker run --cpus="$(nproc --all)" --privileged -u root --rm -v ${{ github.workspace }}:/workspace -w /workspace centos:7 /bin/bash -c "/workspace/build.sh -a x86"
 
       - name: Upload mariadb package
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: mysql-mariadb-centos7
           path: |
@@ -797,7 +797,7 @@ jobs:
             ${{ github.workspace }}/*.zip
 
       - name: Upload mariadb cmake
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: build-info-mariadb
           path: |
@@ -1179,7 +1179,7 @@ jobs:
           docker run --cpus="$(nproc --all)" --privileged -u root --rm -v ${{ github.workspace }}:/workspace -w /workspace centos:7 /bin/bash -c "/workspace/build.sh -a x86"
 
       - name: Upload fbmysql package
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: mysql-fbmysql-centos7
           path: |
@@ -1187,7 +1187,7 @@ jobs:
             ${{ github.workspace }}/*.zip
 
       - name: Upload fbmysql cmake
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: build-info-fbmysql
           path: |
@@ -1598,7 +1598,7 @@ jobs:
           docker run --cpus="$(nproc --all)" --privileged -u root --rm -v ${{ github.workspace }}:/workspace -w /workspace centos:7 /bin/bash -c "/workspace/build.sh -a x86"
 
       - name: Upload omysql package
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: mysql-omysql-centos7
           path: |
@@ -1606,7 +1606,7 @@ jobs:
             ${{ github.workspace }}/*.zip
 
       - name: Upload omysql cmake
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: build-info-omysql
           path: |

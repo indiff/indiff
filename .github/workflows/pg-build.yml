@@ -161,7 +161,7 @@ jobs:
           tar -C /opt -czf ${{ github.workspace }}/postgresql-ubuntu-x86_64-$(date +'%Y%m%d_%H%M').tar.gz postgresql
 
       - name: Upload Artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: postgresql-ubuntu
           path: |
@@ -424,7 +424,7 @@ jobs:
             -v "${{ github.workspace }}":/workspace -w /workspace centos:7 /bin/bash -c "/workspace/build.sh"
 
       - name: Upload Artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: postgresql-centos7
           path: |
@@ -509,7 +509,7 @@ jobs:
             /bin/bash -c "ls -ll && sh ./images/pg-build/pg-build.sh"
 
       - name: Upload pg package
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: pg-centos7-x86_64
           path: |
