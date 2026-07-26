@@ -25,7 +25,7 @@ jobs:
         run: df -h && sudo apt-get clean && docker system prune -a -f && sudo rm -rf /opt/ghc /usr/local/.ghcup /usr/local/lib/android && df -h
       # Step 1: 检出代码
       - name: Checkout MySQL and RocksDB
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
 
       # Step 2: 安装依赖
       - name: Install Dependencies
@@ -200,7 +200,7 @@ jobs:
         run: df -h && sudo apt-get clean && docker system prune -a -f && sudo rm -rf /opt/ghc /usr/local/.ghcup /usr/local/lib/android && df -h && free -h
 
       - name: Checkout v5
-        uses: actions/checkout@v5    
+        uses: actions/checkout@v7    
 
       - name: Create build script
         run: |
@@ -473,7 +473,7 @@ jobs:
         run: df -h && sudo apt-get clean && docker system prune -a -f && sudo rm -rf /opt/ghc /usr/local/.ghcup /usr/local/lib/android && df -h && free -h
 
       - name: Checkout v5
-        uses: actions/checkout@v5    
+        uses: actions/checkout@v7    
 
       - name: Create build script
         run: |
@@ -813,7 +813,7 @@ jobs:
         run: df -h && sudo apt-get clean && docker system prune -a -f && sudo rm -rf /opt/ghc /usr/local/.ghcup /usr/local/lib/android && df -h && free -h
 
       - name: Checkout v5
-        uses: actions/checkout@v5    
+        uses: actions/checkout@v7    
 
       - name: Create build script
         run: |
@@ -1203,7 +1203,7 @@ jobs:
         run: df -h && sudo apt-get clean && docker system prune -a -f && sudo rm -rf /opt/ghc /usr/local/.ghcup /usr/local/lib/android && df -h && free -h
 
       - name: Checkout v5
-        uses: actions/checkout@v5    
+        uses: actions/checkout@v7    
 
       - name: Create build script
         run: |
@@ -1617,7 +1617,7 @@ jobs:
       runs-on: ubuntu-latest
 
       steps:
-        - uses: actions/checkout@v5
+        - uses: actions/checkout@v7
         - name: Restoring artifacts
           uses: actions/download-artifact@main
           with:
