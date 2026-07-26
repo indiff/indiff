@@ -22,6 +22,8 @@ git submodule update --init --recursive
 # breaks one STRING_WITH_LEN usage in extra/mariadb_migrate_config_file.c.
 # Patch it in-place to keep the build green for the mariadb target.
 MARIADB_MIGRATE_CFG=extra/mariadb_migrate_config_file.c
+# Intentional exact-string match: if upstream changes this code, fail fast so we
+# can review whether this patch is still needed/correct.
 if grep -q 'strncmp(option, STRING_WITH_LEN("audit_log"))' "$MARIADB_MIGRATE_CFG"; then
     sed -i 's/strncmp(option, STRING_WITH_LEN("audit_log"))/strncmp(option, "audit_log", sizeof("audit_log") - 1)/' "$MARIADB_MIGRATE_CFG"
 else
