@@ -91,7 +91,7 @@ export LD_LIBRARY_PATH="/opt/gcc-indiff/lib64:$DEPS_DST/lib:$DEPS_DST/lib64${LD_
 # -DCMAKE_BUILD_TYPE=Debug 
 # -DWITHOUT_DYNAMIC_PLUGIN=ON -DWITH_SAFEMALLOC=OFF -DWITH_SSL=bundled -DMYSQL_MAINTAINER_MODE=OFF -G Ninja
 unset PROTOC
-cmake .. -G Ninja -DCMAKE_TOOLCHAIN_FILE=/opt/vcpkg/scripts/buildsystems/vcpkg.cmake \
+cmake -DCMAKE_TOOLCHAIN_FILE=/opt/vcpkg/scripts/buildsystems/vcpkg.cmake .. -G Ninja \
     -DCMAKE_INSTALL_PREFIX=$DEPS_DST \
     -DCMAKE_C_FLAGS="-I$DEPS_DST/include -O2 -march=native -pipe -fPIC -DPIC " \
     -DCMAKE_CXX_FLAGS="-include cstdint -include cstddef -I$DEPS_DST/include -O2 -pipe -fPIC -DPIC -march=native " \
