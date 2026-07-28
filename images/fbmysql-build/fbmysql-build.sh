@@ -138,7 +138,7 @@ cmake .. -G Ninja \
     -DWITH_ZLIB=system -DWITH_LZ4=system -DWITH_ZSTD=system -DWITH_SNAPPY=system \
     -DWITH_PROTOBUF=system \
     -DPROTOBUF_LIBRARY="$DEPS_DST/lib/$LIBPROTOBUF_BASENAME" \
-    -DPROTOBUF_LITE_LIBRARIES="$DEPS_DST/lib/libprotobuf-lite.so" \ 
+    -DPROTOBUF_LITE_LIBRARIES="$DEPS_DST/lib/libprotobuf-lite.so" \
     -DPROTOBUF_PROTOC_EXECUTABLE="$VCPKG_ROOT/installed/x64-linux-dynamic/tools/protobuf/$PROTOC_BASENAME"  \
     -DWITH_ICU=system  \
     -DWITH_SSL=system -DOPENSSL_ROOT_DIR="$DEPS_DST" \
