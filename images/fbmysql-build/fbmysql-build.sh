@@ -42,7 +42,7 @@ mkdir -p "$DEPS_DST"/{include,lib,lib64,tools}
 
 # sync icu68
 rsync -a "/usr/local/icu68/include/" "$DEPS_DST/include/"
-rsync -a "/usr/local/icu68/lib/"    "$DEPS_DST/lib64/"    || true
+rsync -a "/usr/local/icu68/lib/"    "$DEPS_DST/lib/"    || true
 
 # 2) 复制头文件与动态库（.so 与 .so.*）及 pkgconfig
 rsync -a "$DEPS_SRC/include/" "$DEPS_DST/include/"
@@ -112,10 +112,10 @@ unset PROTOC
 cmake .. -G Ninja \
     -DCMAKE_INSTALL_PREFIX=$DEPS_DST \
     -DCMAKE_C_FLAGS="-D__NO_STRING_INLINES -I$DEPS_DST/include -O2 -pipe -fPIC -DPIC -Wno-implicit-fallthrough -Wno-int-in-bool-context -Wno-shift-negative-value -Wno-misleading-indentation -Wno-format-overflow -Wno-nonnull -Wno-unused-function " \
-    -DCMAKE_CXX_FLAGS="-std=c++17 -D__NO_STRING_INLINES -I$DEPS_DST/include -O2 -pipe -fPIC -DPIC -march=native -Wno-aligned-new -Wno-implicit-fallthrough -Wno-int-in-bool-context -Wno-shift-negative-value -Wno-misleading-indentation -Wno-format-overflow -Wno-nonnull -Wno-unused-function  " \
+    -DCMAKE_CXX_FLAGS="-std=c++17 -include cstdint -include cstddef -D__NO_STRING_INLINES -I$DEPS_DST/include -O2 -pipe -fPIC -DPIC -march=native -Wno-aligned-new -Wno-implicit-fallthrough -Wno-int-in-bool-context -Wno-shift-negative-value -Wno-misleading-indentation -Wno-format-overflow -Wno-nonnull -Wno-unused-function  " \
     -DCMAKE_CXX_EXTENSIONS=OFF \
     -DENABLE_DTRACE=0 \
-    -DCMAKE_EXE_LINKER_FLAGS="-L/usr/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--strip-all -Wl,--gc-sections -Wl,--no-as-needed -ldl" \
+    -DCMAKE_EXE_LINKER_FLAGS="-L/usr/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 $(pkg-config --static --libs protobuf) -Wl,--strip-all -Wl,--gc-sections -Wl,--no-as-needed -ldl" \
     -DCMAKE_SHARED_LINKER_FLAGS="-L/usr/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--strip-all -Wl,--gc-sections -Wl,--no-as-needed -ldl" \
     -DCMAKE_MODULE_LINKER_FLAGS="-L/usr/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--strip-all -Wl,--gc-sections -Wl,--no-as-needed -ldl" \
     -DDEFAULT_CHARSET="utf8mb4" \
@@ -138,6 +138,7 @@ cmake .. -G Ninja \
     -DWITH_ZLIB=system -DWITH_LZ4=system -DWITH_ZSTD=system -DWITH_SNAPPY=system \
     -DWITH_PROTOBUF=system \
     -DPROTOBUF_LIBRARY="$DEPS_DST/lib/$LIBPROTOBUF_BASENAME" \
+    -DPROTOBUF_LITE_LIBRARIES="$DEPS_DST/lib/libprotobuf-lite.so" \ 
     -DPROTOBUF_PROTOC_EXECUTABLE="$VCPKG_ROOT/installed/x64-linux-dynamic/tools/protobuf/$PROTOC_BASENAME"  \
     -DWITH_ICU=system  \
     -DWITH_SSL=system -DOPENSSL_ROOT_DIR="$DEPS_DST" \
