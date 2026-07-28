@@ -100,6 +100,12 @@ export LD_LIBRARY_PATH="/opt/gcc-indiff/lib64:$DEPS_DST/lib:$DEPS_DST/lib64${LD_
 # 临时修复方案
 # cp /opt/gcc-indiff/include/c++/16/bits/intcmp.h /opt/gcc-indiff/include/c++/16/bits/intcmp.h.bak
 # sed -i 's/\bin_range\b/__in_range/g' /opt/gcc-indiff/include/c++/16/bits/intcmp.h
+
+# WITH_PROTOBUF调整 bundle
+# -DWITH_PROTOBUF=system  \
+# -DPROTOBUF_LIBRARY="$DEPS_DST/lib/$LIBPROTOBUF_BASENAME" \
+# -DPROTOBUF_PROTOC_EXECUTABLE="$VCPKG_ROOT/installed/x64-linux-dynamic/tools/protobuf/$PROTOC_BASENAME"  \
+
 unset PROTOC
 cmake .. -G Ninja \
     -DCMAKE_INSTALL_PREFIX=$DEPS_DST \
@@ -128,9 +134,7 @@ cmake .. -G Ninja \
     -DWITH_CURL=system \
     -DWITH_LIBEVENT=system \
     -DWITH_ZLIB=system -DWITH_LZ4=system -DWITH_ZSTD=system -DWITH_SNAPPY=system \
-    -DWITH_PROTOBUF=system  \
-    -DPROTOBUF_LIBRARY="$DEPS_DST/lib/$LIBPROTOBUF_BASENAME" \
-    -DPROTOBUF_PROTOC_EXECUTABLE="$VCPKG_ROOT/installed/x64-linux-dynamic/tools/protobuf/$PROTOC_BASENAME"  \
+    -DWITH_PROTOBUF=bundled \
     -DWITH_ICU=system  \
     -DWITH_SSL=system -DOPENSSL_ROOT_DIR="$DEPS_DST" \
     -DWITH_FIDO=system \

@@ -77,7 +77,7 @@ cd /workspace/server/build
 
 # 供 CMake/ld 查找 vcpkg 拷贝到 /opt 的头文件与库
 export CMAKE_PREFIX_PATH="$DEPS_DST${CMAKE_PREFIX_PATH:+:$CMAKE_PREFIX_PATH}"
-export CMAKE_LIBRARY_PATH="/opt/vcpkg/installed/x64-linux-dynamic/lib:$DEPS_DST/lib:$DEPS_DST/lib64${CMAKE_LIBRARY_PATH:+:$CMAKE_LIBRARY_PATH}"
+export CMAKE_LIBRARY_PATH="$DEPS_DST/lib:$DEPS_DST/lib64${CMAKE_LIBRARY_PATH:+:$CMAKE_LIBRARY_PATH}"
 export CMAKE_INCLUDE_PATH="$DEPS_DST/include${CMAKE_INCLUDE_PATH:+:$CMAKE_INCLUDE_PATH}"
 export PKG_CONFIG_PATH="/usr/lib64/pkgconfig:/usr/share/pkgconfig:$DEPS_DST/lib/pkgconfig:$DEPS_DST/lib64/pkgconfig${PKG_CONFIG_PATH:+:$PKG_CONFIG_PATH}"
 
@@ -90,11 +90,17 @@ export LD_LIBRARY_PATH="/opt/gcc-indiff/lib64:$DEPS_DST/lib:$DEPS_DST/lib64${LD_
 # -DWITH_UNIT_TESTS=OFF 
 # -DCMAKE_BUILD_TYPE=Debug 
 # -DWITHOUT_DYNAMIC_PLUGIN=ON -DWITH_SAFEMALLOC=OFF -DWITH_SSL=bundled -DMYSQL_MAINTAINER_MODE=OFF -G Ninja
+
+# WITH_PROTOBUF 调整 bundle
+# -DCMAKE_TOOLCHAIN_FILE=/opt/vcpkg/scripts/buildsystems/vcpkg.cmake
+# /opt/vcpkg/installed/x64-linux-dynamic/lib:
+# -DCMAKE_CXX_FLAGS="-include cstdint -include cstddef
+
 unset PROTOC
-cmake -DCMAKE_TOOLCHAIN_FILE=/opt/vcpkg/scripts/buildsystems/vcpkg.cmake .. -G Ninja \
+cmake .. -G Ninja \
     -DCMAKE_INSTALL_PREFIX=$DEPS_DST \
     -DCMAKE_C_FLAGS="-I$DEPS_DST/include -O2 -march=native -pipe -fPIC -DPIC " \
-    -DCMAKE_CXX_FLAGS="-include cstdint -include cstddef -I$DEPS_DST/include -O2 -pipe -fPIC -DPIC -march=native " \
+    -DCMAKE_CXX_FLAGS="-I$DEPS_DST/include -O2 -pipe -fPIC -DPIC -march=native " \
     -DCMAKE_CXX_EXTENSIONS=OFF \
     -DCMAKE_EXE_LINKER_FLAGS="-L/usr/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--strip-all -Wl,--gc-sections -Wl,--no-as-needed -ldl" \
     -DCMAKE_SHARED_LINKER_FLAGS="-L/usr/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--strip-all -Wl,--gc-sections -Wl,--no-as-needed -ldl" \
@@ -154,7 +160,7 @@ cmake -DCMAKE_TOOLCHAIN_FILE=/opt/vcpkg/scripts/buildsystems/vcpkg.cmake .. -G N
     -DWITH_ROUTER=0 \
     -DWITH_UNIT_TESTS=0 \
     -DWITH_ICU=system \
-    -DWITH_PROTOBUF=system  \
+    -DWITH_PROTOBUF=bundle  \
     -DWITH_LIBEVENT=system -DWITH_LZ4=system -DWITH_ZLIB=system -DWITH_ZSTD=system \
     -DCMAKE_INSTALL_RPATH='$ORIGIN/../lib64:$ORIGIN/../lib' \
     -DCMAKE_BUILD_RPATH='$ORIGIN/../lib64:$ORIGIN/../lib' \
