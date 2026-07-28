@@ -108,10 +108,9 @@ export LD_LIBRARY_PATH="/opt/gcc-indiff/lib64:$DEPS_DST/lib:$DEPS_DST/lib64${LD_
 #  -include cstdint -include cstddef 
 unset PROTOC
 cmake .. -G Ninja \
-    -D__NO_STRING_INLINES \
     -DCMAKE_INSTALL_PREFIX=$DEPS_DST \
-    -DCMAKE_C_FLAGS="-I$DEPS_DST/include -O2 -pipe -fPIC -DPIC -Wno-implicit-fallthrough -Wno-int-in-bool-context -Wno-shift-negative-value -Wno-misleading-indentation -Wno-format-overflow -Wno-nonnull -Wno-unused-function " \
-    -DCMAKE_CXX_FLAGS="-std=c++17 -I$DEPS_DST/include -O2 -pipe -fPIC -DPIC -march=native -Wno-aligned-new -Wno-implicit-fallthrough -Wno-int-in-bool-context -Wno-shift-negative-value -Wno-misleading-indentation -Wno-format-overflow -Wno-nonnull -Wno-unused-function  " \
+    -DCMAKE_C_FLAGS="-D__NO_STRING_INLINES -I$DEPS_DST/include -O2 -pipe -fPIC -DPIC -Wno-implicit-fallthrough -Wno-int-in-bool-context -Wno-shift-negative-value -Wno-misleading-indentation -Wno-format-overflow -Wno-nonnull -Wno-unused-function " \
+    -DCMAKE_CXX_FLAGS="-std=c++17 -D__NO_STRING_INLINES -I$DEPS_DST/include -O2 -pipe -fPIC -DPIC -march=native -Wno-aligned-new -Wno-implicit-fallthrough -Wno-int-in-bool-context -Wno-shift-negative-value -Wno-misleading-indentation -Wno-format-overflow -Wno-nonnull -Wno-unused-function  " \
     -DCMAKE_CXX_EXTENSIONS=OFF \
     -DENABLE_DTRACE=0 \
     -DCMAKE_EXE_LINKER_FLAGS="-L/usr/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--strip-all -Wl,--gc-sections -Wl,--no-as-needed -ldl" \

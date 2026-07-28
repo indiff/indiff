@@ -82,10 +82,9 @@ export LD_LIBRARY_PATH="/opt/gcc-indiff/lib64:$DEPS_DST/lib:$DEPS_DST/lib64${LD_
 # -D__NO_STRING_INLINES
 unset PROTOC
 cmake .. -G Ninja \
-    -D__NO_STRING_INLINES \
     -DCMAKE_INSTALL_PREFIX=$DEPS_DST \
-    -DCMAKE_C_FLAGS="-I$DEPS_DST/include  -O2 -march=native " \
-    -DCMAKE_CXX_FLAGS="-std=c++17 -I$DEPS_DST/include  -O2 -march=native " \
+    -DCMAKE_C_FLAGS=" -D__NO_STRING_INLINES -I$DEPS_DST/include  -O2 -march=native " \
+    -DCMAKE_CXX_FLAGS="-std=c++17 -D__NO_STRING_INLINES -I$DEPS_DST/include  -O2 -march=native " \
     -DCMAKE_EXE_LINKER_FLAGS="-L/usr/lib64 -L/opt/gcc-indiff/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--strip-all -Wl,--gc-sections -Wl,--no-as-needed -ldl" \
     -DCMAKE_SHARED_LINKER_FLAGS="-L/usr/lib64 -L/opt/gcc-indiff/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--strip-all -Wl,--gc-sections -Wl,--no-as-needed -ldl" \
     -DCMAKE_MODULE_LINKER_FLAGS="-L/usr/lib64 -L/opt/gcc-indiff/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--strip-all -Wl,--gc-sections -Wl,--no-as-needed -ldl" \

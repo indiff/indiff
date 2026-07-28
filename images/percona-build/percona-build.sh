@@ -228,9 +228,8 @@ export PKG_CONFIG_PATH=$DEPS_DST/lib/pkgconfig:$PKG_CONFIG_PATH
 # -include cstdint -include cstddef 
 
 cmake .. -G Ninja \
-    -D__NO_STRING_INLINES \
-    -DCMAKE_C_FLAGS="-I$DEPS_DST/include  -O2 -march=native " \
-    -DCMAKE_CXX_FLAGS="-std=c++17 -I$DEPS_DST/include  -O2 -march=native " \
+    -DCMAKE_C_FLAGS=" -D__NO_STRING_INLINES -I$DEPS_DST/include  -O2 -march=native " \
+    -DCMAKE_CXX_FLAGS="-std=c++17 -D__NO_STRING_INLINES  -I$DEPS_DST/include  -O2 -march=native " \
     -DCMAKE_PREFIX_PATH="$DEPS_DST/lib" \
     -DCMAKE_INSTALL_PREFIX="$DEPS_DST" \
     -DCMAKE_EXE_LINKER_FLAGS="-L/usr/lib64 -L/opt/gcc-indiff/lib64 -L$DEPS_DST/lib -fuse-ld=mold -Wl,--strip-all -Wl,--gc-sections -Wl,--no-as-needed -ldl " \
