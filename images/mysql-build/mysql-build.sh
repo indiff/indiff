@@ -160,7 +160,8 @@ cmake .. -G Ninja \
     -DWITH_ROUTER=0 \
     -DWITH_UNIT_TESTS=0 \
     -DWITH_ICU=system \
-    -DWITH_PROTOBUF=bundle  \
+    -DWITH_PROTOBUF=system  \
+    -DPROTOBUF_LIBRARY="$DEPS_DST/lib/$LIBPROTOBUF_BASENAME" \
     -DPROTOBUF_PROTOC_EXECUTABLE="$VCPKG_ROOT/installed/x64-linux-dynamic/tools/protobuf/$PROTOC_BASENAME"  \
     -DWITH_LIBEVENT=system -DWITH_LZ4=system -DWITH_ZLIB=system -DWITH_ZSTD=system \
     -DCMAKE_INSTALL_RPATH='$ORIGIN/../lib64:$ORIGIN/../lib' \
