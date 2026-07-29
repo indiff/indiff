@@ -4,6 +4,14 @@ set -xe
 
 
 
+find /opt/vcpkg/installed/x64-linux-dynamic/lib -maxdepth 1 -name "*.so*"
+find /opt/vcpkg/installed/x64-linux-dynamic/lib -maxdepth 1 -name "*.a*"
+
+PROTOC_BASENAME=$(basename $(find /opt/vcpkg/installed/x64-linux-dynamic/tools/protobuf -maxdepth 1 -name "protoc-*" | head -1))
+#PROTOC_LIB_BASENAME=$(basename $(find /opt/vcpkg/installed/x64-linux-dynamic/lib -maxdepth 1 -name "libprotoc*.so*" | head -1))
+LIBPROTOBUF_BASENAME=libprotobuf.so
+chmod +x /opt/vcpkg/installed/x64-linux-dynamic/tools/protobuf/${PROTOC_BASENAME}
+
 TRIPLET=x64-linux
 DEPS_SRC="$VCPKG_ROOT/installed/$TRIPLET"
 DEPS_DST="$PERCONA_INSTALL_PREFIX"
@@ -230,7 +238,7 @@ export PKG_CONFIG_PATH=$DEPS_DST/lib/pkgconfig:$PKG_CONFIG_PATH
 
 cmake .. -G Ninja \
     -DCMAKE_C_FLAGS=" -D__NO_STRING_INLINES -I$DEPS_DST/include  -O2 -march=native " \
-    -DCMAKE_CXX_FLAGS="-std=c++17 -include cstdint -include cstddef -include string -include memory -include cstdio -include cstdlib -include cstring -D__NO_STRING_INLINES  -I$DEPS_DST/include  -O2 -march=native " \
+    -DCMAKE_CXX_FLAGS="-std=c++17 -D__NO_STRING_INLINES  -I$DEPS_DST/include  -O2 -march=native " \
     -DCMAKE_PREFIX_PATH="$DEPS_DST/lib" \
     -DCMAKE_INSTALL_PREFIX="$DEPS_DST" \
     -DCMAKE_EXE_LINKER_FLAGS="-L/usr/lib64 -L/opt/gcc-indiff/lib64 -L$DEPS_DST/lib -Wl,--strip-all -Wl,--gc-sections -Wl,--no-as-needed -ldl " \
@@ -242,19 +250,35 @@ cmake .. -G Ninja \
     -DWITH_LZ4=system -DWITH_ZSTD=system -DWITH_SNAPPY=system -DWITH_JEMALLOC=system \
     -DWITH_SSL=system -DOPENSSL_ROOT_DIR="$DEPS_DST" \
     -DWITH_ICU=system \
-    -DWITH_PROTOBUF=bundled  \
+    -DWITH_PROTOBUF=system \
+    -DPROTOBUF_LIBRARY="$DEPS_DST/lib/$LIBPROTOBUF_BASENAME" \
+    -DPROTOBUF_LITE_LIBRARIES="$DEPS_DST/lib/libprotobuf-lite.so" \
+    -DPROTOBUF_PROTOC_EXECUTABLE="$VCPKG_ROOT/installed/x64-linux-dynamic/tools/protobuf/$PROTOC_BASENAME"  \
+    -DWITH_SYSTEM_LIBS=ON \
     -DCMAKE_BUILD_TYPE=Release \
+    -DBUILD_CONFIG=mysql_release \
+    -DWITH_PACKAGE_FLAGS=OFF \
     -DCMAKE_INSTALL_RPATH='$ORIGIN/../lib:$ORIGIN/../lib64' \
     -DCMAKE_BUILD_RPATH='/opt/gcc-indiff/lib64:$ORIGIN/../lib:$ORIGIN/../lib64' \
     -DCMAKE_INSTALL_RPATH_USE_LINK_PATH=ON \
     -DWITH_AUTHENTICATION_LDAP=ON \
     -DWITH_PAM=ON \
-    -DWITH_INNODB_MEMCACHED=1 \
-    -DWITH_UNIT_TESTS=0 \
     -DWITH_TESTS=0 \
     -DWITH_XPLUGIN_TESTS=0 \
-    -DWITH_NUMA=1 \
     -DALLOW_NO_SSE42=ON \
+    -DWITH_PERCONA_AUTHENTICATION_LDAP=OFF \
+    -DWITH_ROUTER=OFF \
+    -DWITH_UNIT_TESTS=OFF \
+    -DWITH_NUMA=OFF \
+    -DWITH_NDB=OFF \
+    -DWITH_NDBCLUSTER=OFF \
+    -DWITH_NDB_JAVA=OFF \
+    -DWITH_ARCHIVE_STORAGE_ENGINE=OFF \
+    -DWITH_BLACKHOLE_STORAGE_ENGINE=OFF \
+    -DWITH_EXAMPLE_STORAGE_ENGINE=ON \
+    -DWITH_FEDERATED_STORAGE_ENGINE=OFF \
+    -DWITHOUT_PERFSCHEMA_STORAGE_ENGINE=OFF \
+    -DWITH_INNODB_MEMCACHED=ON \
     -DWITH_DOCS=OFF -DWITH_MAN_PAGES=OFF -DMYSQL_SERVER_SUFFIX="-indiff"
 
 cmake -LAH -N . | tee /workspace/cmake-cache-vars-centos7.txt
