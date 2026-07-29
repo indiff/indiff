@@ -241,8 +241,8 @@ env CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ $VCPKG_ROOT/vcpkg ins
             || cat /workspace/vcpkg/installed/vcpkg/issue_body.md
 # install icu  
 # wget https://github.com/unicode-org/icu/releases/download/release-68-2/icu4c-68_2-src.tgz
-wget https://github.com/unicode-org/icu/releases/download/release-78.3/icu4c-78.3-sources.zip
-tar -xzf icu4c-78.3-sources.zip
+wget https://github.com/unicode-org/icu/releases/download/release-78.3/icu4c-78.3-sources.tgz
+tar -xzf icu4c-78.3-sources.tgz
 cd icu/source
 export LD_LIBRARY_PATH=/opt/gcc-indiff/lib64:$LD_LIBRARY_PATH
 rm -rf /usr/local/icu || true
