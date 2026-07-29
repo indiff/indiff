@@ -40,9 +40,9 @@ DEPS_SRC="$VCPKG_ROOT/installed/x64-linux"
 DEPS_DST="$FBMYSQL_INSTALL_PREFIX"
 mkdir -p "$DEPS_DST"/{include,lib,lib64,tools}
 
-# sync icu68
-rsync -a "/usr/local/icu68/include/" "$DEPS_DST/include/"
-rsync -a "/usr/local/icu68/lib/"    "$DEPS_DST/lib/"    || true
+# sync icu
+rsync -a "/usr/local/icu/include/" "$DEPS_DST/include/" || true
+rsync -a "/usr/local/icu/lib/"    "$DEPS_DST/lib/"    || true
 
 # 2) 复制头文件与动态库（.so 与 .so.*）及 pkgconfig
 rsync -a "$DEPS_SRC/include/" "$DEPS_DST/include/"
@@ -119,7 +119,7 @@ cmake .. -G Ninja \
     -DCMAKE_SHARED_LINKER_FLAGS="-L/usr/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--strip-all -Wl,--gc-sections -Wl,--no-as-needed -ldl" \
     -DCMAKE_MODULE_LINKER_FLAGS="-L/usr/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--strip-all -Wl,--gc-sections -Wl,--no-as-needed -ldl" \
     -DCMAKE_TOOLCHAIN_FILE="/opt/vcpkg/scripts/buildsystems/vcpkg.cmake" \
-    -DVCPKG_TARGET_TRIPLET="x64-linux-dynamic" \
+    -DVCPKG_TARGET_TRIPLET="x64-linux" \
     -DDEFAULT_CHARSET="utf8mb4" \
     -DDEFAULT_COLLATION="utf8mb4_bin" \
     -DWITH_BOOST="/tmp/boost" \

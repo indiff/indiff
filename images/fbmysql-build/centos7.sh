@@ -220,6 +220,9 @@ export TRIPLET=x64-linux
 # 用 vcpkg 安装动态 curl （会生成 libcurl.so 并自动依赖 libssl/libcrypto)
 # cyrus-sasl
 env CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ $VCPKG_ROOT/vcpkg install curl[core,non-http,ssl,openssl,zstd] snappy protobuf \
+          --triplet x64-linux-dynamic --clean-after-build \
+          || cat /workspace/vcpkg/installed/vcpkg/issue_body.md
+env CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ $VCPKG_ROOT/vcpkg install \
             openssl \
             zlib \
             lz4 \
@@ -234,31 +237,16 @@ env CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ $VCPKG_ROOT/vcpkg ins
             libaio  \
             libfido2  \
             mecab  \
-          --triplet x64-linux-dynamic --clean-after-build \
-          || cat /workspace/vcpkg/installed/vcpkg/issue_body.md
-# env CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ $VCPKG_ROOT/vcpkg install \
-#             openssl \
-#             zlib \
-#             lz4 \
-#             zstd \
-#             bzip2 \
-#             readline \
-#             lzo \
-#             libxml2 \
-#             libevent[openssl] \
-#             pcre2 \
-#             ncurses \
-#             libaio  \
-#             libfido2  \
-#             mecab  \
-#             --triplet $TRIPLET --clean-after-build \
-#             || cat /workspace/vcpkg/installed/vcpkg/issue_body.md
+            --triplet $TRIPLET --clean-after-build \
+            || cat /workspace/vcpkg/installed/vcpkg/issue_body.md
 # install icu  
-wget https://github.com/unicode-org/icu/releases/download/release-68-2/icu4c-68_2-src.tgz
-tar -xzf icu4c-68_2-src.tgz
+# wget https://github.com/unicode-org/icu/releases/download/release-68-2/icu4c-68_2-src.tgz
+wget https://github.com/unicode-org/icu/releases/download/release-78.3/icu4c-78.3-sources.zip
+tar -xzf icu4c-78.3-sources.zip
 cd icu/source
 export LD_LIBRARY_PATH=/opt/gcc-indiff/lib64:$LD_LIBRARY_PATH
-./configure --prefix=/usr/local/icu68
+rm -rf /usr/local/icu || true
+./configure --prefix=/usr/local/icu
 make -j$(nproc)
 make install
  
