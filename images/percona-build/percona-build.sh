@@ -2,7 +2,7 @@
 # author: indiff
 set -xe
 
-yum install -y libgudev1
+yum install -y systemd-devel libgudev1
 
 CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ LDOPTS="-fuse-ld=mold -Wl,--strip-all -Wl,--gc-sections " \
             /opt/vcpkg/vcpkg install libfido2  \

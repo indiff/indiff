@@ -140,6 +140,7 @@ cmake .. -G Ninja \
     -DWITH_LIBEVENT=system \
     -DWITH_ZLIB=system -DWITH_LZ4=system -DWITH_ZSTD=system -DWITH_SNAPPY=system \
     -DWITH_PROTOBUF=system \
+    -DPROTOBUF_INCLUDE_DIR="/opt/fbmysql/include" \
     -DPROTOBUF_LIBRARY="/opt/vcpkg/installed/x64-linux-dynamic/lib/libprotobuf.so" \
     -DPROTOBUF_PROTOC_EXECUTABLE="/opt/vcpkg/installed/x64-linux-dynamic/tools/protobuf/$PROTOC_BASENAME"  \
     -DWITH_ICU=system  \
