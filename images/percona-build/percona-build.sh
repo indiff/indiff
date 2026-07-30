@@ -251,7 +251,7 @@ cmake .. -G Ninja \
     -DPROTOBUF_LIBRARY="/opt/vcpkg/installed/x64-linux-dynamic/lib/libprotobuf.so" \
     -DPROTOBUF_PROTOC_EXECUTABLE="/opt/vcpkg/installed/x64-linux-dynamic/tools/protobuf/$PROTOC_BASENAME"  \
     -DPROTOBUF_PROTOC_LIBRARY="" \
-    -PROTOBUF_LITE_LIBRARY="/opt/vcpkg/installed/x64-linux-dynamic/lib/libprotobuf-lite.so" \
+    -DPROTOBUF_LITE_LIBRARY="/opt/vcpkg/installed/x64-linux-dynamic/lib/libprotobuf-lite.so" \
     -DWITH_BOOST=boost -DDOWNLOAD_BOOST=1 -DWITH_BOOST=../boost \
     -DWITH_ROCKSDB=ON \
     -DWITH_EXT_BACKTRACE=OFF \
