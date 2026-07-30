@@ -186,7 +186,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Build ${{ matrix.target }} in Docker
         run: |
-          sudo timedatectl set-timezone Asia/Shanghai
+          # sudo timedatectl set-timezone Asia/Shanghai
           ls
           cat > run-config.sh <<'EOF'
           export VCPKG_ROOT=${{ env.VCPKG_ROOT }};
@@ -352,7 +352,6 @@ jobs:
 
       - name: Build mysql in Docker
         run: |
-          sudo timedatectl set-timezone Asia/Shanghai
           ls
           docker run --rm \
             -v ${{ github.workspace }}:/workspace \
