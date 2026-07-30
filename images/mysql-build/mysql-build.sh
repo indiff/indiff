@@ -96,7 +96,9 @@ export LD_LIBRARY_PATH="/opt/gcc-indiff/lib64:$DEPS_DST/lib:$DEPS_DST/lib64${LD_
 # /opt/vcpkg/installed/x64-linux-dynamic/lib:
 # -DCMAKE_CXX_FLAGS="-include cstdint -include cstddef
 # -Uin_range
-# remove -march=native 
+# remove -march=native
+rsync -a /opt/vcpkg/installed/x64-linux/include/ /opt/mysql/include/
+rsync -a /opt/vcpkg/installed/x64-linux-dynamic/include/ /opt/mysql/include/
 unset PROTOC
 cmake .. -G Ninja \
     -DCMAKE_INSTALL_PREFIX=$DEPS_DST \
@@ -165,7 +167,7 @@ cmake .. -G Ninja \
     -DWITH_UNIT_TESTS=0 \
     -DWITH_ICU=system \
     -DWITH_PROTOBUF=system  \
-    -DPROTOBUF_INCLUDE_DIR="/opt/fbmysql/include" \
+    -DPROTOBUF_INCLUDE_DIR="/opt/mysql/include" \
     -DPROTOBUF_LIBRARY="$DEPS_DST/lib/$LIBPROTOBUF_BASENAME" \
     -DPROTOBUF_PROTOC_EXECUTABLE="$VCPKG_ROOT/installed/x64-linux-dynamic/tools/protobuf/$PROTOC_BASENAME"  \
     -DWITH_LIBEVENT=system -DWITH_LZ4=system -DWITH_ZLIB=system -DWITH_ZSTD=system \

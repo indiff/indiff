@@ -110,11 +110,15 @@ export LD_LIBRARY_PATH="/opt/gcc-indiff/lib64:$DEPS_DST/lib:$DEPS_DST/lib64${LD_
 # -DPROTOBUF_PROTOC_LIBRARY=${CONDA_PREFIX}/src/protobuf/libprotoc.a \
 #     -DPROTOBUF_LITE_LIBRARIES="/opt/vcpkg/installed/x64-linux-dynamic/lib/libprotobuf-lite.so" \
 #     -DWITH_LTO=ON \
+
+rsync -a /opt/vcpkg/installed/x64-linux/include/ /opt/fbmysql/include/
+rsync -a /opt/vcpkg/installed/x64-linux-dynamic/include/ /opt/fbmysql/include/
+
 unset PROTOC
 cmake .. -G Ninja \
     -DCMAKE_INSTALL_PREFIX=$DEPS_DST \
-    -DCMAKE_C_FLAGS="-D__NO_STRING_INLINES -I$DEPS_DST/include -O2 -pipe -fPIC -DPIC -Wno-implicit-fallthrough -Wno-int-in-bool-context -Wno-shift-negative-value -Wno-misleading-indentation -Wno-format-overflow -Wno-nonnull -Wno-unused-function " \
-    -DCMAKE_CXX_FLAGS="-std=c++17 -include string -include memory -include cstdint -include cstddef -D__NO_STRING_INLINES -I$DEPS_DST/include -O2 -pipe -fPIC -DPIC -march=native -Wno-aligned-new -Wno-implicit-fallthrough -Wno-int-in-bool-context -Wno-shift-negative-value -Wno-misleading-indentation -Wno-format-overflow -Wno-nonnull -Wno-unused-function  " \
+    -DCMAKE_C_FLAGS="-include my_global.h -D__NO_STRING_INLINES -I$DEPS_DST/include -O2 -pipe -fPIC -DPIC -Wno-implicit-fallthrough -Wno-int-in-bool-context -Wno-shift-negative-value -Wno-misleading-indentation -Wno-format-overflow -Wno-nonnull -Wno-unused-function " \
+    -DCMAKE_CXX_FLAGS="-include my_global.h -std=c++17 -include string -include memory -include cstdint -include cstddef -D__NO_STRING_INLINES -I$DEPS_DST/include -O2 -pipe -fPIC -DPIC -march=native -Wno-aligned-new -Wno-implicit-fallthrough -Wno-int-in-bool-context -Wno-shift-negative-value -Wno-misleading-indentation -Wno-format-overflow -Wno-nonnull -Wno-unused-function  " \
     -DCMAKE_CXX_EXTENSIONS=OFF \
     -DENABLE_DTRACE=0 \
     -DCMAKE_EXE_LINKER_FLAGS="-L/opt/vcpkg/installed/x64-linux/lib -L/usr/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 $(pkg-config --static --libs protobuf) -Wl,--strip-all -Wl,--gc-sections -Wl,--no-as-needed -ldl" \
@@ -122,6 +126,7 @@ cmake .. -G Ninja \
     -DCMAKE_MODULE_LINKER_FLAGS="-L/usr/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--strip-all -Wl,--gc-sections -Wl,--no-as-needed -ldl" \
     -DCMAKE_TOOLCHAIN_FILE="/opt/vcpkg/scripts/buildsystems/vcpkg.cmake" \
     -DVCPKG_TARGET_TRIPLET="x64-linux" \
+    -DHAVE_PSI_INTERFACE=ON \
     -DDEFAULT_CHARSET="utf8mb4" \
     -DDEFAULT_COLLATION="utf8mb4_bin" \
     -DWITH_BOOST="/tmp/boost" \

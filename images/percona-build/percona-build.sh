@@ -239,7 +239,8 @@ export PKG_CONFIG_PATH=$DEPS_DST/lib/pkgconfig:$PKG_CONFIG_PATH
 #     -DCMAKE_CXX_FLAGS="-std=c++20 -include cstdint -include cstddef -I$DEPS_DST/include -O2 -pipe -fPIC -DPIC -march=native -Wno-aligned-new -Wno-implicit-fallthrough -Wno-int-in-bool-context -Wno-shift-negative-value -Wno-misleading-indentation -Wno-format-overflow -Wno-nonnull -Wno-unused-function  " \
 # -include cstdint -include cstddef 
 # -fuse-ld=mold 
-
+rsync -a /opt/vcpkg/installed/x64-linux/include/ /opt/percona80/include/
+rsync -a /opt/vcpkg/installed/x64-linux-dynamic/include/ /opt/percona80/include/
 cmake .. -G Ninja \
     -DCMAKE_C_FLAGS=" -D__NO_STRING_INLINES -I$DEPS_DST/include  -O2 -march=native " \
     -DCMAKE_CXX_FLAGS="-std=c++17 -D__NO_STRING_INLINES  -I$DEPS_DST/include  -O2 -march=native " \
@@ -251,6 +252,7 @@ cmake .. -G Ninja \
     -DCMAKE_TOOLCHAIN_FILE="/opt/vcpkg/scripts/buildsystems/vcpkg.cmake" \
     -DVCPKG_TARGET_TRIPLET="x64-linux" \
     -DWITH_PROTOBUF=system \
+    -DPROTOBUF_INCLUDE_DIR="/opt/percona80/include" \
     -DPROTOBUF_LIBRARY="/opt/vcpkg/installed/x64-linux-dynamic/lib/libprotobuf.so" \
     -DPROTOBUF_PROTOC_EXECUTABLE="/opt/vcpkg/installed/x64-linux-dynamic/tools/protobuf/$PROTOC_BASENAME"  \
     -DWITH_BOOST=boost -DDOWNLOAD_BOOST=1 -DWITH_BOOST=../boost \
