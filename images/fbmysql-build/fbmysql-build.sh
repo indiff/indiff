@@ -73,6 +73,73 @@ for d in lib lib64; do
 rsync -a "$DEPS_SRC/$d/pkgconfig/" "$DEPS_DST/$d/pkgconfig/" 2>/dev/null || true
 done
 
+git clone --filter=blob:none --depth 1 https://github.com/cyrusimap/cyrus-sasl.git
+cd cyrus-sasl
+# sh autogen.sh
+# export CFLAGS="-Wall "
+./autogen.sh --with-openssl="$DEPS_DST" --prefix="$DEPS_DST"
+    # --with-staticsasl
+env LDFLAGS="/opt/gcc-indiff/lib64:$DEPS_DST/lib:$DEPS_DST/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH} -fuse-ld=lld" CC="/opt/gcc-indiff/bin/gcc" CXX="/opt/gcc-indiff/bin/g++" \
+make install || true
+# make -j$(nproc)
+# make install
+cd ..
+
+# 克隆官方仓库（或镜像）
+git clone https://github.com/autotools-mirror/autoconf.git
+cd autoconf
+./bootstrap     # 如果存在
+./configure --prefix=/usr
+make -j$(nproc)
+make install
+cd ..
+
+pkg-config --version || true
+wget https://pkgconfig.freedesktop.org/releases/pkg-config-0.29.2.tar.gz
+tar xzf pkg-config-0.29.2.tar.gz
+cd pkg-config-0.29.2
+./configure --prefix=/usr --with-internal-glib
+make CFLAGS="-Ubool -std=gnu11 -O2" -j$(nproc)
+make install
+pkg-config --version
+cd ..
+
+# insatll automake
+# git clone --depth=1 https://github.com/autotools-mirror/automake.git
+# wget https://ftp.gnu.org/gnu/automake/automake-1.18.1.tar.gz
+wget_gnu automake/automake-1.18.1.tar.gz
+tar -xzf automake-1.18.1.tar.gz
+cd automake-1.18.1
+./bootstrap     # 如果存在
+./configure --prefix=$PREFIX_DIR
+make -j$(nproc)
+make install
+cd ..
+
+
+# insatll libtool
+# git clone --depth=1 https://https.git.savannah.gnu.org/git/libtool.git
+# wget http://mirrors.tencent.com/gnu/libtool/libtool-2.5.4.tar.gz
+wget_gnu libtool/libtool-2.5.4.tar.gz
+tar -xzf libtool-2.5.4.tar.gz
+cd libtool-2.5.4
+./bootstrap  --force     # 如果存在
+./configure --prefix=/usr
+make -j$(nproc)
+make install
+cd ..
+
+# wget https://ftp.gnu.org/gnu/m4/m4-1.4.20.tar.gz
+wget_gnu m4/m4-1.4.20.tar.gz
+tar -xzf m4-1.4.20.tar.gz
+cd m4-1.4.20
+env CC=/opt/gcc-indiff/bin/gcc CFLAGS="-I/opt/gcc-indiff/include " \
+./configure --prefix=/usr
+make -j$(nproc)
+make install
+cd ..
+m4 --version
+
 # 显示一下目录接口查看是否存在相关的 lib 和 include
 # tree "$DEPS_DST"/{include,lib,lib64} | tee /workspace/deps_dst_tree.txt
 tree "$DEPS_DST"/{include,lib,lib64} > /workspace/deps_dst_tree.txt
