@@ -219,11 +219,10 @@ export TRIPLET=x64-linux
 
 # 用 vcpkg 安装动态 curl （会生成 libcurl.so 并自动依赖 libssl/libcrypto)
 # cyrus-sasl
-env CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ $VCPKG_ROOT/vcpkg install curl[core,non-http,ssl,openssl,zstd] snappy protobuf \
+env CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ $VCPKG_ROOT/vcpkg install openssl curl[core,non-http,ssl,openssl,zstd] snappy protobuf \
           --triplet x64-linux-dynamic --clean-after-build \
           || cat /workspace/vcpkg/installed/vcpkg/issue_body.md
 env CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ $VCPKG_ROOT/vcpkg install \
-            openssl \
             zlib \
             lz4 \
             zstd \
