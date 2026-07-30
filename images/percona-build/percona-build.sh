@@ -3,6 +3,9 @@
 set -xe
 
 
+CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ LDOPTS="-fuse-ld=mold -Wl,--strip-all -Wl,--gc-sections " $VCPKG_ROOT/vcpkg install libfido2  \
+            --triplet x64-linux-dynamic --clean-after-build  \
+            || cat /workspace/vcpkg/installed/vcpkg/issue_body.md
 
 find /opt/vcpkg/installed/x64-linux-dynamic/lib -maxdepth 1 -name "*.so*"
 find /opt/vcpkg/installed/x64-linux-dynamic/lib -maxdepth 1 -name "*.a*"
@@ -244,16 +247,18 @@ cmake .. -G Ninja \
     -DCMAKE_EXE_LINKER_FLAGS="-L/usr/lib64 -L/opt/gcc-indiff/lib64 -L$DEPS_DST/lib -Wl,--strip-all -Wl,--gc-sections -Wl,--no-as-needed -ldl " \
     -DCMAKE_SHARED_LINKER_FLAGS="-L/usr/lib64 -L/opt/gcc-indiff/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--strip-all -Wl,--gc-sections -Wl,--no-as-needed -ldl" \
     -DCMAKE_MODULE_LINKER_FLAGS="-L/usr/lib64 -L/opt/gcc-indiff/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--strip-all -Wl,--gc-sections -Wl,--no-as-needed -ldl" \
+    -DCMAKE_TOOLCHAIN_FILE="/opt/vcpkg/scripts/buildsystems/vcpkg.cmake" \
+    -DVCPKG_TARGET_TRIPLET="x64-linux" \
+    -DWITH_PROTOBUF=system \
+    -DPROTOBUF_LIBRARY="$DEPS_DST/lib/$LIBPROTOBUF_BASENAME" \
+    -DPROTOBUF_LITE_LIBRARIES="$DEPS_DST/lib/libprotobuf-lite.so" \
+    -DPROTOBUF_PROTOC_EXECUTABLE="$VCPKG_ROOT/installed/x64-linux-dynamic/tools/protobuf/$PROTOC_BASENAME" \
     -DWITH_BOOST=boost -DDOWNLOAD_BOOST=1 -DWITH_BOOST=../boost \
     -DWITH_ROCKSDB=ON \
     -DWITH_EXT_BACKTRACE=OFF \
     -DWITH_LZ4=system -DWITH_ZSTD=system -DWITH_SNAPPY=system -DWITH_JEMALLOC=system \
     -DWITH_SSL=system -DOPENSSL_ROOT_DIR="$DEPS_DST" \
     -DWITH_ICU=system \
-    -DWITH_PROTOBUF=system \
-    -DPROTOBUF_LIBRARY="$DEPS_DST/lib/$LIBPROTOBUF_BASENAME" \
-    -DPROTOBUF_LITE_LIBRARIES="$DEPS_DST/lib/libprotobuf-lite.so" \
-    -DPROTOBUF_PROTOC_EXECUTABLE="$VCPKG_ROOT/installed/x64-linux-dynamic/tools/protobuf/$PROTOC_BASENAME"  \
     -DWITH_SYSTEM_LIBS=ON \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_CONFIG=mysql_release \
