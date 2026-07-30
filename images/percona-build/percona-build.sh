@@ -244,7 +244,7 @@ cmake .. -G Ninja \
     -DCMAKE_CXX_FLAGS="-std=c++17 -D__NO_STRING_INLINES  -I$DEPS_DST/include  -O2 -march=native " \
     -DCMAKE_PREFIX_PATH="$DEPS_DST/lib" \
     -DCMAKE_INSTALL_PREFIX="$DEPS_DST" \
-    -DCMAKE_EXE_LINKER_FLAGS="-L/usr/lib64 -L/opt/gcc-indiff/lib64 -L$DEPS_DST/lib -Wl,--strip-all -Wl,--gc-sections -Wl,--no-as-needed -ldl " \
+    -DCMAKE_EXE_LINKER_FLAGS="-L/opt/vcpkg/installed/x64-linux/lib -L/usr/lib64 -L/opt/gcc-indiff/lib64 -L$DEPS_DST/lib -Wl,--strip-all -Wl,--gc-sections -Wl,--no-as-needed -ldl " \
     -DCMAKE_SHARED_LINKER_FLAGS="-L/usr/lib64 -L/opt/gcc-indiff/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--strip-all -Wl,--gc-sections -Wl,--no-as-needed -ldl" \
     -DCMAKE_MODULE_LINKER_FLAGS="-L/usr/lib64 -L/opt/gcc-indiff/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--strip-all -Wl,--gc-sections -Wl,--no-as-needed -ldl" \
     -DCMAKE_TOOLCHAIN_FILE="/opt/vcpkg/scripts/buildsystems/vcpkg.cmake" \
@@ -278,6 +278,7 @@ cmake .. -G Ninja \
     -DWITH_NDB=OFF \
     -DWITH_NDBCLUSTER=OFF \
     -DWITH_NDB_JAVA=OFF \
+    -DWITH_PERFORMANCE_SCHEMA=ON \
     -DWITH_ARCHIVE_STORAGE_ENGINE=OFF \
     -DWITH_BLACKHOLE_STORAGE_ENGINE=OFF \
     -DWITH_EXAMPLE_STORAGE_ENGINE=ON \
