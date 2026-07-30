@@ -2,10 +2,9 @@
 # author: indiff
 set -xe
 
-
-CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ LDOPTS="-fuse-ld=mold -Wl,--strip-all -Wl,--gc-sections " $VCPKG_ROOT/vcpkg install libfido2  \
-            --triplet x64-linux-dynamic --clean-after-build  \
-            || cat /workspace/vcpkg/installed/vcpkg/issue_body.md
+CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ LDOPTS="-fuse-ld=mold -Wl,--strip-all -Wl,--gc-sections " \
+            /opt/vcpkg/vcpkg install libfido2  \
+            --triplet x64-linux-dynamic --clean-after-build
 
 find /opt/vcpkg/installed/x64-linux-dynamic/lib -maxdepth 1 -name "*.so*"
 find /opt/vcpkg/installed/x64-linux-dynamic/lib -maxdepth 1 -name "*.a*"
@@ -250,9 +249,8 @@ cmake .. -G Ninja \
     -DCMAKE_TOOLCHAIN_FILE="/opt/vcpkg/scripts/buildsystems/vcpkg.cmake" \
     -DVCPKG_TARGET_TRIPLET="x64-linux" \
     -DWITH_PROTOBUF=system \
-    -DPROTOBUF_LIBRARY="$DEPS_DST/lib/$LIBPROTOBUF_BASENAME" \
-    -DPROTOBUF_LITE_LIBRARIES="$DEPS_DST/lib/libprotobuf-lite.so" \
-    -DPROTOBUF_PROTOC_EXECUTABLE="$VCPKG_ROOT/installed/x64-linux-dynamic/tools/protobuf/$PROTOC_BASENAME" \
+    -DPROTOBUF_LIBRARY="/opt/vcpkg/installed/x64-linux-dynamic/lib/libprotobuf.so" \
+    -DPROTOBUF_PROTOC_EXECUTABLE="/opt/vcpkg/installed/x64-linux-dynamic/tools/protobuf/$PROTOC_BASENAME"  \
     -DWITH_BOOST=boost -DDOWNLOAD_BOOST=1 -DWITH_BOOST=../boost \
     -DWITH_ROCKSDB=ON \
     -DWITH_EXT_BACKTRACE=OFF \

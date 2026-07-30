@@ -108,6 +108,8 @@ export LD_LIBRARY_PATH="/opt/gcc-indiff/lib64:$DEPS_DST/lib:$DEPS_DST/lib64${LD_
 # -DPROTOBUF_PROTOC_EXECUTABLE="$VCPKG_ROOT/installed/x64-linux-dynamic/tools/protobuf/$PROTOC_BASENAME"  \
 #  -include cstdint -include cstddef
 # -DPROTOBUF_PROTOC_LIBRARY=${CONDA_PREFIX}/src/protobuf/libprotoc.a \
+#     -DPROTOBUF_LITE_LIBRARIES="/opt/vcpkg/installed/x64-linux-dynamic/lib/libprotobuf-lite.so" \
+#     -DWITH_LTO=ON \
 unset PROTOC
 cmake .. -G Ninja \
     -DCMAKE_INSTALL_PREFIX=$DEPS_DST \
@@ -127,7 +129,6 @@ cmake .. -G Ninja \
     -DWITH_BENCHMARK_TOOLS=0 \
     -DWITH_GFLAGS=0 \
     -DWITH_NDB=OFF \
-    -DWITH_LTO=ON \
     -DWITH_MYSQLX=0 \
     -DWITH_NDB_JAVA=0 \
     -DWITH_RAPID=0 \
@@ -139,9 +140,8 @@ cmake .. -G Ninja \
     -DWITH_LIBEVENT=system \
     -DWITH_ZLIB=system -DWITH_LZ4=system -DWITH_ZSTD=system -DWITH_SNAPPY=system \
     -DWITH_PROTOBUF=system \
-    -DPROTOBUF_LIBRARY="$DEPS_DST/lib/$LIBPROTOBUF_BASENAME" \
-    -DPROTOBUF_LITE_LIBRARIES="$DEPS_DST/lib/libprotobuf-lite.so" \
-    -DPROTOBUF_PROTOC_EXECUTABLE="$VCPKG_ROOT/installed/x64-linux-dynamic/tools/protobuf/$PROTOC_BASENAME"  \
+    -DPROTOBUF_LIBRARY="/opt/vcpkg/installed/x64-linux-dynamic/lib/libprotobuf.so" \
+    -DPROTOBUF_PROTOC_EXECUTABLE="/opt/vcpkg/installed/x64-linux-dynamic/tools/protobuf/$PROTOC_BASENAME"  \
     -DWITH_ICU=system  \
     -DWITH_SSL=system -DOPENSSL_ROOT_DIR="$DEPS_DST" \
     -DWITH_FIDO=system \
