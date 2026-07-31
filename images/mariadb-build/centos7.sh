@@ -83,14 +83,14 @@ yum update -y
 yum install -y flex bison ncurses-dev texinfo gcc gperf patch libtool automake g++ libncurses5-dev gawk subversion expat libexpat1-dev binutils-dev bc libcap-dev autoconf libgmp-dev build-essential pkg-config libmpc-dev libmpfr-dev autopoint gettext txt2man liblzma-dev mercurial wget tar cmake zstd ninja-build make pkgconfig xz xz-devel glibc-devel.i686 which lld bzip2 glibc glibc-devel
 yum install -y pcre-devel zlib-devel make git wget sed perl-IPC-Cmd GeoIP GeoIP-devel zip systemd automake libtool
 yum install -y perl-Test-Simple perl-FindBin perl-IPC-Cmd perl-Text-Template perl-File-Compare perl-File-Copy perl-Data-Dumper perl-Time-Piece
-yum -y install autoconf autoconf-archive wget automake libtool m4 pkgconfig pam-devel
+yum -y install autoconf autoconf-archive wget automake libtool m4 pkgconfig pam-devel help2man
 
 # 基础依赖
 yum install -y zip unzip rsync ninja-build curl wget tar xz unzip bzip2 which rsync tree pkgconfig \
 make cmake3 gcc gcc-c++ flex bison gettext \
 autoconf automake libtool patchelf \
 readline-devel \
-perl-ExtUtils-Embed tree
+perl-ExtUtils-Embed tree libtirpc libtirpc-devel
 
 # Install development tools and dependencies
 yum groupinstall -y "Development tools"
@@ -130,6 +130,7 @@ yum install -y \
     curl \
     file \
     zip
+yum install -y systemd-devel libgudev1
 yum clean all
 
 
@@ -149,6 +150,9 @@ yum -y install git
 # build ninja 
 curl -sLo /opt/gcc-indiff.zip "${gcc_indiff_centos7_url}"
 unzip /opt/gcc-indiff.zip -d /opt/gcc-indiff
+ln -sf /opt/gcc-indiff/bin/ld.mold /usr/bin/ld.mold
+export LD_LIBRARY_PATH=/opt/gcc-indiff/lib64:/opt/gcc-indiff/lib
+export LDOPTS="-fuse-ld=mold "
 git clone --filter=blob:none https://github.com/ninja-build/ninja.git --depth=1
 cd ninja
 cmake -Bbuild-cmake -DBUILD_TESTING=OFF -DCMAKE_EXE_LINKER_FLAGS="-static-libstdc++ -static-libgcc" -DCMAKE_BUILD_TYPE=release -DCMAKE_CXX_COMPILER=/opt/gcc-indiff/bin/g++
@@ -228,13 +232,15 @@ CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ $VCPKG_ROOT/vcpkg install
             bzip2 \
             lzo \
             libxml2 \
-            libevent \
+            libevent[openssl] \
             pcre2 \
             ncurses \
+            readline \
             libaio  \
-            --triplet $TRIPLET --clean-after-build	\
+            pkgconf \
+            mecab  \
+            --triplet $TRIPLET --clean-after-build \
             || cat /workspace/vcpkg/installed/vcpkg/issue_body.md
-
 cd /opt
 # install icu  
 # wget https://github.com/unicode-org/icu/releases/download/release-68-2/icu4c-68_2-src.tgz

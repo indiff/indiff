@@ -2,18 +2,18 @@
 # author: indiff
 set -xe
 
+find /opt/vcpkg/installed -name "*.so*"
+find /opt/vcpkg/installed -name "*.a*"
 PROTOC_BASENAME=$(basename $(find /opt/vcpkg/installed/x64-linux-dynamic/tools/protobuf -maxdepth 1 -name "protoc-*" | head -1))
-# PROTOC_LIB_BASENAME=$(basename $(find /opt/vcpkg/installed/x64-linux-dynamic/lib -maxdepth 1 -name "libproto*.so.*" | head -1))
+#PROTOC_LIB_BASENAME=$(basename $(find /opt/vcpkg/installed/x64-linux-dynamic/lib -maxdepth 1 -name "libprotoc*.so*" | head -1))
 LIBPROTOBUF_BASENAME=libprotobuf.so
 chmod +x /opt/vcpkg/installed/x64-linux-dynamic/tools/protobuf/${PROTOC_BASENAME}
-
 
 if [[ -z "$MYSQL_BRANCH" ]]; then
     git clone --filter=blob:none --depth 1 https://github.com/mysql/mysql-server.git server
 else
     git clone --filter=blob:none --depth 1 https://github.com/mysql/mysql-server.git  -b $MYSQL_BRANCH server
 fi
-
 
 cd server
 # git submodule update --init --recursive
@@ -23,10 +23,10 @@ cd server
 # sed -i 's/^SET(BOOST_PACKAGE_NAME.*)$/SET(BOOST_PACKAGE_NAME "boost_1_89_0")/' cmake/boost.cmake
 # grep -n 'BOOST_PACKAGE_NAME' cmake/boost.cmake
 
-sed -i '/^[[:space:]]*#include[[:space:]]*<vector>[[:space:]]*$/a #include <cstdint>' extra/libcno/cno_huffman_generator.cc
+#sed -i '/^[[:space:]]*#include[[:space:]]*<vector>[[:space:]]*$/a #include <cstdint>' extra/libcno/cno_huffman_generator.cc
 # patch fix /workspace/server/strings/collations_internal.cc:553:22: error: no matching function for call t
 # sed -i 's/hash\.find(\s*\(key\)\s*)/hash.find(std::to_string(\1))/g' /workspace/server/strings/collations_internal.cc
-sed -i 's/enum class Gtid_format : uint8_t {/enum Gtid_format {/g' /workspace/server/libs/mysql/gtid/gtid_format.h
+#sed -i 's/enum class Gtid_format : uint8_t {/enum Gtid_format {/g' /workspace/server/libs/mysql/gtid/gtid_format.h
 
 DEPS_SRC="$VCPKG_ROOT/installed/x64-linux"
 DEPS_DST="$MYSQL_INSTALL_PREFIX"
@@ -54,16 +54,17 @@ rsync -a --copy-links "/opt/gcc-indiff/lib64/"    "$DEPS_DST/lib64/"    || true
 
 # 如果宿主镜像/系统有 /lib64/libjemalloc.so.1 同步到目标目录
 if [ -f /lib64/libjemalloc.so.1 ]; then
-echo "Found /lib64/libjemalloc.so.1 on build host, copying to $DEPS_DST/lib64"
-mkdir -p "$DEPS_DST/lib64"
-cp -a /lib64/libjemalloc.so* "$DEPS_DST/lib64/" || true
-chmod 644 "$DEPS_DST/lib64"/libjemalloc.so* 2>/dev/null || true
+    echo "Found /lib64/libjemalloc.so.1 on build host, copying to $DEPS_DST/lib64"
+    mkdir -p "$DEPS_DST/lib64"
+    cp -a /lib64/libjemalloc.so* "$DEPS_DST/lib64/" || true
+    chmod 644 "$DEPS_DST/lib64"/libjemalloc.so* 2>/dev/null || true
 fi
 
 for d in lib lib64; do
-[[ -d "$DEPS_DST/$d/pkgconfig" ]] || mkdir -p "$DEPS_DST/$d/pkgconfig"
-rsync -a "$DEPS_SRC/$d/pkgconfig/" "$DEPS_DST/$d/pkgconfig/" 2>/dev/null || true
+    [[ -d "$DEPS_DST/$d/pkgconfig" ]] || mkdir -p "$DEPS_DST/$d/pkgconfig"
+    rsync -a "$DEPS_SRC/$d/pkgconfig/" "$DEPS_DST/$d/pkgconfig/" 2>/dev/null || true
 done
+
 
 # 克隆官方仓库（或镜像）
 git clone https://github.com/autotools-mirror/autoconf.git
@@ -74,6 +75,11 @@ make -j$(nproc)
 make install
 cd ..
 
+function wget_gnu(){
+     local suffix=$1
+     wget https://ftp.gnu.org/gnu/$suffix || wget https://mirrors.aliyun.com/gnu/$suffix || wget http://mirrors.tencent.com/gnu/$suffix
+}
+          
 pkg-config --version || true
 wget https://pkgconfig.freedesktop.org/releases/pkg-config-0.29.2.tar.gz
 tar xzf pkg-config-0.29.2.tar.gz
@@ -132,7 +138,7 @@ cd ..
 
 # 显示一下目录接口查看是否存在相关的 lib 和 include
 # tree "$DEPS_DST"/{include,lib,lib64} | tee /workspace/deps_dst_tree.txt
-tree "$DEPS_DST"/{include,lib,lib64} > /workspace/deps_dst_tree.txt
+tree "$DEPS_DST"/{include,lib,lib64} > /workspace/deps_mysql_dst_tree.txt
 
 # build persona mysql
 mkdir -p /workspace/server/build /workspace/server/boost
@@ -246,6 +252,8 @@ rm -f $DEPS_DST/bin/ps-admin
 rm -f $DEPS_DST/bin/mysqltest
 rm -f $DEPS_DST/bin/mysqlxtest
 rm -f $DEPS_DST/bin/mytap
+rm -f $DEPS_DST/lib/*.a
+rm -f $DEPS_DST/lib64/*.a
 zip -r -q -9 /workspace/mysql-centos7-x86_64-$MYSQL_BRANCH-$(date +'%Y%m%d_%H%M').xz .
 
 # free memory

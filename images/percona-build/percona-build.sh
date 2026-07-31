@@ -2,12 +2,9 @@
 # author: indiff
 set -xe
 
-CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ LDOPTS="-fuse-ld=mold -Wl,--strip-all -Wl,--gc-sections " $VCPKG_ROOT/vcpkg install \
-            protobuf[core,libprotoc] cyrus-sasl --recurse --triplet x64-linux-dynamic --clean-after-build \
-            || cat /workspace/vcpkg/installed/vcpkg/issue_body.md
 
-find /opt/vcpkg/installed/x64-linux-dynamic/lib -maxdepth 1 -name "*.so*"
-find /opt/vcpkg/installed/x64-linux-dynamic/lib -maxdepth 1 -name "*.a*"
+find /opt/vcpkg/installed -name "*.so*"
+find /opt/vcpkg/installed -name "*.a*"
 
 PROTOC_BASENAME=$(basename $(find /opt/vcpkg/installed/x64-linux-dynamic/tools/protobuf -maxdepth 1 -name "protoc-*" | head -1))
 #PROTOC_LIB_BASENAME=$(basename $(find /opt/vcpkg/installed/x64-linux-dynamic/lib -maxdepth 1 -name "libprotoc*.so*" | head -1))
@@ -147,7 +144,7 @@ cd ..
 wget_gnu m4/m4-1.4.20.tar.gz
 tar -xzf m4-1.4.20.tar.gz
 cd m4-1.4.20
-env CC=/opt/gcc-indiff/bin/gcc CFLAGS="-I/opt/mygcc/include " \
+env CC=/opt/gcc-indiff/bin/gcc CFLAGS="-I/opt/gcc-indiff/include " \
 ./configure --prefix=/usr
 make -j$(nproc)
 make install
@@ -295,7 +292,9 @@ cmake --build . -j"$(nproc)" --target install
 cmake --install .
 
 cd $DEPS_DST
+rm -rf $DEPS_DST/sql-bench
 rm -rf $DEPS_DST/man
+rm -rf $DEPS_DST/mariadb-test
 rm -rf $DEPS_DST/mysql-test
 rm -rf $DEPS_DST/bin/mysqld-debug
 rm -rf $DEPS_DST/sbin/mysqld-debug

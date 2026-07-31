@@ -153,7 +153,6 @@ unzip /opt/gcc-indiff.zip -d /opt/gcc-indiff
 ln -sf /opt/gcc-indiff/bin/ld.mold /usr/bin/ld.mold
 export LD_LIBRARY_PATH=/opt/gcc-indiff/lib64:/opt/gcc-indiff/lib
 export LDOPTS="-fuse-ld=mold "
-
 git clone --filter=blob:none https://github.com/ninja-build/ninja.git --depth=1
 cd ninja
 cmake -Bbuild-cmake -DBUILD_TESTING=OFF -DCMAKE_EXE_LINKER_FLAGS="-static-libstdc++ -static-libgcc" -DCMAKE_BUILD_TYPE=release -DCMAKE_CXX_COMPILER=/opt/gcc-indiff/bin/g++
@@ -166,6 +165,7 @@ rm -rf ninja
 /usr/bin/ninja --version
 
 
+yum -y install autoconf autoconf-archive icu wget automake libtool m4 pkgconfig
 
 # install python 38
 # yum -y install centos-release-scl
@@ -179,9 +179,6 @@ yum -y install yum-plugin-copr
 yum -y copr enable adrienverge/python37
 yum -y install python37 python37-devel python37-pip
 python3 --version
-
-yum -y install autoconf autoconf-archive icu wget automake libtool m4 pkgconfig
-
           
 git --version
 
@@ -194,6 +191,7 @@ cmake --version || true
 ninja --version || true
 
 export PATH=/opt/gcc-indiff/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+export LD_LIBRARY_PATH=/opt/gcc-indiff/lib64:/opt/gcc-indiff/lib
 git clone --filter=blob:none --depth 1 https://github.com/microsoft/vcpkg.git /opt/vcpkg
 /opt/vcpkg/bootstrap-vcpkg.sh
 export VCPKG_ROOT=/opt/vcpkg

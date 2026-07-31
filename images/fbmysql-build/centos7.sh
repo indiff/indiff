@@ -83,33 +83,14 @@ yum update -y
 yum install -y flex bison ncurses-dev texinfo gcc gperf patch libtool automake g++ libncurses5-dev gawk subversion expat libexpat1-dev binutils-dev bc libcap-dev autoconf libgmp-dev build-essential pkg-config libmpc-dev libmpfr-dev autopoint gettext txt2man liblzma-dev mercurial wget tar cmake zstd ninja-build make pkgconfig xz xz-devel glibc-devel.i686 which lld bzip2 glibc glibc-devel
 yum install -y pcre-devel zlib-devel make git wget sed perl-IPC-Cmd GeoIP GeoIP-devel zip systemd automake libtool
 yum install -y perl-Test-Simple perl-FindBin perl-IPC-Cmd perl-Text-Template perl-File-Compare perl-File-Copy perl-Data-Dumper perl-Time-Piece
-yum -y install autoconf autoconf-archive wget automake libtool m4 pkgconfig pam-devel
+yum -y install autoconf autoconf-archive wget automake libtool m4 pkgconfig pam-devel help2man
 
 # 基础依赖
 yum install -y zip unzip rsync ninja-build curl wget tar xz unzip bzip2 which rsync tree pkgconfig \
 make cmake3 gcc gcc-c++ flex bison gettext \
 autoconf automake libtool patchelf \
 readline-devel \
-perl-ExtUtils-Embed tree
-
-
-yum -y install make kernel-headers kernel-devel pkgconfig perl-IPC-Cmd perl-Test-Simple perl-FindBin perl-IPC-Cmd perl-Text-Template perl-File-Compare perl-File-Copy perl-Data-Dumper perl-Time-Piece
-yum -y install \
-            zip unzip rsync cmake3 ninja-build \
-            jemalloc jemalloc-devel \
-            ncurses-devel \
-            gflags-devel \
-            numactl-devel \
-            openldap-devel \
-            bison \
-            systemd-devel \
-            krb5-devel \
-            readline-devel \
-            libedit-devel \
-            cyrus-sasl cyrus-sasl-devel cyrus-sasl-gssapi \
-            cyrus-sasl-devel cyrus-sasl-scram \
-            libatomic \
-            libtirpc libtirpc-devel
+perl-ExtUtils-Embed tree libtirpc libtirpc-devel
 
 # Install development tools and dependencies
 yum groupinstall -y "Development tools"
@@ -149,12 +130,11 @@ yum install -y \
     curl \
     file \
     zip
+yum install -y systemd-devel libgudev1
 yum clean all
 
 
 
-# install cmake v4.1.1
-# https://github.com/Kitware/CMake/releases/download/v4.2.3/cmake-4.2.3-linux-x86_64.tar.gz
 # https://github.com/Kitware/CMake/releases/download/v4.4.0/cmake-4.4.0-linux-x86_64.tar.gz
 curl -sLo cmake3.tar.gz https://github.com/Kitware/CMake/releases/download/v4.4.0/cmake-4.4.0-linux-x86_64.tar.gz
 tar -xzf cmake3.tar.gz
@@ -170,6 +150,9 @@ yum -y install git
 # build ninja 
 curl -sLo /opt/gcc-indiff.zip "${gcc_indiff_centos7_url}"
 unzip /opt/gcc-indiff.zip -d /opt/gcc-indiff
+ln -sf /opt/gcc-indiff/bin/ld.mold /usr/bin/ld.mold
+export LD_LIBRARY_PATH=/opt/gcc-indiff/lib64:/opt/gcc-indiff/lib
+export LDOPTS="-fuse-ld=mold "
 git clone --filter=blob:none https://github.com/ninja-build/ninja.git --depth=1
 cd ninja
 cmake -Bbuild-cmake -DBUILD_TESTING=OFF -DCMAKE_EXE_LINKER_FLAGS="-static-libstdc++ -static-libgcc" -DCMAKE_BUILD_TYPE=release -DCMAKE_CXX_COMPILER=/opt/gcc-indiff/bin/g++
@@ -217,25 +200,44 @@ export LD_LIBRARY_PATH=/opt/gcc-indiff/lib64:/opt/gcc-indiff/lib
 export TRIPLET=x64-linux
 # TRIPLET=x64-linux-dynamic
 
+# 用 vcpkg 安装第三方库（确认需的端口名，必要时用 --overlay-ports)
+# curl => 替代 libcurl-devel
+# yum install libcurl-devel       # libcurl 开发库（HTTP 客户端、下载等功能）
+# yum install zlib-devel          # zlib 开发库（通用压缩库）
+# yum install lz4-devel           # LZ4 开发库（高速压缩，MySQL 用于快速压缩）
+# yum install zstd                # Zstandard 压缩工具与库（快速压缩算法，现代替代选项）
+# yum install snappy snappy-devel # Snappy 压缩库及开发文件（RocksDB 等依赖）
+# yum install openssl openssl-devel   # OpenSSL 运行时与开发库（TLS/加密与 SSL 编译依赖）
+# yum install pcre2-devel         # PCRE2 正则表达式开发库（正则匹配功能）
+# yum install lzo-devel           # LZO 开发库（另一种压缩算法，部分组件可能依赖）
+# yum install ncurses-devel       # ncurses 开发库（终端界面库，某些工具依赖）
+# yum install libxml2-devel       # libxml2 开发库（XML 解析，部分插件或工具需要）
+# yum install libaio-devel        # libaio 异步 IO 开发库（高性能 IO 支持，数据库常用）
+# yum install libevent-devel      # libevent 开发库（高性能事件通知库，网络组件常用）
+# yum install bzip2-devel         # bzip2 开发库（压缩算法支持）
+# $VCPKG_ROOT/vcpkg install boost
+# openssl
+
 # 用 vcpkg 安装动态 curl （会生成 libcurl.so 并自动依赖 libssl/libcrypto)
 # cyrus-sasl
-env CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ $VCPKG_ROOT/vcpkg install openssl curl[core,non-http,ssl,openssl,zstd] snappy \
-          protobuf[core,libprotoc] \
-          --triplet x64-linux-dynamic --clean-after-build \
-          || cat /workspace/vcpkg/installed/vcpkg/issue_body.md
-env CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ $VCPKG_ROOT/vcpkg install \
+yum install -y systemd-devel libgudev1
+
+CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ $VCPKG_ROOT/vcpkg install openssl curl[core,non-http,ssl,openssl,zstd] snappy \
+            protobuf[core,libprotoc] libfido2 --triplet x64-linux-dynamic --clean-after-build \
+            || cat /workspace/vcpkg/installed/vcpkg/issue_body.md
+CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ $VCPKG_ROOT/vcpkg install \
             zlib \
             lz4 \
             zstd \
             bzip2 \
-            readline \
             lzo \
             libxml2 \
             libevent[openssl] \
             pcre2 \
             ncurses \
+            readline \
             libaio  \
-            libfido2  \
+            pkgconf \
             mecab  \
             --triplet $TRIPLET --clean-after-build \
             || cat /workspace/vcpkg/installed/vcpkg/issue_body.md

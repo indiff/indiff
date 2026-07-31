@@ -2,9 +2,12 @@
 # author: indiff
 set -xe
 
-# PROTOC_BASENAME=$(basename $(find /opt/vcpkg/installed/x64-linux-dynamic/tools/protobuf -maxdepth 1 -name "protoc-*" | head -1))
-# PROTOC_LIB_BASENAME=$(basename $(find /opt/vcpkg/installed/x64-linux-dynamic/lib -maxdepth 1 -name "libprotoc*.so.*" | head -1))
-# LIBPROTOBUF_BASENAME=$(basename $(find /opt/vcpkg/installed/x64-linux-dynamic/lib -maxdepth 1 -name "libprotobuf*.so.*" | head -1))
+find /opt/vcpkg/installed -name "*.so*"
+find /opt/vcpkg/installed -name "*.a*"
+PROTOC_BASENAME=$(basename $(find /opt/vcpkg/installed/x64-linux-dynamic/tools/protobuf -maxdepth 1 -name "protoc-*" | head -1))
+#PROTOC_LIB_BASENAME=$(basename $(find /opt/vcpkg/installed/x64-linux-dynamic/lib -maxdepth 1 -name "libprotoc*.so*" | head -1))
+LIBPROTOBUF_BASENAME=libprotobuf.so
+chmod +x /opt/vcpkg/installed/x64-linux-dynamic/tools/protobuf/${PROTOC_BASENAME}
 
 if [[ -z "$MARIADB_BRANCH" ]]; then
     git clone --filter=blob:none --depth 1 https://github.com/MariaDB/server.git server
@@ -63,6 +66,11 @@ make -j$(nproc)
 make install
 cd ..
 
+function wget_gnu(){
+     local suffix=$1
+     wget https://ftp.gnu.org/gnu/$suffix || wget https://mirrors.aliyun.com/gnu/$suffix || wget http://mirrors.tencent.com/gnu/$suffix
+}
+          
 pkg-config --version || true
 wget https://pkgconfig.freedesktop.org/releases/pkg-config-0.29.2.tar.gz
 tar xzf pkg-config-0.29.2.tar.gz
@@ -190,9 +198,13 @@ rm -f $DEPS_DST/bin/ps-admin
 rm -f $DEPS_DST/bin/mysqltest
 rm -f $DEPS_DST/bin/mysqlxtest
 rm -f $DEPS_DST/bin/mytap
-zip -r -q -9 /workspace/mariadb-centos7-x86_64-$(date +'%Y%m%d_%H%M').xz .
+rm -f $DEPS_DST/lib/*.a
+rm -f $DEPS_DST/lib64/*.a
+
+zip -r -q -9 /workspace/percona80-centos7-x86_64-$(date +'%Y%m%d_%H%M').xz .
 
 # free memory
 free -h
-
-
+# sync
+# echo 3 > /proc/sys/vm/drop_caches
+# free -h && df -h
