@@ -12,8 +12,7 @@ git -C $VCPKG_ROOT pull
 /opt/vcpkg/bootstrap-vcpkg.sh
 CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ LDOPTS="-fuse-ld=mold -Wl,--strip-all -Wl,--gc-sections " $VCPKG_ROOT/vcpkg install \
             protobuf[core,libprotoc] cyrus-sasl --recurse --triplet x64-linux-dynamic --clean-after-build \
-            || cat /workspace/vcpkg/installed/vcpkg/issue_body.md
-cat /opt/vcpkg/buildtrees/cyrus-sasl/make-all-x64-linux-dynamic-dbg-err.log || true
+            || cat /opt/vcpkg/buildtrees/cyrus-sasl/make-all-x64-linux-dynamic-dbg-err.log
 
 find /opt/vcpkg/installed/x64-linux-dynamic/lib -maxdepth 1 -name "*.so*"
 find /opt/vcpkg/installed/x64-linux-dynamic/lib -maxdepth 1 -name "*.a*"
@@ -212,7 +211,7 @@ cmake .. -G Ninja \
     -DPROTOBUF_INCLUDE_DIR="/opt/fbmysql/include" \
     -DPROTOBUF_LIBRARY="/opt/vcpkg/installed/x64-linux-dynamic/lib/libprotobuf.so" \
     -DPROTOBUF_PROTOC_EXECUTABLE="/opt/vcpkg/installed/x64-linux-dynamic/tools/protobuf/$PROTOC_BASENAME"  \
-    -DPROTOBUF_PROTOC_LIBRARY="" \
+    -DPROTOBUF_PROTOC_LIBRARY="/opt/vcpkg/installed/x64-linux-dynamic/lib/libprotoc.so" \
     -DPROTOBUF_LITE_LIBRARY="/opt/vcpkg/installed/x64-linux-dynamic/lib/libprotobuf-lite.so" \
     -DWITH_ICU=system  \
     -DWITH_SSL=system -DOPENSSL_ROOT_DIR="$DEPS_DST" \
