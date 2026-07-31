@@ -32,9 +32,9 @@ DEPS_SRC="$VCPKG_ROOT/installed/x64-linux"
 DEPS_DST="$MYSQL_INSTALL_PREFIX"
 mkdir -p "$DEPS_DST"/{include,lib,lib64,tools}
 
-# sync icu  
-rsync -a "/usr/local/icu68/include/" "$DEPS_DST/include/"
-rsync -a "/usr/local/icu68/lib/"    "$DEPS_DST/lib64/"    || true
+# sync icu
+rsync -a "/usr/local/icu/include/" "$DEPS_DST/include/" || true
+rsync -a "/usr/local/icu/lib/"    "$DEPS_DST/lib/"    || true
 
 # 2) 复制头文件与动态库（.so 与 .so.*）及 pkgconfig
 rsync -a "$DEPS_SRC/include/" "$DEPS_DST/include/"

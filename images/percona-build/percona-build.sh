@@ -31,12 +31,11 @@ mkdir -p "$DEPS_DST"/{include,lib,lib64}
 
 
 DEPS_SRC="$VCPKG_ROOT/installed/x64-linux"
-# sync icu68
-rsync -a "/usr/local/icu68/include/" "$DEPS_DST/include/"
-rsync -a "/usr/local/icu68/lib/"    "$DEPS_DST/lib64/"    || true
+# sync icu
+rsync -a "/usr/local/icu/include/" "$DEPS_DST/include/" || true
+rsync -a "/usr/local/icu/lib/"    "$DEPS_DST/lib/"    || true
 
 # sync jemalloc 
-
 rsync -a "/opt/fbjemalloc/include/" "$DEPS_DST/include/"
 rsync -a "/opt/fbjemalloc/lib/"    "$DEPS_DST/lib64/"    || true
 

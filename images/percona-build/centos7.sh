@@ -261,11 +261,13 @@ CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ LDOPTS="-fuse-ld=mold -Wl
 
 cd /opt
 # install icu  
-wget https://github.com/unicode-org/icu/releases/download/release-68-2/icu4c-68_2-src.tgz
-tar -xzf icu4c-68_2-src.tgz
+# wget https://github.com/unicode-org/icu/releases/download/release-68-2/icu4c-68_2-src.tgz
+wget https://github.com/unicode-org/icu/releases/download/release-78.3/icu4c-78.3-sources.tgz
+tar -xzf icu4c-78.3-sources.tgz
 cd icu/source
 export LD_LIBRARY_PATH=/opt/gcc-indiff/lib64:$LD_LIBRARY_PATH
-./configure --prefix=/usr/local/icu68
+rm -rf /usr/local/icu || true
+./configure --prefix=/usr/local/icu
 make -j$(nproc)
 make install
 
