@@ -7,6 +7,10 @@ set -xe
 #PROTOC_LIB_BASENAME=$(basename $VCPKG_ROOT/installed/x64-linux-dynamic/lib/libprotoc.so.*)
 #chmod +x "$VCPKG_ROOT/installed/x64-linux-dynamic/tools/protobuf/$PROTOC_BASENAME"
 # $HOME/protoc/lib/libprotobuf.so
+
+CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ $VCPKG_ROOT/vcpkg cyrus-sasl --triplet x64-linux-dynamic --clean-after-build \
+            || cat /workspace/vcpkg/installed/vcpkg/issue_body.md
+
 find /opt/vcpkg/installed/x64-linux-dynamic/lib -maxdepth 1 -name "*.so*"
 find /opt/vcpkg/installed/x64-linux-dynamic/lib -maxdepth 1 -name "*.a*"
 
@@ -73,17 +77,6 @@ for d in lib lib64; do
 rsync -a "$DEPS_SRC/$d/pkgconfig/" "$DEPS_DST/$d/pkgconfig/" 2>/dev/null || true
 done
 
-git clone --filter=blob:none --depth 1 https://github.com/cyrusimap/cyrus-sasl.git
-cd cyrus-sasl
-# sh autogen.sh
-# export CFLAGS="-Wall "
-./autogen.sh --with-openssl="$DEPS_DST" --prefix="$DEPS_DST"
-    # --with-staticsasl
-env LDFLAGS="/opt/gcc-indiff/lib64:$DEPS_DST/lib:$DEPS_DST/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH} -fuse-ld=lld" CC="/opt/gcc-indiff/bin/gcc" CXX="/opt/gcc-indiff/bin/g++" \
-make install || true
-# make -j$(nproc)
-# make install
-cd ..
 
 # 克隆官方仓库（或镜像）
 git clone https://github.com/autotools-mirror/autoconf.git
