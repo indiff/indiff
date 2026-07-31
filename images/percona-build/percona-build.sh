@@ -2,8 +2,6 @@
 # author: indiff
 set -xe
 
-git -C $VCPKG_ROOT pull
-/opt/vcpkg/bootstrap-vcpkg.sh
 CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ LDOPTS="-fuse-ld=mold -Wl,--strip-all -Wl,--gc-sections " $VCPKG_ROOT/vcpkg install \
             protobuf[core,libprotoc] cyrus-sasl --recurse --triplet x64-linux-dynamic --clean-after-build \
             || cat /workspace/vcpkg/installed/vcpkg/issue_body.md
@@ -94,18 +92,8 @@ export LD_LIBRARY_PATH="/opt/gcc-indiff/lib64:$DEPS_DST/lib:$DEPS_DST/lib64${LD_
 # export CPPFLAGS="-I$DEPS_DST/include "
 # export CFLAGS="$CPPFLAGS"
 # export LDFLAGS="/opt/gcc-indiff/lib64:$DEPS_DST/lib:$DEPS_DST/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
-  
-git clone --filter=blob:none --depth 1 https://github.com/cyrusimap/cyrus-sasl.git
-cd cyrus-sasl
-# sh autogen.sh
-# export CFLAGS="-Wall "
-./autogen.sh --with-openssl="$DEPS_DST" --prefix="$DEPS_DST"
-    # --with-staticsasl
-env LDFLAGS="/opt/gcc-indiff/lib64:$DEPS_DST/lib:$DEPS_DST/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH} -fuse-ld=lld" CC="/opt/gcc-indiff/bin/gcc" CXX="/opt/gcc-indiff/bin/g++" \
-make install || true
-# make -j$(nproc)
-# make install
-cd ..
+
+
 
 # 克隆官方仓库（或镜像）
 git clone https://github.com/autotools-mirror/autoconf.git
@@ -214,6 +202,15 @@ make -j$(nproc) LDAP_INC="-I$OPENLADP_DIR/include \
  -I$OPENLADP_DIR/clients/tools"
 make install
 
+# export CFLAGS="-Wall "
+# --with-staticsasl
+git clone --filter=blob:none --depth 1 https://github.com/cyrusimap/cyrus-sasl.git
+cd cyrus-sasl
+./autogen.sh --with-openssl="$DEPS_DST" --prefix="$DEPS_DST"
+env LDFLAGS="/opt/gcc-indiff/lib64:$DEPS_DST/lib:$DEPS_DST/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH} -fuse-ld=lld" CC="/opt/gcc-indiff/bin/gcc" CXX="/opt/gcc-indiff/bin/g++" \
+make -j$(nproc)
+make install
+cd ..
 
 if [[ -z "$PERCONA_BRANCH" ]]; then
     git clone --filter=blob:none --depth 1 https://github.com/percona/percona-server.git -b 8.0 /workspace/server

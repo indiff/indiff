@@ -5,18 +5,12 @@ set -xe
 # PROTOC_BASENAME=$(basename $(find /opt/vcpkg/installed/x64-linux-dynamic/tools/protobuf -maxdepth 1 -name "protoc-*" | head -1))
 # PROTOC_LIB_BASENAME=$(basename $(find /opt/vcpkg/installed/x64-linux-dynamic/lib -maxdepth 1 -name "libprotoc*.so.*" | head -1))
 # LIBPROTOBUF_BASENAME=$(basename $(find /opt/vcpkg/installed/x64-linux-dynamic/lib -maxdepth 1 -name "libprotobuf*.so.*" | head -1))
-git -C $VCPKG_ROOT pull
-/opt/vcpkg/bootstrap-vcpkg.sh
-CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ LDOPTS="-fuse-ld=mold -Wl,--strip-all -Wl,--gc-sections " $VCPKG_ROOT/vcpkg install \
-            protobuf[core,libprotoc] cyrus-sasl --recurse --triplet x64-linux-dynamic --clean-after-build \
-            || cat /workspace/vcpkg/installed/vcpkg/issue_body.md
 
 if [[ -z "$MARIADB_BRANCH" ]]; then
     git clone --filter=blob:none --depth 1 https://github.com/MariaDB/server.git server
 else
     git clone --filter=blob:none --depth 1 https://github.com/MariaDB/server.git  -b $MARIADB_BRANCH server
 fi
-
 
 cd server
 git submodule update --init --recursive
@@ -58,8 +52,6 @@ for d in lib lib64; do
     [[ -d "$DEPS_DST/$d/pkgconfig" ]] || mkdir -p "$DEPS_DST/$d/pkgconfig"
     rsync -a "$DEPS_SRC/$d/pkgconfig/" "$DEPS_DST/$d/pkgconfig/" 2>/dev/null || true
 done
-
-
 
 
 # 克隆官方仓库（或镜像）
@@ -117,6 +109,15 @@ make install
 cd ..
 m4 --version
 
+# export CFLAGS="-Wall "
+# --with-staticsasl
+git clone --filter=blob:none --depth 1 https://github.com/cyrusimap/cyrus-sasl.git
+cd cyrus-sasl
+./autogen.sh --with-openssl="$DEPS_DST" --prefix="$DEPS_DST"
+env LDFLAGS="/opt/gcc-indiff/lib64:$DEPS_DST/lib:$DEPS_DST/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH} -fuse-ld=lld" CC="/opt/gcc-indiff/bin/gcc" CXX="/opt/gcc-indiff/bin/g++" \
+make -j$(nproc)
+make install
+cd ..
 
 # 显示一下目录接口查看是否存在相关的 lib 和 include
 # tree "$DEPS_DST"/{include,lib,lib64} | tee /workspace/deps_dst_tree.txt

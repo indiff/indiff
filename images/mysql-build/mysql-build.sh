@@ -2,12 +2,6 @@
 # author: indiff
 set -xe
 
-git -C $VCPKG_ROOT pull
-/opt/vcpkg/bootstrap-vcpkg.sh
-CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ LDOPTS="-fuse-ld=mold -Wl,--strip-all -Wl,--gc-sections " $VCPKG_ROOT/vcpkg install \
-            protobuf[core,libprotoc] cyrus-sasl --recurse --triplet x64-linux-dynamic --clean-after-build \
-            || cat /opt/vcpkg/buildtrees/cyrus-sasl/make-all-x64-linux-dynamic-dbg-err.log
-
 PROTOC_BASENAME=$(basename $(find /opt/vcpkg/installed/x64-linux-dynamic/tools/protobuf -maxdepth 1 -name "protoc-*" | head -1))
 # PROTOC_LIB_BASENAME=$(basename $(find /opt/vcpkg/installed/x64-linux-dynamic/lib -maxdepth 1 -name "libproto*.so.*" | head -1))
 LIBPROTOBUF_BASENAME=libprotobuf.so
@@ -125,6 +119,16 @@ make -j$(nproc)
 make install
 cd ..
 m4 --version
+
+# export CFLAGS="-Wall "
+# --with-staticsasl
+git clone --filter=blob:none --depth 1 https://github.com/cyrusimap/cyrus-sasl.git
+cd cyrus-sasl
+./autogen.sh --with-openssl="$DEPS_DST" --prefix="$DEPS_DST"
+env LDFLAGS="/opt/gcc-indiff/lib64:$DEPS_DST/lib:$DEPS_DST/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH} -fuse-ld=lld" CC="/opt/gcc-indiff/bin/gcc" CXX="/opt/gcc-indiff/bin/g++" \
+make -j$(nproc)
+make install
+cd ..
 
 # 显示一下目录接口查看是否存在相关的 lib 和 include
 # tree "$DEPS_DST"/{include,lib,lib64} | tee /workspace/deps_dst_tree.txt
