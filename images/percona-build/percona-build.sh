@@ -4,7 +4,7 @@ set -xe
 
 
 CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ LDOPTS="-fuse-ld=mold -Wl,--strip-all -Wl,--gc-sections " $VCPKG_ROOT/vcpkg install \
-            protobuf[core,libprotoc] --triplet x64-linux-dynamic --clean-after-build \
+            protobuf[core,libprotoc] --recurse --triplet x64-linux-dynamic --clean-after-build \
             || cat /workspace/vcpkg/installed/vcpkg/issue_body.md
 
 find /opt/vcpkg/installed/x64-linux-dynamic/lib -maxdepth 1 -name "*.so*"

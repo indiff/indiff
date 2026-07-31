@@ -8,7 +8,7 @@ set -xe
 #chmod +x "$VCPKG_ROOT/installed/x64-linux-dynamic/tools/protobuf/$PROTOC_BASENAME"
 # $HOME/protoc/lib/libprotobuf.so
 
-CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ $VCPKG_ROOT/vcpkg cyrus-sasl --triplet x64-linux-dynamic --clean-after-build \
+CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ $VCPKG_ROOT/vcpkg install cyrus-sasl --triplet x64-linux-dynamic --clean-after-build \
             || cat /workspace/vcpkg/installed/vcpkg/issue_body.md
 
 find /opt/vcpkg/installed/x64-linux-dynamic/lib -maxdepth 1 -name "*.so*"
