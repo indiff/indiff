@@ -111,8 +111,8 @@ tar -xzf libtool-2.5.4.tar.gz
 cd libtool-2.5.4
 ./bootstrap  --force     # 如果存在
 ./configure --prefix=/usr
-sudo make -j$(nproc)
-sudo make install
+make -j$(nproc)
+make install
 cd ..
 # 3. 刷新 aclocal 缓存
 aclocal
