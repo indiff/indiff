@@ -58,14 +58,30 @@ done
 
 
 # export CFLAGS="-Wall "
-# --with-staticsasl
-git clone --filter=blob:none --depth 1 https://github.com/cyrusimap/cyrus-sasl.git
-cd cyrus-sasl
-./autogen.sh --with-openssl="$DEPS_DST" --prefix="$DEPS_DST"
-env LDFLAGS="/opt/gcc-indiff/lib64:$DEPS_DST/lib:$DEPS_DST/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH} -fuse-ld=lld" CC="/opt/gcc-indiff/bin/gcc" CXX="/opt/gcc-indiff/bin/g++" \
-make -j$(nproc)
-make install
-cd ..
+# 固定变量，和你现有环境对齐
+ export TRIPLET=x64-linux-dynamic
+ VCPKG_PREFIX="${VCPKG_ROOT}/installed/${TRIPLET}"
+ # 导入vcpkg全套编译环境
+ export PKG_CONFIG_PATH="${VCPKG_PREFIX}/lib/pkgconfig:${PKG_CONFIG_PATH}"
+ export CPPFLAGS="-I${VCPKG_PREFIX}/include"
+ # 正确LDFLAGS：所有库目录加-L，追加rpath保证运行时找到动态库
+ export LDFLAGS="-L/opt/gcc-indiff/lib64 -L${DEPS_DST}/lib -L${VCPKG_PREFIX}/lib -Wl,-rpath=${VCPKG_PREFIX}/lib,${DEPS_DST}/lib,/opt/gcc-indiff/lib64 -fuse-ld=lld"
+ export LD_LIBRARY_PATH="${VCPKG_PREFIX}/lib:${DEPS_DST}/lib:/opt/gcc-indiff/lib64"
+ # 统一锁定gcc-indiff编译器，全程全局生效
+ export CC="/opt/gcc-indiff/bin/gcc"
+ export CXX="/opt/gcc-indiff/bin/g++"
+ # 拉取源码
+ git clone --filter=blob:none --depth 1 https://github.com/cyrusimap/cyrus-sasl.git
+ cd cyrus-sasl
+ # autogen：--with-openssl 指向vcpkg的openssl安装目录，不再指向空DEPS_DST
+ ./autogen.sh \
+     --with-openssl="${VCPKG_PREFIX}" \
+     --prefix="${DEPS_DST}" \
+     --with-staticsasl
+ # 编译安装，环境变量已全局导出，无需重复env传参
+ make -j$(nproc)
+ make install
+ cd ..
 
 
 # 克隆官方仓库（或镜像）
