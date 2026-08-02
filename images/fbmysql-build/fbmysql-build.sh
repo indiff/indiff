@@ -68,6 +68,12 @@ for d in lib lib64; do
 rsync -a "$DEPS_SRC/$d/pkgconfig/" "$DEPS_DST/$d/pkgconfig/" 2>/dev/null || true
 done
 
+export CC="/opt/gcc-indiff/bin/gcc"
+export CXX="/opt/gcc-indiff/bin/g++"
+export CPPFLAGS="-I$DEPS_DST/include"
+export LDFLAGS="-L/opt/gcc-indiff/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH} -fuse-ld=mold"
+export ACLOCAL_PATH=/usr/share/aclocal:${ACLOCAL_PATH:-}
+
 
 # 克隆官方仓库（或镜像）
 git clone https://github.com/autotools-mirror/autoconf.git
@@ -131,11 +137,7 @@ m4 --version
 
 # export CFLAGS="-Wall "
 # --with-staticsasl
-export CC="/opt/gcc-indiff/bin/gcc"
-export CXX="/opt/gcc-indiff/bin/g++"
-export CPPFLAGS="-I$DEPS_DST/include"
-export LDFLAGS="-L/opt/gcc-indiff/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH} -fuse-ld=mold"
-export ACLOCAL_PATH=/usr/share/aclocal:${ACLOCAL_PATH:-}
+
 git clone --filter=blob:none --depth 1 https://github.com/cyrusimap/cyrus-sasl.git
 cd cyrus-sasl
 autoreconf -fi
