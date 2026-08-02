@@ -122,7 +122,7 @@ wget_gnu automake/automake-1.18.1.tar.gz
 tar -xzf automake-1.18.1.tar.gz
 cd automake-1.18.1
 ./bootstrap     # 如果存在
-./configure --prefix=$PREFIX_DIR
+./configure --prefix=/usr
 make -j$(nproc)
 make install
 cd ..
@@ -150,6 +150,23 @@ make -j$(nproc)
 make install
 cd ..
 m4 --version
+
+export CC="/opt/gcc-indiff/bin/gcc"
+export CXX="/opt/gcc-indiff/bin/g++"
+export CPPFLAGS="-I$DEPS_DST/include"
+export LDFLAGS="-L/opt/gcc-indiff/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH} -fuse-ld=mold"
+export ACLOCAL_PATH=/usr/share/aclocal:${ACLOCAL_PATH:-}
+git clone --filter=blob:none --depth 1 https://github.com/cyrusimap/cyrus-sasl.git
+cd cyrus-sasl
+autoreconf -fi
+./configure --with-openssl="$DEPS_DST" --prefix="$DEPS_DST"
+make -j$(nproc)
+make install
+cd ..
+unset CPPFLAGS
+unset LDFLAGS
+
+
           
 # yum install pkgconfig -y
 # git clone --filter=blob:none --depth 1 https://git.openldap.org/openldap/openldap.git
@@ -198,15 +215,6 @@ make -j$(nproc) LDAP_INC="-I$OPENLADP_DIR/include \
  -I$OPENLADP_DIR/clients/tools"
 make install
 
-# export CFLAGS="-Wall "
-# --with-staticsasl
-git clone --filter=blob:none --depth 1 https://github.com/cyrusimap/cyrus-sasl.git
-cd cyrus-sasl
-./autogen.sh --with-openssl="$DEPS_DST" --prefix="$DEPS_DST"
-env LDFLAGS="/opt/gcc-indiff/lib64:$DEPS_DST/lib:$DEPS_DST/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH} -fuse-ld=lld" CC="/opt/gcc-indiff/bin/gcc" CXX="/opt/gcc-indiff/bin/g++" \
-make -j$(nproc)
-make install
-cd ..
 
 if [[ -z "$PERCONA_BRANCH" ]]; then
     git clone --filter=blob:none --depth 1 https://github.com/percona/percona-server.git -b 8.0 /workspace/server
