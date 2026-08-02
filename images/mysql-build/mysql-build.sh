@@ -97,7 +97,7 @@ wget_gnu automake/automake-1.18.1.tar.gz
 tar -xzf automake-1.18.1.tar.gz
 cd automake-1.18.1
 ./bootstrap     # 如果存在
-./configure --prefix=$PREFIX_DIR
+./configure --prefix=/usr
 make -j$(nproc)
 make install
 cd ..
@@ -114,11 +114,7 @@ cd libtool-2.5.4
 make -j$(nproc)
 make install
 cd ..
-# 3. 刷新 aclocal 缓存
-aclocal
 
-# 4. 重新生成 configure
-autoreconf -fvi
 
 # wget https://ftp.gnu.org/gnu/m4/m4-1.4.20.tar.gz
 wget_gnu m4/m4-1.4.20.tar.gz
@@ -131,15 +127,23 @@ make install
 cd ..
 m4 --version
 
-# export CFLAGS="-Wall "
-# --with-staticsasl
+
+export CC="/opt/gcc-indiff/bin/gcc"
+export CXX="/opt/gcc-indiff/bin/g++"
+export CPPFLAGS="-I$DEPS_DST/include"
+export LDFLAGS="-L/opt/gcc-indiff/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH} -fuse-ld=mold"
+export ACLOCAL_PATH=/usr/share/aclocal:${ACLOCAL_PATH:-}
 git clone --filter=blob:none --depth 1 https://github.com/cyrusimap/cyrus-sasl.git
 cd cyrus-sasl
-./autogen.sh --with-openssl="$DEPS_DST" --prefix="$DEPS_DST"
-env LDFLAGS="/opt/gcc-indiff/lib64:$DEPS_DST/lib:$DEPS_DST/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH} -fuse-ld=lld" CC="/opt/gcc-indiff/bin/gcc" CXX="/opt/gcc-indiff/bin/g++" \
+autoreconf -fi
+./configure --with-openssl="$DEPS_DST" --prefix="$DEPS_DST"
 make -j$(nproc)
 make install
 cd ..
+unset CPPFLAGS
+unset LDFLAGS
+
+
 
 # 显示一下目录接口查看是否存在相关的 lib 和 include
 # tree "$DEPS_DST"/{include,lib,lib64} | tee /workspace/deps_dst_tree.txt
