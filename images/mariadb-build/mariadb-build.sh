@@ -70,18 +70,8 @@ done
  # 统一锁定gcc-indiff编译器，全程全局生效
  export CC="/opt/gcc-indiff/bin/gcc"
  export CXX="/opt/gcc-indiff/bin/g++"
- # 拉取源码
- git clone --filter=blob:none --depth 1 https://github.com/cyrusimap/cyrus-sasl.git
- cd cyrus-sasl
- # autogen：--with-openssl 指向vcpkg的openssl安装目录，不再指向空DEPS_DST
- ./autogen.sh \
-     --with-openssl="${VCPKG_PREFIX}" \
-     --prefix="${DEPS_DST}" \
-     --with-staticsasl
- # 编译安装，环境变量已全局导出，无需重复env传参
- make -j$(nproc)
- make install
- cd ..
+ 
+ 
 
 
 # 克隆官方仓库（或镜像）
@@ -115,7 +105,7 @@ wget_gnu automake/automake-1.18.1.tar.gz
 tar -xzf automake-1.18.1.tar.gz
 cd automake-1.18.1
 ./bootstrap     # 如果存在
-./configure --prefix=$PREFIX_DIR
+./configure --prefix=/usr
 make -j$(nproc)
 make install
 cd ..
@@ -143,6 +133,23 @@ make -j$(nproc)
 make install
 cd ..
 m4 --version
+
+
+export CC="/opt/gcc-indiff/bin/gcc"
+export CXX="/opt/gcc-indiff/bin/g++"
+export CPPFLAGS="-I$DEPS_DST/include"
+export LDFLAGS="-L/opt/gcc-indiff/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH} -fuse-ld=mold"
+export ACLOCAL_PATH=/usr/share/aclocal:${ACLOCAL_PATH:-}
+git clone --filter=blob:none --depth 1 https://github.com/cyrusimap/cyrus-sasl.git
+cd cyrus-sasl
+autoreconf -fi
+./configure --with-openssl="$DEPS_DST" --prefix="$DEPS_DST"
+make -j$(nproc)
+make install
+cd ..
+unset CPPFLAGS
+unset LDFLAGS
+
 
 
 # 显示一下目录接口查看是否存在相关的 lib 和 include
