@@ -65,7 +65,7 @@ done
  export PKG_CONFIG_PATH="${VCPKG_PREFIX}/lib/pkgconfig:${PKG_CONFIG_PATH}"
  export CPPFLAGS="-I${VCPKG_PREFIX}/include"
  # 正确LDFLAGS：所有库目录加-L，追加rpath保证运行时找到动态库
- export LDFLAGS="-L/opt/gcc-indiff/lib64 -L${DEPS_DST}/lib -L${VCPKG_PREFIX}/lib -Wl,-rpath=${VCPKG_PREFIX}/lib,${DEPS_DST}/lib,/opt/gcc-indiff/lib64 -fuse-ld=lld"
+ export LDFLAGS="-L/opt/gcc-indiff/lib64 -L${DEPS_DST}/lib -L${VCPKG_PREFIX}/lib -Wl,-rpath=${VCPKG_PREFIX}/lib,${DEPS_DST}/lib,/opt/gcc-indiff/lib64 -fuse-ld=mold"
  export LD_LIBRARY_PATH="${VCPKG_PREFIX}/lib:${DEPS_DST}/lib:/opt/gcc-indiff/lib64"
  # 统一锁定gcc-indiff编译器，全程全局生效
  export CC="/opt/gcc-indiff/bin/gcc"
@@ -226,7 +226,7 @@ rm -f $DEPS_DST/bin/mytap
 rm -f $DEPS_DST/lib/*.a
 rm -f $DEPS_DST/lib64/*.a
 
-zip -r -q -9 /workspace/percona80-centos7-x86_64-$(date +'%Y%m%d_%H%M').xz .
+zip -r -q -9 /workspace/mariadb-centos7-x86_64-$(date +'%Y%m%d_%H%M').xz .
 
 # free memory
 free -h
