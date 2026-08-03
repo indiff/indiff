@@ -190,14 +190,18 @@ export LD_LIBRARY_PATH="/opt/gcc-indiff/lib64:$DEPS_DST/lib:$DEPS_DST/lib64${LD_
 rsync -a /opt/vcpkg/installed/x64-linux/include/ /opt/fbmysql/include/
 rsync -a /opt/vcpkg/installed/x64-linux-dynamic/include/ /opt/fbmysql/include/
 
+# cmake . -DCMAKE_BUILD_TYPE=RelWithDebInfo -DWITH_SSL=system \
+#-DWITH_ZLIB=bundled -DMYSQL_MAINTAINER_MODE=0 -DENABLED_LOCAL_INFILE=1 \
+#-DENABLE_DTRACE=0 -DCMAKE_CXX_FLAGS="-march=native"
+# make -j8
 unset PROTOC
 cmake .. -G Ninja \
     -DCMAKE_INSTALL_PREFIX=$DEPS_DST \
-    -DCMAKE_C_FLAGS="-include stdint.h -include stddef.h -D__NO_STRING_INLINES -I$DEPS_DST/include -O2 -pipe -fPIC -DPIC -Wno-implicit-fallthrough -Wno-int-in-bool-context -Wno-shift-negative-value -Wno-misleading-indentation -Wno-format-overflow -Wno-nonnull -Wno-unused-function " \
-    -DCMAKE_CXX_FLAGS="-std=c++17 -include string -include memory -include cstdint -include cstddef -Uin_range -D__NO_STRING_INLINES -I$DEPS_DST/include -O2 -pipe -fPIC -DPIC -Wno-aligned-new -Wno-implicit-fallthrough -Wno-int-in-bool-context -Wno-shift-negative-value -Wno-misleading-indentation -Wno-format-overflow -Wno-nonnull -Wno-unused-function  " \
+    -DCMAKE_C_FLAGS=" -D__NO_STRING_INLINES -I$DEPS_DST/include -O2 -pipe -fPIC -DPIC " \
+    -DCMAKE_CXX_FLAGS="-std=c++17 -include cstdint -include cstddef -Uin_range -D__NO_STRING_INLINES -I$DEPS_DST/include -O2 -pipe -fPIC -DPIC " \
     -DCMAKE_CXX_EXTENSIONS=OFF \
     -DENABLE_DTRACE=0 \
-    -DCMAKE_EXE_LINKER_FLAGS="-L/opt/vcpkg/installed/x64-linux/lib -L/usr/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 $(pkg-config --static --libs protobuf) -Wl,--strip-all -Wl,--gc-sections -Wl,--no-as-needed -ldl" \
+    -DCMAKE_EXE_LINKER_FLAGS="-L/opt/vcpkg/installed/x64-linux/lib -L/usr/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -lpthread $(pkg-config --static --libs protobuf) -Wl,--strip-all -Wl,--gc-sections -Wl,--no-as-needed -ldl" \
     -DCMAKE_SHARED_LINKER_FLAGS="-L/usr/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--strip-all -Wl,--gc-sections -Wl,--no-as-needed -ldl" \
     -DCMAKE_MODULE_LINKER_FLAGS="-L/usr/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--strip-all -Wl,--gc-sections -Wl,--no-as-needed -ldl" \
     -DCMAKE_TOOLCHAIN_FILE="/opt/vcpkg/scripts/buildsystems/vcpkg.cmake" \
@@ -205,6 +209,7 @@ cmake .. -G Ninja \
     -DHAVE_PSI_INTERFACE=ON \
     -DDEFAULT_CHARSET="utf8mb4" \
     -DDEFAULT_COLLATION="utf8mb4_bin" \
+    -DENABLED_LOCAL_INFILE=1 \
     -DWITH_BOOST="/tmp/boost" \
     -DWITH_TESTS=0 \
     -DWITH_BENCHMARK_TOOLS=0 \

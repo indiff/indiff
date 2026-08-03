@@ -249,7 +249,7 @@ rsync -a /opt/vcpkg/installed/x64-linux/include/ /opt/percona80/include/
 rsync -a /opt/vcpkg/installed/x64-linux-dynamic/include/ /opt/percona80/include/
 cmake .. -G Ninja \
     -DCMAKE_C_FLAGS=" -include stdint.h -include stddef.h -D__NO_STRING_INLINES -I$DEPS_DST/include  -O2 -pipe -fPIC -DPIC " \
-    -DCMAKE_CXX_FLAGS="-std=c++17 -include cstdint -include cstddef -Uin_range  -D__NO_STRING_INLINES  -I$DEPS_DST/include  -O2 -pipe -fPIC -DPIC " \
+    -DCMAKE_CXX_FLAGS="-std=c++17 -include cstdint -include string -include memory -include cstdint -include cstddef -Uin_range -D__NO_STRING_INLINES  -I$DEPS_DST/include -O2 -pipe -fPIC -DPIC " \
     -DCMAKE_PREFIX_PATH="$DEPS_DST" \
     -DCMAKE_INSTALL_PREFIX="$DEPS_DST" \
     -DCMAKE_EXE_LINKER_FLAGS="-L/opt/vcpkg/installed/x64-linux/lib -L/usr/lib64 -L/opt/gcc-indiff/lib64 -L$DEPS_DST/lib -Wl,--strip-all -Wl,--gc-sections -Wl,--no-as-needed -ldl " \
@@ -257,13 +257,16 @@ cmake .. -G Ninja \
     -DCMAKE_MODULE_LINKER_FLAGS="-L/usr/lib64 -L/opt/gcc-indiff/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--strip-all -Wl,--gc-sections -Wl,--no-as-needed -ldl" \
     -DCMAKE_TOOLCHAIN_FILE="/opt/vcpkg/scripts/buildsystems/vcpkg.cmake" \
     -DVCPKG_TARGET_TRIPLET="x64-linux" \
+    -DBUILD_CONFIG=mysql_release \
+    -DWITH_PACKAGE_FLAGS=OFF \
     -DWITH_PROTOBUF=system \
     -DPROTOBUF_INCLUDE_DIR="/opt/percona80/include" \
     -DPROTOBUF_LIBRARY="/opt/vcpkg/installed/x64-linux-dynamic/lib/libprotobuf.so" \
     -DPROTOBUF_PROTOC_EXECUTABLE="/opt/vcpkg/installed/x64-linux-dynamic/tools/protobuf/$PROTOC_BASENAME"  \
     -DPROTOBUF_PROTOC_LIBRARY="/opt/vcpkg/installed/x64-linux-dynamic/lib/libprotoc.so" \
     -DPROTOBUF_LITE_LIBRARY="/opt/vcpkg/installed/x64-linux-dynamic/lib/libprotobuf-lite.so" \
-    -DWITH_BOOST=boost -DDOWNLOAD_BOOST=1 -DWITH_BOOST=../boost \
+    -DDOWNLOAD_BOOST=1 -DWITH_BOOST=../boost \
+    -DMYSQL_MAINTAINER_MODE=OFF \
     -DWITH_ROCKSDB=ON \
     -DWITH_EXT_BACKTRACE=OFF \
     -DWITH_LZ4=system -DWITH_ZSTD=system -DWITH_SNAPPY=system -DWITH_JEMALLOC=system \
@@ -271,8 +274,6 @@ cmake .. -G Ninja \
     -DWITH_ICU=system \
     -DWITH_SYSTEM_LIBS=ON \
     -DCMAKE_BUILD_TYPE=Release \
-    -DBUILD_CONFIG=mysql_release \
-    -DWITH_PACKAGE_FLAGS=OFF \
     -DCMAKE_INSTALL_RPATH='$ORIGIN/../lib:$ORIGIN/../lib64' \
     -DCMAKE_BUILD_RPATH='/opt/gcc-indiff/lib64:$ORIGIN/../lib:$ORIGIN/../lib64' \
     -DCMAKE_INSTALL_RPATH_USE_LINK_PATH=ON \
