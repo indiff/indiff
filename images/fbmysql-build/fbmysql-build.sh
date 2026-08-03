@@ -205,7 +205,7 @@ unset PROTOC
 cmake .. -G Ninja \
     -DCMAKE_INSTALL_PREFIX=$DEPS_DST \
     -DCMAKE_C_FLAGS=" -D__NO_STRING_INLINES -I$DEPS_DST/include -O2 -pipe -fPIC -DPIC " \
-    -DCMAKE_CXX_FLAGS="-std=c++17 -include cstdint -include cstddef -Uin_range -D__NO_STRING_INLINES -I$DEPS_DST/include -O2 -pipe -fPIC -DPIC " \
+    -DCMAKE_CXX_FLAGS="-std=c++20 -include cstdint -include cstddef -Uin_range -D__NO_STRING_INLINES -I$DEPS_DST/include -O2 -pipe -fPIC -DPIC " \
     -DCMAKE_CXX_EXTENSIONS=OFF \
     -DENABLE_DTRACE=0 \
     -DCMAKE_EXE_LINKER_FLAGS="-L/opt/vcpkg/installed/x64-linux/lib -L/usr/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -lpthread $(pkg-config --static --libs protobuf) -Wl,--strip-all -Wl,--gc-sections -Wl,--no-as-needed -ldl" \
