@@ -115,9 +115,9 @@ cd ..
 # insatll libtool
 # git clone --depth=1 https://https.git.savannah.gnu.org/git/libtool.git
 # wget http://mirrors.tencent.com/gnu/libtool/libtool-2.5.4.tar.gz
-wget_gnu libtool/libtool-2.5.4.tar.gz
-tar -xzf libtool-2.5.4.tar.gz
-cd libtool-2.5.4
+wget_gnu libtool/libtool-2.6.2.tar.gz
+tar -xzf libtool-2.6.2.tar.gz
+cd libtool-2.6.2
 ./bootstrap  --force     # 如果存在
 ./configure --prefix=/usr
 make -j$(nproc)
@@ -125,9 +125,9 @@ make install
 cd ..
 
 # wget https://ftp.gnu.org/gnu/m4/m4-1.4.20.tar.gz
-wget_gnu m4/m4-1.4.20.tar.gz
-tar -xzf m4-1.4.20.tar.gz
-cd m4-1.4.20
+wget_gnu m4/m4-latest.tar.gz
+tar -xzf m4-latest.tar.gz
+cd m4-latest
 env CC=/opt/gcc-indiff/bin/gcc CFLAGS="-I/opt/gcc-indiff/include " \
 ./configure --prefix=/usr
 make -j$(nproc)
@@ -232,7 +232,7 @@ cmake .. -G Ninja \
     -DWITH_MECAB=OFF \
     -DWITH_EXT_BACKTRACE=OFF \
     -DWITH_NUMA=OFF \
-    -DWITH_PERFORMANCE_SCHEMA=ON -DHAVE_PSI_INTERFACE=1 \
+    -DWITH_PERFORMANCE_SCHEMA=ON -DWITH_MYISAM=ON -DENABLE_PSI=1 -DHAVE_PSI_INTERFACE=1 \
     -DWITH_ARCHIVE_STORAGE_ENGINE=OFF \
     -DWITH_BLACKHOLE_STORAGE_ENGINE=OFF \
     -DWITH_EXAMPLE_STORAGE_ENGINE=ON \
