@@ -252,7 +252,7 @@ rsync -a /opt/vcpkg/installed/x64-linux/include/ /opt/percona80/include/
 rsync -a /opt/vcpkg/installed/x64-linux-dynamic/include/ /opt/percona80/include/
 cmake .. -G Ninja \
     -DCMAKE_C_FLAGS=" -include stdint.h -include stddef.h -D__NO_STRING_INLINES -I$DEPS_DST/include  -O2 -pipe -fPIC -DPIC " \
-    -DCMAKE_CXX_FLAGS="-std=c++17 -include cstdint -include string -include memory -include cstdint -include cstddef -Uin_range -D__NO_STRING_INLINES  -I$DEPS_DST/include -O2 -pipe -fPIC -DPIC " \
+    -DCMAKE_CXX_FLAGS="-std=c++20 -include cstdint -include string -include memory -include cstdint -include cstddef -Uin_range -D__NO_STRING_INLINES  -I$DEPS_DST/include -O2 -pipe -fPIC -DPIC " \
     -DCMAKE_PREFIX_PATH="$DEPS_DST" \
     -DCMAKE_INSTALL_PREFIX="$DEPS_DST" \
     -DCMAKE_EXE_LINKER_FLAGS="-L/opt/vcpkg/installed/x64-linux/lib -L/usr/lib64 -L/opt/gcc-indiff/lib64 -L$DEPS_DST/lib -Wl,--strip-all -Wl,--gc-sections -Wl,--no-as-needed -ldl " \
