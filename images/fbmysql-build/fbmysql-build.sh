@@ -127,7 +127,7 @@ cd ..
 # wget https://ftp.gnu.org/gnu/m4/m4-1.4.20.tar.gz
 wget_gnu m4/m4-latest.tar.gz
 tar -xzf m4-latest.tar.gz
-cd m4-latest
+cd m4-*
 env CC=/opt/gcc-indiff/bin/gcc CFLAGS="-I/opt/gcc-indiff/include " \
 ./configure --prefix=/usr
 make -j$(nproc)
