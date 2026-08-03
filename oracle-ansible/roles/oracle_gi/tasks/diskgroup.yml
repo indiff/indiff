@@ -1,0 +1,29 @@
+---
+# Create the RECO diskgroup from the P2 (recovery) partitions.
+# Runs only on the first node (run_once) as the grid user.
+
+- name: Build RECO disk list from udev symlinks
+  shell: ls -dm /dev/ORCL_DISK*_p2 | tr -d ' \n'
+  register: reco_disks_raw
+  changed_when: false
+  run_once: true
+
+- name: Create RECO diskgroup via asmca
+  become: true
+  become_user: grid
+  shell: |
+    "{{ gi_home }}/bin/asmca" -silent \
+      -createDiskGroup \
+      -diskGroupName RECO \
+      -diskList "{{ reco_disks_raw.stdout }}" \
+      -redundancy EXTERNAL \
+      -au_size 4 \
+      -sysAsmPassword "{{ sys_password }}" \
+      -asmsnmpPassword "{{ sys_password }}" && \
+    touch /tmp/.reco_dg_created
+  register: reco_dg_result
+  failed_when: reco_dg_result.rc != 0
+  changed_when: reco_dg_result.rc == 0
+  run_once: true
+  args:
+    creates: /tmp/.reco_dg_created

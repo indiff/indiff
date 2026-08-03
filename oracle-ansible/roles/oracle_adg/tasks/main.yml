@@ -1,0 +1,13 @@
+---
+- name: Configure ADG primary database
+  include_tasks: configure_primary.yml
+  when: adg_role == 'primary'
+
+- name: Configure ADG standby database
+  include_tasks: configure_standby.yml
+  when: adg_role == 'standby'
+
+- name: Verify ADG replication
+  include_tasks: verify.yml
+  when: adg_role == 'primary'
+  run_once: true

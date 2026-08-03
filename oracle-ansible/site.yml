@@ -1,0 +1,49 @@
+---
+# site.yml — Main entry point for Oracle 19c RAC/ADG Ansible deployment.
+#
+# Select the architecture by setting arch_type on the command line or in
+# inventory/group_vars/all.yml.
+#
+# Examples:
+#   # RAC cluster only
+#   ansible-playbook -i inventory/hosts.yml site.yml -e arch_type=rac
+#
+#   # Standalone ADG (primary + standby)
+#   ansible-playbook -i inventory/hosts.yml site.yml -e arch_type=adg
+#
+#   # RAC primary + RAC standby with ADG
+#   ansible-playbook -i inventory/hosts.yml site.yml -e arch_type=rac_adg
+#
+#   # RAC primary + standalone standby with ADG
+#   ansible-playbook -i inventory/hosts.yml site.yml -e arch_type=rac_standalone_adg
+
+# ── Dispatch based on arch_type ──────────────────────────────────────────────
+
+- name: Assert arch_type is valid
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: Validate arch_type parameter
+      assert:
+        that:
+          - arch_type is defined
+          - arch_type in ['rac', 'adg', 'rac_adg', 'rac_standalone_adg']
+        fail_msg: |
+          Invalid arch_type='{{ arch_type | default('undefined') }}'.
+          Valid values: rac | adg | rac_adg | rac_standalone_adg
+
+# ── RAC only ─────────────────────────────────────────────────────────────────
+- import_playbook: playbooks/install_rac.yml
+  when: arch_type == 'rac'
+
+# ── Standalone ADG ───────────────────────────────────────────────────────────
+- import_playbook: playbooks/install_adg.yml
+  when: arch_type == 'adg'
+
+# ── RAC primary + RAC standby (ADG) ──────────────────────────────────────────
+- import_playbook: playbooks/install_rac_adg.yml
+  when: arch_type == 'rac_adg'
+
+# ── RAC primary + standalone standby (ADG) ───────────────────────────────────
+- import_playbook: playbooks/install_standalone_adg.yml
+  when: arch_type == 'rac_standalone_adg'

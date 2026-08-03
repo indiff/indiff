@@ -1,0 +1,9 @@
+---
+gi_home:       "/u01/app/19.3.0/grid"
+grid_base:     "/u01/app/grid"
+ora_inventory: "/u01/app/oraInventory"
+gi_software:   "LINUX.X64_193000_grid_home.zip"
+oracle_stage_dir: "/tmp/oracle_stage"
+nomgmtdb:      true
+orestart:      false
+scan_port:     1521

@@ -1,0 +1,101 @@
+---
+# Build the node list and VIP list for cluster install.
+# For orestart (single-node), only the current host is used.
+
+- name: Gather network interface facts
+  setup:
+    gather_subset: network
+
+- name: Detect public network interface
+  set_fact:
+    net_public:  "{{ ansible_interfaces | reject('equalto', 'lo') | list | first }}"
+    net_private: "{{ ansible_interfaces | reject('equalto', 'lo') | list | last }}"
+
+- name: Build cluster node list (RAC)
+  set_fact:
+    gi_cluster_nodes: >-
+      {{
+        ansible_play_hosts
+        | map('extract', hostvars)
+        | map(attribute='inventory_hostname', default='')
+        | zip(
+            ansible_play_hosts
+            | map('extract', hostvars)
+            | map(attribute='inventory_hostname', default='')
+            | map('regex_replace', '$', '-vip')
+          )
+        | map('join', ':')
+        | map('regex_replace', '$', ':HUB')
+        | join(',')
+      }}
+  when: not orestart
+
+- name: Build DATA disk list from udev symlinks
+  shell: ls -dm /dev/ORCL_DISK*_p1 | tr -d ' \n'
+  register: data_disks_raw
+  changed_when: false
+
+- name: Set DATA disk fact
+  set_fact:
+    gi_data_disks: "{{ data_disks_raw.stdout }}"
+
+- name: Install cvuqdisk RPM (required for clusterware pre-checks)
+  shell: "yum install -y {{ gi_home }}/cv/rpm/cvuqdisk*.rpm"
+  args:
+    creates: /etc/cvuqdisk.conf
+
+- name: Run gridSetup.sh in silent mode
+  become: true
+  become_user: grid
+  shell: |
+    "{{ gi_home }}/gridSetup.sh" \
+      -ignorePrereq -waitforcompletion -silent \
+      -responseFile "{{ gi_home }}/install/response/gridsetup.rsp" \
+      INVENTORY_LOCATION="{{ ora_inventory }}" \
+      SELECTED_LANGUAGES="{{ ora_languages }}" \
+      ORACLE_BASE="{{ grid_base }}" \
+      oracle.install.asm.OSDBA=asmdba \
+      oracle.install.asm.OSOPER=asmoper \
+      oracle.install.asm.OSASM=asmadmin \
+      oracle.install.crs.config.ClusterConfiguration=STANDALONE \
+      oracle.install.crs.config.configureAsExtendedCluster=false \
+      oracle.install.crs.config.gpnp.configureGNS=false \
+      oracle.install.crs.config.autoConfigureClusterNodeVIP=false \
+      oracle.install.asm.configureGIMRDataDG=false \
+      oracle.install.asmOnNAS.configureGIMRDataDG=false \
+      oracle.install.crs.config.useIPMI=false \
+      oracle.install.asm.storageOption=ASM \
+      oracle.install.asm.SYSASMPassword="{{ sys_password }}" \
+      oracle.install.asm.monitorPassword="{{ sys_password }}" \
+      oracle.install.asm.diskGroup.name=DATA \
+      oracle.install.asm.diskGroup.redundancy=EXTERNAL \
+      oracle.install.asm.diskGroup.AUSize=4 \
+      oracle.install.asm.diskGroup.disks="{{ gi_data_disks }}" \
+      oracle.install.asm.diskGroup.diskDiscoveryString="/dev/ORCL_*" \
+      oracle.install.asm.gimrDG.AUSize=1 \
+      oracle.install.crs.configureRHPS=false \
+      oracle.install.crs.config.ignoreDownNodes=false \
+      oracle.install.config.managementOption=NONE \
+      oracle.install.config.omsPort=0 \
+      oracle.install.crs.rootconfig.executeRootScript=false \
+      {% if orestart %}
+      oracle.install.option=HA_CONFIG \
+      {% else %}
+      oracle.install.option=CRS_CONFIG \
+      oracle.install.crs.config.scanType=LOCAL_SCAN \
+      oracle.install.crs.config.gpnp.scanName="{{ scan_name }}" \
+      oracle.install.crs.config.gpnp.scanPort="{{ scan_port }}" \
+      oracle.install.crs.config.clusterName="{{ cluster_name }}" \
+      oracle.install.crs.config.clusterNodes="{{ gi_cluster_nodes }}" \
+      oracle.install.crs.config.networkInterfaceList="{{ net_public }}:{{ public_subnet }}:1,{{ net_private }}:{{ private_subnet }}:5" \
+      {% endif %}
+      {% if nomgmtdb %}
+      oracle_install_crs_ConfigureMgmtDB=false
+      {% else %}
+      oracle_install_crs_ConfigureMgmtDB=true
+      {% endif %}
+  register: gi_install_result
+  failed_when: gi_install_result.rc not in [0, 6]
+  changed_when: gi_install_result.rc in [0, 6]
+  args:
+    creates: "{{ gi_home }}/bin/crsctl"

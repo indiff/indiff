@@ -1,0 +1,109 @@
+---
+# install_standalone_adg.yml — Deploy Oracle 19c RAC primary + single-node standby (ADG).
+#
+# Usage:
+#   ansible-playbook -i inventory/hosts.yml playbooks/install_standalone_adg.yml
+#
+# Requires inventory groups:
+#   rac_primary  (≥2 nodes — primary RAC cluster)
+#   adg_standby  (1 node  — standalone standby)
+
+# ── Primary RAC cluster ──────────────────────────────────────────────────────
+
+- name: OS baseline — RAC primary nodes
+  hosts: rac_primary
+  become: true
+  gather_facts: true
+  vars:
+    arch_type: rac_standalone_adg
+    orestart: false
+    db_type: RAC
+    adg_role: primary
+  roles:
+    - role: common
+
+- name: Grid Infrastructure — RAC primary cluster
+  hosts: rac_primary
+  become: true
+  gather_facts: true
+  serial:
+    - 1
+    - "100%"
+  vars:
+    arch_type: rac_standalone_adg
+    orestart: false
+    adg_role: primary
+  roles:
+    - role: oracle_gi
+
+- name: Oracle RDBMS — install + create RAC primary database
+  hosts: rac_primary
+  become: true
+  gather_facts: true
+  vars:
+    arch_type: rac_standalone_adg
+    orestart: false
+    db_type: RAC
+    adg_role: primary
+  roles:
+    - role: oracle_db
+
+# ── Standalone standby ───────────────────────────────────────────────────────
+
+- name: OS baseline — standalone standby node
+  hosts: adg_standby
+  become: true
+  gather_facts: true
+  vars:
+    arch_type: rac_standalone_adg
+    orestart: true
+    db_type: SI
+    adg_role: standby
+  roles:
+    - role: common
+
+- name: Oracle Restart (GI) — standalone standby
+  hosts: adg_standby
+  become: true
+  gather_facts: true
+  vars:
+    arch_type: rac_standalone_adg
+    orestart: true
+    db_type: SI
+    adg_role: standby
+  roles:
+    - role: oracle_gi
+
+- name: Oracle RDBMS software — standalone standby (no DB create)
+  hosts: adg_standby
+  become: true
+  gather_facts: true
+  vars:
+    arch_type: rac_standalone_adg
+    orestart: true
+    db_type: SI
+    adg_role: standby
+  roles:
+    - role: oracle_db
+
+# ── ADG configuration ────────────────────────────────────────────────────────
+
+- name: Configure ADG — primary side (RAC)
+  hosts: rac_primary
+  become: true
+  gather_facts: true
+  vars:
+    arch_type: rac_standalone_adg
+    adg_role: primary
+  roles:
+    - role: oracle_adg
+
+- name: Configure ADG — standby side (standalone)
+  hosts: adg_standby
+  become: true
+  gather_facts: true
+  vars:
+    arch_type: rac_standalone_adg
+    adg_role: standby
+  roles:
+    - role: oracle_adg

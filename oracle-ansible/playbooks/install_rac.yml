@@ -1,0 +1,43 @@
+---
+# install_rac.yml — Deploy Oracle 19c RAC cluster (primary only, no ADG).
+#
+# Usage:
+#   ansible-playbook -i inventory/hosts.yml playbooks/install_rac.yml
+#
+# Requires inventory group: rac_primary (minimum 2 nodes)
+
+- name: OS baseline — all RAC primary nodes
+  hosts: rac_primary
+  become: true
+  gather_facts: true
+  vars:
+    arch_type: rac
+    orestart: false
+    db_type: RAC
+  roles:
+    - role: common
+
+- name: Grid Infrastructure — RAC primary cluster (node1 first, then rest)
+  hosts: rac_primary
+  become: true
+  gather_facts: true
+  serial:
+    - 1
+    - "100%"
+  vars:
+    arch_type: rac
+    orestart: false
+  roles:
+    - role: oracle_gi
+
+- name: Oracle RDBMS — install software and create RAC database
+  hosts: rac_primary
+  become: true
+  gather_facts: true
+  vars:
+    arch_type: rac
+    orestart: false
+    db_type: RAC
+    adg_role: ""
+  roles:
+    - role: oracle_db

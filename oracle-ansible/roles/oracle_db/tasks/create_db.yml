@@ -1,0 +1,63 @@
+---
+# Create the Oracle database via dbca (silent mode).
+# Only runs on the first node (run_once) as oracle user.
+
+- name: Build dbca node list
+  set_fact:
+    dbca_nodelist: >-
+      {{
+        ansible_play_hosts | join(',')
+        if (db_type in ['RAC', 'RACONE'] and not orestart)
+        else inventory_hostname
+      }}
+  run_once: true
+
+- name: Create database via dbca (silent)
+  become: true
+  become_user: oracle
+  shell: |
+    "{{ db_home }}/bin/dbca" -silent -createDatabase \
+      -templateName General_Purpose.dbc \
+      -initParams db_recovery_file_dest_size=2G \
+      -responseFile NO_VALUE \
+      -gdbname "{{ db_name }}" \
+      -characterSet AL32UTF8 \
+      -sysPassword "{{ sys_password }}" \
+      -systemPassword "{{ sys_password }}" \
+      -databaseType MULTIPURPOSE \
+      -automaticMemoryManagement false \
+      -totalMemory 2048 \
+      -redoLogFileSize 50 \
+      -emConfiguration NONE \
+      -ignorePreReqs \
+      -storageType ASM \
+      -diskGroupName +DATA \
+      -recoveryGroupName +RECO \
+      -asmsnmpPassword "{{ sys_password }}" \
+      {{ '-createAsContainerDatabase true -numberOfPDBs 1 -pdbName ' + pdb_name + ' -pdbAdminPassword ' + pdb_password if cdb else '' }} \
+      {{ '-databaseConfigType RAC' if db_type == 'RAC' else
+         '-databaseConfigType RACONE -RACOneNodeServiceName ' + db_name + '_srv' if db_type == 'RACONE' else
+         '-databaseConfigType SINGLE' }} \
+      {{ '-nodelist ' + dbca_nodelist if db_type in ['RAC', 'RACONE'] and not orestart else '' }}
+  register: dbca_result
+  failed_when: dbca_result.rc != 0
+  changed_when: dbca_result.rc == 0
+  run_once: true
+  args:
+    creates: /etc/oratab
+
+- name: Verify database is running
+  become: true
+  become_user: oracle
+  shell: |
+    export ORACLE_HOME="{{ db_home }}"
+    export ORACLE_SID="{{ db_name }}1"
+    echo "SELECT STATUS FROM V\$INSTANCE;" | "$ORACLE_HOME/bin/sqlplus" -s / as sysdba
+  register: db_check
+  changed_when: false
+  run_once: true
+
+- name: Show database status
+  debug:
+    msg: "Database {{ db_name }} status: {{ db_check.stdout }}"
+  run_once: true

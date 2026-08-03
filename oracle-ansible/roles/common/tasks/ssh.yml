@@ -1,0 +1,89 @@
+---
+# Set up passwordless SSH equivalence between all Oracle cluster nodes.
+# Generates key pairs for root, grid, and oracle; distributes public keys
+# across all nodes in the same cluster group.
+
+- name: Generate SSH key for root
+  user:
+    name:        root
+    generate_ssh_key: true
+    ssh_key_type: rsa
+    ssh_key_bits: 4096
+
+- name: Generate SSH key for grid
+  user:
+    name:        grid
+    generate_ssh_key: true
+    ssh_key_type: rsa
+    ssh_key_bits: 4096
+
+- name: Generate SSH key for oracle
+  user:
+    name:        oracle
+    generate_ssh_key: true
+    ssh_key_type: rsa
+    ssh_key_bits: 4096
+
+- name: Fetch root public key
+  fetch:
+    src:  /root/.ssh/id_rsa.pub
+    dest: "/tmp/oracle_ssh_keys/{{ inventory_hostname }}/root_id_rsa.pub"
+    flat: true
+
+- name: Fetch grid public key
+  fetch:
+    src:  /home/grid/.ssh/id_rsa.pub
+    dest: "/tmp/oracle_ssh_keys/{{ inventory_hostname }}/grid_id_rsa.pub"
+    flat: true
+
+- name: Fetch oracle public key
+  fetch:
+    src:  /home/oracle/.ssh/id_rsa.pub
+    dest: "/tmp/oracle_ssh_keys/{{ inventory_hostname }}/oracle_id_rsa.pub"
+    flat: true
+
+- name: Distribute root authorized_keys across peer nodes
+  authorized_key:
+    user:    root
+    key:     "{{ lookup('file', '/tmp/oracle_ssh_keys/' + item + '/root_id_rsa.pub') }}"
+    state:   present
+  loop: "{{ ansible_play_hosts }}"
+  when: item != inventory_hostname
+
+- name: Distribute grid authorized_keys across peer nodes
+  authorized_key:
+    user:    grid
+    key:     "{{ lookup('file', '/tmp/oracle_ssh_keys/' + item + '/grid_id_rsa.pub') }}"
+    state:   present
+  loop: "{{ ansible_play_hosts }}"
+  when: item != inventory_hostname
+
+- name: Distribute oracle authorized_keys across peer nodes
+  authorized_key:
+    user:    oracle
+    key:     "{{ lookup('file', '/tmp/oracle_ssh_keys/' + item + '/oracle_id_rsa.pub') }}"
+    state:   present
+  loop: "{{ ansible_play_hosts }}"
+  when: item != inventory_hostname
+
+- name: Pre-populate SSH known_hosts for root
+  known_hosts:
+    name:  "{{ item }}"
+    key:   "{{ lookup('pipe', 'ssh-keyscan -t rsa ' + item + ' 2>/dev/null') }}"
+    state: present
+  loop: "{{ ansible_play_hosts }}"
+  ignore_errors: true
+
+- name: Pre-populate SSH known_hosts for grid
+  shell: |
+    su - grid -c "ssh-keyscan -t rsa {{ item }} >> /home/grid/.ssh/known_hosts 2>/dev/null; sort -u /home/grid/.ssh/known_hosts -o /home/grid/.ssh/known_hosts"
+  loop: "{{ ansible_play_hosts }}"
+  changed_when: false
+  ignore_errors: true
+
+- name: Pre-populate SSH known_hosts for oracle
+  shell: |
+    su - oracle -c "ssh-keyscan -t rsa {{ item }} >> /home/oracle/.ssh/known_hosts 2>/dev/null; sort -u /home/oracle/.ssh/known_hosts -o /home/oracle/.ssh/known_hosts"
+  loop: "{{ ansible_play_hosts }}"
+  changed_when: false
+  ignore_errors: true

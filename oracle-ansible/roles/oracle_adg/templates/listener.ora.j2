@@ -1,0 +1,18 @@
+# listener.ora — managed by Ansible
+LISTENER =
+  (DESCRIPTION_LIST =
+    (DESCRIPTION =
+      (ADDRESS = (PROTOCOL = TCP)(HOST = {{ ansible_fqdn | default(inventory_hostname) }})(PORT = 1521))
+    )
+  )
+
+SID_LIST_LISTENER =
+  (SID_LIST =
+    (SID_DESC =
+      (GLOBAL_DBNAME = {{ db_name if adg_role == 'primary' else adg_standby_db_name }})
+      (ORACLE_HOME = {{ db_home }})
+      (SID_NAME = {{ db_name + '1' if adg_role == 'primary' else adg_standby_db_name + '1' }})
+    )
+  )
+
+ADR_BASE_LISTENER = {{ oracle_base }}

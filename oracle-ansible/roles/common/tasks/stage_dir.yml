@@ -1,0 +1,24 @@
+---
+- name: Create Oracle software staging directory
+  file:
+    path:  "{{ oracle_stage_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode:  "0755"
+
+- name: Create /etc/opt/oracle-rac config directory
+  file:
+    path:  /etc/opt/oracle-rac
+    state: directory
+    owner: root
+    group: root
+    mode:  "0700"
+
+- name: Write setup.env for shared use by grid/oracle
+  template:
+    src:   setup.env.j2
+    dest:  /etc/opt/oracle-rac/setup.env
+    owner: root
+    group: oinstall
+    mode:  "0640"

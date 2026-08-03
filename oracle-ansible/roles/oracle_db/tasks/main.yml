@@ -1,0 +1,10 @@
+---
+- name: Extract Oracle RDBMS software
+  include_tasks: extract.yml
+
+- name: Install Oracle RDBMS software (silent)
+  include_tasks: install.yml
+
+- name: Create Oracle database
+  include_tasks: create_db.yml
+  when: adg_role | default('') != 'standby'

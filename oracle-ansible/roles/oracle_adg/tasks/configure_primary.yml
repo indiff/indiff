@@ -1,0 +1,160 @@
+---
+# Configure the primary database for Active Data Guard.
+# Runs as oracle user on the primary node (run_once for RAC).
+
+- name: Determine primary Oracle SID
+  set_fact:
+    primary_sid: "{{ db_name }}1"
+    primary_oracle_home: "{{ db_home }}"
+
+- name: Enable ARCHIVELOG mode on primary
+  become: true
+  become_user: oracle
+  shell: |
+    export ORACLE_HOME="{{ primary_oracle_home }}"
+    export ORACLE_SID="{{ primary_sid }}"
+    sqlplus -s / as sysdba <<'EOF'
+    SHUTDOWN IMMEDIATE;
+    STARTUP MOUNT;
+    ALTER DATABASE ARCHIVELOG;
+    ALTER DATABASE OPEN;
+    ALTER SYSTEM ARCHIVE LOG CURRENT;
+    EXIT;
+    EOF
+    touch /tmp/.adg_archivelog_done
+  register: archivelog_result
+  changed_when: archivelog_result.rc == 0
+  run_once: true
+  args:
+    creates: /tmp/.adg_archivelog_done
+
+- name: Enable FORCE LOGGING on primary
+  become: true
+  become_user: oracle
+  shell: |
+    export ORACLE_HOME="{{ primary_oracle_home }}"
+    export ORACLE_SID="{{ primary_sid }}"
+    echo "ALTER DATABASE FORCE LOGGING; EXIT;" | sqlplus -s / as sysdba
+  changed_when: false
+  run_once: true
+
+- name: Add standby redo logs on primary
+  become: true
+  become_user: oracle
+  shell: |
+    export ORACLE_HOME="{{ primary_oracle_home }}"
+    export ORACLE_SID="{{ primary_sid }}"
+    sqlplus -s / as sysdba <<'EOF'
+    DECLARE
+      v_count NUMBER;
+    BEGIN
+      SELECT COUNT(*) INTO v_count FROM V$STANDBY_LOG;
+      IF v_count = 0 THEN
+        FOR i IN 1..4 LOOP
+          EXECUTE IMMEDIATE 'ALTER DATABASE ADD STANDBY LOGFILE SIZE {{ adg_redo_log_size_mb }}M';
+        END LOOP;
+      END IF;
+    END;
+    /
+    EXIT;
+    EOF
+  changed_when: false
+  run_once: true
+
+- name: Configure primary DB parameters for ADG
+  become: true
+  become_user: oracle
+  shell: |
+    export ORACLE_HOME="{{ primary_oracle_home }}"
+    export ORACLE_SID="{{ primary_sid }}"
+    sqlplus -s / as sysdba <<EOF
+    ALTER SYSTEM SET LOG_ARCHIVE_DEST_1='LOCATION=USE_DB_RECOVERY_FILE_DEST VALID_FOR=(ALL_LOGFILES,ALL_ROLES) DB_UNIQUE_NAME={{ db_name }}' SCOPE=BOTH;
+    ALTER SYSTEM SET LOG_ARCHIVE_DEST_2='SERVICE={{ adg_standby_db_name }} ASYNC VALID_FOR=(ONLINE_LOGFILES,PRIMARY_ROLE) DB_UNIQUE_NAME={{ adg_standby_db_name }}' SCOPE=BOTH;
+    ALTER SYSTEM SET LOG_ARCHIVE_DEST_STATE_1=ENABLE SCOPE=BOTH;
+    ALTER SYSTEM SET LOG_ARCHIVE_DEST_STATE_2=ENABLE SCOPE=BOTH;
+    ALTER SYSTEM SET DB_UNIQUE_NAME={{ db_name }} SCOPE=SPFILE;
+    ALTER SYSTEM SET LOG_ARCHIVE_CONFIG='DG_CONFIG=({{ db_name }},{{ adg_standby_db_name }})' SCOPE=BOTH;
+    ALTER SYSTEM SET LOG_ARCHIVE_FORMAT='%t_%s_%r.arc' SCOPE=SPFILE;
+    ALTER SYSTEM SET STANDBY_FILE_MANAGEMENT={{ adg_standby_file_manage }} SCOPE=BOTH;
+    ALTER SYSTEM SET FAL_SERVER={{ adg_standby_db_name }} SCOPE=BOTH;
+    ALTER SYSTEM SET FAL_CLIENT={{ db_name }} SCOPE=BOTH;
+    EXIT;
+    EOF
+  changed_when: false
+  run_once: true
+
+- name: Create TNS entries for primary and standby
+  template:
+    src:  tnsnames.ora.j2
+    dest: "{{ primary_oracle_home }}/network/admin/tnsnames.ora"
+    owner: oracle
+    group: oinstall
+    mode:  "0644"
+  run_once: true
+
+- name: Create listener.ora for primary
+  template:
+    src:  listener.ora.j2
+    dest: "{{ primary_oracle_home }}/network/admin/listener.ora"
+    owner: oracle
+    group: oinstall
+    mode:  "0644"
+  run_once: true
+
+- name: Reload listener on primary
+  become: true
+  become_user: oracle
+  shell: |
+    export ORACLE_HOME="{{ primary_oracle_home }}"
+    $ORACLE_HOME/bin/lsnrctl reload
+  changed_when: false
+  run_once: true
+
+- name: Create standby control file backup
+  become: true
+  become_user: oracle
+  shell: |
+    export ORACLE_HOME="{{ primary_oracle_home }}"
+    export ORACLE_SID="{{ primary_sid }}"
+    echo "ALTER DATABASE CREATE STANDBY CONTROLFILE AS '/tmp/standby.ctl'; EXIT;" | sqlplus -s / as sysdba
+  run_once: true
+  args:
+    creates: /tmp/standby.ctl
+
+- name: Create password file backup for standby
+  become: true
+  become_user: oracle
+  shell: |
+    cp "{{ primary_oracle_home }}/dbs/orapw{{ primary_sid }}" /tmp/orapw_primary
+  run_once: true
+  args:
+    creates: /tmp/orapw_primary
+
+- name: Determine standby node address
+  set_fact:
+    standby_host: >-
+      {{
+        (groups['adg_standby'] | default([]) | first)
+        if groups['adg_standby'] | default([]) | length > 0
+        else (groups['rac_standby'] | default([]) | first)
+      }}
+
+- name: Transfer standby control file to standby node
+  copy:
+    src:  /tmp/standby.ctl
+    dest: /tmp/standby.ctl
+    owner: oracle
+    group: oinstall
+    mode:  "0644"
+  delegate_to: "{{ standby_host }}"
+  run_once: true
+
+- name: Transfer password file to standby node
+  copy:
+    src:  /tmp/orapw_primary
+    dest: "/tmp/orapw_{{ db_name }}"
+    owner: oracle
+    group: oinstall
+    mode:  "0640"
+  delegate_to: "{{ standby_host }}"
+  run_once: true

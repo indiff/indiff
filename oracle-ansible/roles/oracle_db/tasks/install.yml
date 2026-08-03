@@ -1,0 +1,39 @@
+---
+- name: Install Oracle RDBMS software (silent)
+  become: true
+  become_user: oracle
+  shell: |
+    "{{ db_home }}/runInstaller" \
+      -ignorePrereq -waitforcompletion -silent \
+      -responseFile "{{ db_home }}/install/response/db_install.rsp" \
+      ORACLE_BASE="{{ oracle_base }}" \
+      ORACLE_HOME="{{ db_home }}" \
+      INVENTORY_LOCATION="{{ ora_inventory }}" \
+      SELECTED_LANGUAGES="{{ ora_languages }}" \
+      oracle.install.option=INSTALL_DB_SWONLY \
+      oracle.install.db.InstallEdition=EE \
+      oracle.install.db.OSDBA_GROUP=dba \
+      oracle.install.db.OSOPER_GROUP=oper \
+      oracle.install.db.OSBACKUPDBA_GROUP=backupdba \
+      oracle.install.db.OSDGDBA_GROUP=dgdba \
+      oracle.install.db.OSKMDBA_GROUP=kmdba \
+      oracle.install.db.OSRACDBA_GROUP=racdba \
+      oracle.install.db.rootconfig.executeRootScript=false
+  register: db_install_result
+  failed_when: db_install_result.rc not in [0, 6]
+  changed_when: db_install_result.rc in [0, 6]
+  args:
+    creates: "{{ db_home }}/bin/oracle"
+
+- name: Run DB root.sh on primary/current node
+  shell: "{{ db_home }}/root.sh"
+  args:
+    creates: /etc/oratab
+
+- name: Run DB root.sh on peer RAC nodes
+  shell: "{{ db_home }}/root.sh"
+  delegate_to: "{{ item }}"
+  loop: "{{ ansible_play_hosts | difference([inventory_hostname]) }}"
+  when: not orestart
+  args:
+    creates: /etc/oratab

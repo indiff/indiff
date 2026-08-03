@@ -1,0 +1,94 @@
+---
+- name: Create Oracle OS groups
+  group:
+    name: "{{ item.name }}"
+    gid:  "{{ item.gid }}"
+    state: present
+  loop:
+    - { name: oinstall,  gid: 54321 }
+    - { name: dba,       gid: 54322 }
+    - { name: oper,      gid: 54323 }
+    - { name: backupdba, gid: 54324 }
+    - { name: dgdba,     gid: 54325 }
+    - { name: kmdba,     gid: 54326 }
+    - { name: asmdba,    gid: 54327 }
+    - { name: asmoper,   gid: 54328 }
+    - { name: asmadmin,  gid: 54329 }
+    - { name: racdba,    gid: 54330 }
+
+- name: Create grid OS user
+  user:
+    name:    grid
+    uid:     54321
+    group:   oinstall
+    groups:  "oinstall,dba,asmdba,asmoper,asmadmin,racdba"
+    shell:   /bin/bash
+    home:    /home/grid
+    comment: "Oracle Grid Infrastructure Owner"
+    state:   present
+
+- name: Create oracle OS user
+  user:
+    name:    oracle
+    uid:     54322
+    group:   oinstall
+    groups:  "oinstall,dba,oper,backupdba,dgdba,kmdba,asmdba,racdba"
+    shell:   /bin/bash
+    home:    /home/oracle
+    comment: "Oracle Database Owner"
+    state:   present
+
+- name: Set passwords for oracle users
+  shell: "echo '{{ item.user }}:{{ item.password }}' | chpasswd"
+  no_log: true
+  loop:
+    - { user: root,   password: "{{ root_password }}" }
+    - { user: grid,   password: "{{ grid_password }}" }
+    - { user: oracle, password: "{{ oracle_password }}" }
+  changed_when: false
+
+- name: Configure grid user bash profile
+  blockinfile:
+    path: /home/grid/.bash_profile
+    create: true
+    owner: grid
+    group: oinstall
+    mode:  "0644"
+    marker: "# {mark} ANSIBLE MANAGED — Oracle Grid"
+    block: |
+      export ORACLE_BASE={{ grid_base }}
+      export ORACLE_HOME={{ gi_home }}
+      export ORACLE_SID=+ASM1
+      export PATH=$ORACLE_HOME/bin:$PATH
+      export LD_LIBRARY_PATH=$ORACLE_HOME/lib:$LD_LIBRARY_PATH
+
+- name: Configure oracle user bash profile
+  blockinfile:
+    path: /home/oracle/.bash_profile
+    create: true
+    owner: oracle
+    group: oinstall
+    mode:  "0644"
+    marker: "# {mark} ANSIBLE MANAGED — Oracle DB"
+    block: |
+      export ORACLE_BASE={{ oracle_base }}
+      export ORACLE_HOME={{ db_home }}
+      export ORACLE_SID={{ db_name }}1
+      export PATH=$ORACLE_HOME/bin:$PATH
+      export LD_LIBRARY_PATH=$ORACLE_HOME/lib:$LD_LIBRARY_PATH
+
+- name: Create Oracle directory tree
+  file:
+    path:  "{{ item }}"
+    state: directory
+    owner: "{{ item_owner }}"
+    group: oinstall
+    mode:  "0775"
+  loop:
+    - "{{ oracle_base }}"
+    - "{{ grid_base }}"
+    - "{{ gi_home }}"
+    - "{{ db_home }}"
+    - "{{ ora_inventory }}"
+  vars:
+    item_owner: "{{ 'grid' if item in [grid_base, gi_home, ora_inventory] else 'oracle' }}"

@@ -1,0 +1,44 @@
+127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
+::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
+
+# ── RAC primary cluster ──────────────────────────────────────────────────────
+{% for host in groups['rac_primary'] | default([]) %}
+{% set hv = hostvars[host] %}
+{{ hv.public_ip }}  {{ host }}.{{ domain_name }}  {{ host }}
+{{ hv.vip_ip }}     {{ host }}-vip.{{ domain_name }}  {{ host }}-vip
+{{ hv.private_ip }} {{ host }}-priv.{{ domain_name }} {{ host }}-priv
+{% endfor %}
+{% if groups['rac_primary'] | default([]) | length > 0 %}
+
+# SCAN VIPs — primary cluster
+{{ hostvars[groups['rac_primary'][0]]['scan_ip1'] | default('') }}  {{ hostvars[groups['rac_primary'][0]]['scan_name'] | default('rac1-scan') }}.{{ domain_name }}  {{ hostvars[groups['rac_primary'][0]]['scan_name'] | default('rac1-scan') }}
+{{ hostvars[groups['rac_primary'][0]]['scan_ip2'] | default('') }}  {{ hostvars[groups['rac_primary'][0]]['scan_name'] | default('rac1-scan') }}.{{ domain_name }}
+{{ hostvars[groups['rac_primary'][0]]['scan_ip3'] | default('') }}  {{ hostvars[groups['rac_primary'][0]]['scan_name'] | default('rac1-scan') }}.{{ domain_name }}
+{% endif %}
+
+# ── RAC standby cluster ──────────────────────────────────────────────────────
+{% for host in groups['rac_standby'] | default([]) %}
+{% set hv = hostvars[host] %}
+{{ hv.public_ip }}  {{ host }}.{{ domain_name }}  {{ host }}
+{{ hv.vip_ip }}     {{ host }}-vip.{{ domain_name }}  {{ host }}-vip
+{{ hv.private_ip }} {{ host }}-priv.{{ domain_name }} {{ host }}-priv
+{% endfor %}
+{% if groups['rac_standby'] | default([]) | length > 0 %}
+
+# SCAN VIPs — standby cluster
+{{ hostvars[groups['rac_standby'][0]]['scan_ip1'] | default('') }}  {{ hostvars[groups['rac_standby'][0]]['scan_name'] | default('rac2-scan') }}.{{ domain_name }}  {{ hostvars[groups['rac_standby'][0]]['scan_name'] | default('rac2-scan') }}
+{{ hostvars[groups['rac_standby'][0]]['scan_ip2'] | default('') }}  {{ hostvars[groups['rac_standby'][0]]['scan_name'] | default('rac2-scan') }}.{{ domain_name }}
+{{ hostvars[groups['rac_standby'][0]]['scan_ip3'] | default('') }}  {{ hostvars[groups['rac_standby'][0]]['scan_name'] | default('rac2-scan') }}.{{ domain_name }}
+{% endif %}
+
+# ── Standalone ADG nodes ─────────────────────────────────────────────────────
+{% for host in groups['adg_primary'] | default([]) %}
+{% set hv = hostvars[host] %}
+{{ hv.public_ip }}  {{ host }}.{{ domain_name }}  {{ host }}
+{{ hv.private_ip }} {{ host }}-priv.{{ domain_name }} {{ host }}-priv
+{% endfor %}
+{% for host in groups['adg_standby'] | default([]) %}
+{% set hv = hostvars[host] %}
+{{ hv.public_ip }}  {{ host }}.{{ domain_name }}  {{ host }}
+{{ hv.private_ip }} {{ host }}-priv.{{ domain_name }} {{ host }}-priv
+{% endfor %}

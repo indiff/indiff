@@ -1,0 +1,9 @@
+---
+- name: Set system locale to zh_CN.utf-8
+  lineinfile:
+    path: /etc/environment
+    line: "{{ item }}"
+    create: true
+  loop:
+    - "LANG=zh_CN.utf-8"
+    - "LC_ALL=zh_CN.utf-8"

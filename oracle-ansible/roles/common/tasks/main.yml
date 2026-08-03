@@ -1,0 +1,14 @@
+---
+- name: Configure common Oracle OS baseline
+  include_tasks: "{{ item }}"
+  loop:
+    - locale.yml
+    - timezone.yml
+    - packages.yml
+    - kernel.yml
+    - users.yml
+    - storage.yml
+    - hosts.yml
+    - chrony.yml
+    - ssh.yml
+    - stage_dir.yml

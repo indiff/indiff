@@ -1,0 +1,40 @@
+---
+- name: Verify GI installer checksum (local)
+  stat:
+    path: "{{ oracle_software_local_dir }}/{{ gi_software }}"
+    checksum_algorithm: sha256
+  register: gi_zip_stat
+  delegate_to: localhost
+  run_once: true
+
+- name: Fail if GI installer not found locally
+  fail:
+    msg: "GI installer not found at {{ oracle_software_local_dir }}/{{ gi_software }}"
+  when: not gi_zip_stat.stat.exists
+  delegate_to: localhost
+  run_once: true
+
+- name: Copy GI installer to target node
+  copy:
+    src:  "{{ oracle_software_local_dir }}/{{ gi_software }}"
+    dest: "{{ oracle_stage_dir }}/{{ gi_software }}"
+    owner: grid
+    group: oinstall
+    mode:  "0644"
+
+- name: Create GI home directory
+  file:
+    path:  "{{ gi_home }}"
+    state: directory
+    owner: grid
+    group: oinstall
+    mode:  "0775"
+
+- name: Extract GI software into GI home
+  become: true
+  become_user: grid
+  unarchive:
+    src:        "{{ oracle_stage_dir }}/{{ gi_software }}"
+    dest:       "{{ gi_home }}"
+    remote_src: true
+    creates:    "{{ gi_home }}/gridSetup.sh"

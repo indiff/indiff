@@ -1,0 +1,40 @@
+# tnsnames.ora — managed by Ansible
+# Primary DB service
+{{ db_name }} =
+  (DESCRIPTION =
+    (ADDRESS_LIST =
+{% if groups['rac_primary'] | default([]) | length > 0 %}
+      (LOAD_BALANCE = YES)
+      (FAILOVER = YES)
+{% for host in groups['rac_primary'] | default([]) %}
+      (ADDRESS = (PROTOCOL = TCP)(HOST = {{ hostvars[host]['public_ip'] }})(PORT = 1521))
+{% endfor %}
+{% elif groups['adg_primary'] | default([]) | length > 0 %}
+      (ADDRESS = (PROTOCOL = TCP)(HOST = {{ hostvars[groups['adg_primary'][0]]['public_ip'] }})(PORT = 1521))
+{% endif %}
+    )
+    (CONNECT_DATA =
+      (SERVER = DEDICATED)
+      (SERVICE_NAME = {{ db_name }})
+    )
+  )
+
+# Standby DB service
+{{ adg_standby_db_name }} =
+  (DESCRIPTION =
+    (ADDRESS_LIST =
+{% if groups['rac_standby'] | default([]) | length > 0 %}
+      (LOAD_BALANCE = YES)
+      (FAILOVER = YES)
+{% for host in groups['rac_standby'] | default([]) %}
+      (ADDRESS = (PROTOCOL = TCP)(HOST = {{ hostvars[host]['public_ip'] }})(PORT = 1521))
+{% endfor %}
+{% elif groups['adg_standby'] | default([]) | length > 0 %}
+      (ADDRESS = (PROTOCOL = TCP)(HOST = {{ hostvars[groups['adg_standby'][0]]['public_ip'] }})(PORT = 1521))
+{% endif %}
+    )
+    (CONNECT_DATA =
+      (SERVER = DEDICATED)
+      (SERVICE_NAME = {{ adg_standby_db_name }})
+    )
+  )
