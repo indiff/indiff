@@ -230,6 +230,9 @@ fi
 cd /workspace/server
 git submodule update --init --recursive
 
+# Fix: buffered_error_log.h uses std::string but does not include <string>
+sed -i '/#include <cstring>/a #include <string>' mysys/buffered_error_log.h
+
 # build persona mysql
 mkdir -p /workspace/server/build /workspace/server/boost
 cd /workspace/server/build

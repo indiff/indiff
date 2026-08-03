@@ -31,6 +31,13 @@ git submodule update --init --recursive
 # patch zlib.h
 sed -i '1i#ifndef Z_ARG\n#define Z_ARG(args) args\n#endif\n' extra/zlib/zlib-1.2.13/zlib.h || true
 
+# Fix: myrg_static.cc has #ifndef stdin guard that skips myrg_def.h when stdin is
+# defined (happens with GCC 17 + -include string). Remove the guard so myrg_def.h
+# is always included, and add missing mysql/psi/mysql_mutex.h for PSI_mutex_key etc.
+sed -i '/#ifndef stdin/d' storage/myisammrg/myrg_static.cc
+sed -i '/#include "storage\/myisammrg\/myrg_def.h"/{n;/#endif/d}' storage/myisammrg/myrg_static.cc
+sed -i '/#include "mysql\/psi\/mysql_memory.h"/a #include "mysql/psi/mysql_mutex.h"' storage/myisammrg/myrg_static.cc
+
 DEPS_SRC="$VCPKG_ROOT/installed/x64-linux"
 DEPS_DST="$FBMYSQL_INSTALL_PREFIX"
 mkdir -p "$DEPS_DST"/{include,lib,lib64,tools}
