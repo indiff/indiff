@@ -217,7 +217,7 @@ cmake .. -G Ninja \
     -DDEFAULT_CHARSET="utf8mb4" \
     -DDEFAULT_COLLATION="utf8mb4_bin" \
     -DENABLED_LOCAL_INFILE=1 \
-    -DWITH_BOOST="/tmp/boost" \
+    -DDOWNLOAD_BOOST=1 -DWITH_BOOST=../boost \
     -DWITH_TESTS=0 \
     -DWITH_BENCHMARK_TOOLS=0 \
     -DWITH_GFLAGS=0 \

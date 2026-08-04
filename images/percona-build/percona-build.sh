@@ -252,7 +252,7 @@ rsync -a /opt/vcpkg/installed/x64-linux/include/ /opt/percona80/include/
 rsync -a /opt/vcpkg/installed/x64-linux-dynamic/include/ /opt/percona80/include/
 cmake .. -G Ninja \
     -DCMAKE_C_FLAGS=" -include stdint.h -include stddef.h -D__NO_STRING_INLINES -I$DEPS_DST/include  -O2 -pipe -fPIC -DPIC " \
-    -DCMAKE_CXX_FLAGS="-std=c++20 -Uin_range -include cstdint -include string -include memory -include cstdint -include cstddef -D__NO_STRING_INLINES -I$DEPS_DST/include -O2 -pipe -fPIC -DPIC " \
+    -DCMAKE_CXX_FLAGS="-std=c++20 -Uin_range -include string -include memory -include cstdint -include cstddef -D__NO_STRING_INLINES -I$DEPS_DST/include -O2 -pipe -fPIC -DPIC " \
     -DCMAKE_PREFIX_PATH="$DEPS_DST" \
     -DCMAKE_INSTALL_PREFIX="$DEPS_DST" \
     -DCMAKE_EXE_LINKER_FLAGS="-L/opt/vcpkg/installed/x64-linux/lib -L/usr/lib64 -L/opt/gcc-indiff/lib64 -L$DEPS_DST/lib -Wl,--strip-all -Wl,--gc-sections -Wl,--no-as-needed -ldl " \
@@ -260,6 +260,7 @@ cmake .. -G Ninja \
     -DCMAKE_MODULE_LINKER_FLAGS="-L/usr/lib64 -L/opt/gcc-indiff/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--strip-all -Wl,--gc-sections -Wl,--no-as-needed -ldl" \
     -DCMAKE_TOOLCHAIN_FILE="/opt/vcpkg/scripts/buildsystems/vcpkg.cmake" \
     -DVCPKG_TARGET_TRIPLET="x64-linux" \
+    -DWITH_COMPONENT_KEYRING_VAULT=ON \
     -DBUILD_CONFIG=mysql_release \
     -DWITH_PACKAGE_FLAGS=OFF \
     -DWITH_PROTOBUF=system \
@@ -269,8 +270,21 @@ cmake .. -G Ninja \
     -DPROTOBUF_PROTOC_LIBRARY="/opt/vcpkg/installed/x64-linux-dynamic/lib/libprotoc.so" \
     -DPROTOBUF_LITE_LIBRARY="/opt/vcpkg/installed/x64-linux-dynamic/lib/libprotobuf-lite.so" \
     -DDOWNLOAD_BOOST=1 -DWITH_BOOST=../boost \
-    -DMYSQL_MAINTAINER_MODE=OFF \
+    -DMYSQL_MAINTAINER_MODE=ON \
     -DWITH_ROCKSDB=ON \
+    -DWITH_MECAB=OFF \
+    -DWITH_EDITLINE=system \
+    -DWITH_LIBEVENT=system \
+    -DWITH_ZLIB=system \
+    -DWITH_CURL=system \
+    -DWITH_FIDO=system \
+    -DWITH_RAPIDJSON=bundled \
+    -DWITH_PROTOBUF=system  \
+    -DPROTOBUF_INCLUDE_DIR="/opt/mysql/include" \
+    -DPROTOBUF_LIBRARY="$DEPS_DST/lib/$LIBPROTOBUF_BASENAME" \
+    -DPROTOBUF_PROTOC_EXECUTABLE="$VCPKG_ROOT/installed/x64-linux-dynamic/tools/protobuf/$PROTOC_BASENAME"  \
+    -DPROTOBUF_PROTOC_LIBRARY="/opt/vcpkg/installed/x64-linux-dynamic/lib/libprotoc.so" \
+    -DPROTOBUF_LITE_LIBRARY="/opt/vcpkg/installed/x64-linux-dynamic/lib/libprotobuf-lite.so" \
     -DWITH_EXT_BACKTRACE=OFF \
     -DWITH_LZ4=system -DWITH_ZSTD=system -DWITH_SNAPPY=system -DWITH_JEMALLOC=system \
     -DWITH_SSL=system -DOPENSSL_ROOT_DIR="$DEPS_DST" \
@@ -292,7 +306,7 @@ cmake .. -G Ninja \
     -DWITH_NDB=OFF \
     -DWITH_NDBCLUSTER=OFF \
     -DWITH_NDB_JAVA=OFF \
-    -DWITH_PERFORMANCE_SCHEMA=ON -DWITH_MYISAM=ON -DENABLE_PSI=1 -DHAVE_PSI_INTERFACE=1 \
+    -DWITH_PERFORMANCE_SCHEMA=ON -DWITH_PSI=ON -DWITH_MYISAM=ON -DENABLE_PSI=1 -DHAVE_PSI_INTERFACE=1 \
     -DWITH_ARCHIVE_STORAGE_ENGINE=OFF \
     -DWITH_BLACKHOLE_STORAGE_ENGINE=OFF \
     -DWITH_EXAMPLE_STORAGE_ENGINE=ON \
