@@ -1,0 +1,35 @@
+name: Cleanup failed workflow runs
+
+on:
+  workflow_dispatch:
+  schedule:
+    # 每天 UTC 03:00 执行一次
+    - cron: "0 3 * * *"
+
+permissions:
+  actions: write
+
+jobs:
+  delete-failed-runs:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Delete all failed workflow runs
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+
+          gh run list \
+            --repo "$GH_REPO" \
+            --status failure \
+            --limit 1000 \
+            --json databaseId \
+            --jq '.[].databaseId' |
+          while read -r run_id; do
+            echo "Deleting failed workflow run: $run_id"
+            gh run delete "$run_id" \
+              --repo "$GH_REPO" \
+              --confirm
+          done
