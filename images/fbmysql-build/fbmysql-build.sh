@@ -170,12 +170,13 @@ wget https://archives.boost.io/release/1.87.0/source/${boost_version_str}.tar.bz
 mkdir -p /tmp/boost
 tar -xjf ${boost_version_str}.tar.bz2 -C /tmp/boost --strip-components=1
 
+
 # ====== 替换 boost.cmake ======
 cat > /workspace/server/cmake/boost.cmake << BOOST_CMAKE_EOF
 SET(BOOST_PACKAGE_NAME "${boost_version_str}")
 
 # Always use the bundled version.
-SET(BOOST_SOURCE_DIR "/tmp/boost")
+SET(BOOST_SOURCE_DIR "/tmp/boost/${boost_version_str}")
 
 # Contains all header files we need.
 # (All the directories that contain at least one needed file).
@@ -255,7 +256,7 @@ cmake .. -G Ninja \
     -DDEFAULT_CHARSET="utf8mb4" \
     -DDEFAULT_COLLATION="utf8mb4_bin" \
     -DENABLED_LOCAL_INFILE=1 \
-    -DWITH_BOOST="/tmp/boost" -DDOWNLOAD_BOOST=0 \
+    -DWITH_BOOST="/tmp/boost/${boost_version_str}" -DDOWNLOAD_BOOST=0 \
     -DWITH_TESTS=0 \
     -DWITH_BENCHMARK_TOOLS=0 \
     -DWITH_GFLAGS=0 \

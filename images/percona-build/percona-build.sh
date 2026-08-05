@@ -239,18 +239,19 @@ sed -i '/#include <cstring>/a #include <string>' mysys/buffered_error_log.h
 # cd /workspace/boost
 # git submodule update --init --recursive
 
-
+# wget https://archives.boost.io/release/1.87.0/source/boost_1_87_0.tar.bz2
 boost_version_str="boost_1_87_0"
 wget https://archives.boost.io/release/1.87.0/source/${boost_version_str}.tar.bz2
 mkdir -p /tmp/boost
 tar -xjf ${boost_version_str}.tar.bz2 -C /tmp/boost --strip-components=1
+
 
 # ====== 替换 boost.cmake ======
 cat > /workspace/server/cmake/boost.cmake << BOOST_CMAKE_EOF
 SET(BOOST_PACKAGE_NAME "${boost_version_str}")
 
 # Always use the bundled version.
-SET(BOOST_SOURCE_DIR "/tmp/boost")
+SET(BOOST_SOURCE_DIR "/tmp/boost/${boost_version_str}")
 
 # Contains all header files we need.
 # (All the directories that contain at least one needed file).
@@ -312,7 +313,7 @@ cmake .. -G Ninja \
     -DPROTOBUF_PROTOC_EXECUTABLE="/opt/vcpkg/installed/x64-linux-dynamic/tools/protobuf/$PROTOC_BASENAME"  \
     -DPROTOBUF_PROTOC_LIBRARY="/opt/vcpkg/installed/x64-linux-dynamic/lib/libprotoc.so" \
     -DPROTOBUF_LITE_LIBRARY="/opt/vcpkg/installed/x64-linux-dynamic/lib/libprotobuf-lite.so" \
-    -DWITH_BOOST="/tmp/boost" -DDOWNLOAD_BOOST=0 \
+    -DWITH_BOOST="/tmp/boost/${boost_version_str}" -DDOWNLOAD_BOOST=0 \
     -DMYSQL_MAINTAINER_MODE=ON \
     -DWITH_ROCKSDB=ON \
     -DWITH_MECAB=OFF \
