@@ -274,6 +274,7 @@ BOOST_CMAKE_EOF
 
 cat /workspace/server/cmake/boost.cmake
 
+mkdir /workspace/server/build
 cd /workspace/server/build
 
 # 避免外部 protobuf 干扰

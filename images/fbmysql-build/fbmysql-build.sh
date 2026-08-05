@@ -199,6 +199,7 @@ BOOST_CMAKE_EOF
 
 cat /workspace/server/cmake/boost.cmake
 
+mkdir /workspace/server/build
 cd /workspace/server/build
 
 # 供 CMake/ld 查找 vcpkg 拷贝到 /opt 的头文件与库
