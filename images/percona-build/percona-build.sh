@@ -234,10 +234,45 @@ git submodule update --init --recursive
 sed -i '/#include <cstring>/a #include <string>' mysys/buffered_error_log.h
 
 # build persona mysql
-mkdir -p /workspace/server/build /workspace/boost
-git clone --filter=blob:none --depth 1 https://github.com/boostorg/boost.git /workspace/boost
-cd /workspace/boost
-git submodule update --init --recursive
+# mkdir -p /workspace/server/build /workspace/boost
+# git clone --filter=blob:none --depth 1 https://github.com/boostorg/boost.git /workspace/boost
+# cd /workspace/boost
+# git submodule update --init --recursive
+
+
+boost_version_str="boost_1_87_0"
+wget https://archives.boost.io/release/1.87.0/source/${boost_version_str}.tar.bz2
+mkdir -p /tmp/boost
+tar -xjf ${boost_version_str}.tar.bz2 -C /tmp/boost --strip-components=1
+
+# ====== 替换 boost.cmake ======
+cat > /workspace/server/cmake/boost.cmake << BOOST_CMAKE_EOF
+SET(BOOST_PACKAGE_NAME "${boost_version_str}")
+
+# Always use the bundled version.
+SET(BOOST_SOURCE_DIR "/tmp/boost")
+
+# Contains all header files we need.
+# (All the directories that contain at least one needed file).
+SET(BOOST_INCLUDE_DIR \${BOOST_SOURCE_DIR}/\${BOOST_PACKAGE_NAME})
+
+ADD_LIBRARY(boost INTERFACE)
+ADD_LIBRARY(extra::boost ALIAS boost)
+
+TARGET_INCLUDE_DIRECTORIES(boost SYSTEM BEFORE INTERFACE \${BOOST_INCLUDE_DIR})
+
+IF(NOT WIN32)
+  # See boost/container_hash/hash.hpp
+  # We pretend that the compiler is pre-c++98, in order to hide the
+  # usage of std::unary_function<..> (which was removed in C++17)
+  # For windows: see boost/config/stdlib/dinkumware.hpp
+  TARGET_COMPILE_DEFINITIONS(boost INTERFACE BOOST_NO_CXX98_FUNCTION_BASE)
+ENDIF()
+
+MESSAGE(STATUS "BOOST_INCLUDE_DIR \${BOOST_INCLUDE_DIR}")
+BOOST_CMAKE_EOF
+
+cat /workspace/server/cmake/boost.cmake
 
 cd /workspace/server/build
 
@@ -276,7 +311,7 @@ cmake .. -G Ninja \
     -DPROTOBUF_PROTOC_EXECUTABLE="/opt/vcpkg/installed/x64-linux-dynamic/tools/protobuf/$PROTOC_BASENAME"  \
     -DPROTOBUF_PROTOC_LIBRARY="/opt/vcpkg/installed/x64-linux-dynamic/lib/libprotoc.so" \
     -DPROTOBUF_LITE_LIBRARY="/opt/vcpkg/installed/x64-linux-dynamic/lib/libprotobuf-lite.so" \
-    -DWITH_BOOST="/workspace/boost" \
+    -DWITH_BOOST="/tmp/boost" -DDOWNLOAD_BOOST=0 \
     -DMYSQL_MAINTAINER_MODE=ON \
     -DWITH_ROCKSDB=ON \
     -DWITH_MECAB=OFF \

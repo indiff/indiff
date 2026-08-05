@@ -10,13 +10,7 @@ PROTOC_BASENAME=$(basename $(find /opt/vcpkg/installed/x64-linux-dynamic/tools/p
 LIBPROTOBUF_BASENAME=libprotobuf.so
 chmod +x /opt/vcpkg/installed/x64-linux-dynamic/tools/protobuf/${PROTOC_BASENAME}
 
-# wget https://archives.boost.io/release/1.89.0/source/boost_1_89_0.tar.bz2
-# mkdir -p /tmp/boost
-# tar -xjf boost_1_89_0.tar.bz2 -C /tmp/boost --strip-components=1
-wget https://archives.boost.io/release/1.77.0/source/boost_1_77_0.tar.bz2
-# wget  https://boostorg.jfrog.io/artifactory/main/release/1.77.0/source/boost_1_77_0.tar.bz2
-mkdir -p /tmp/boost
-tar -xjf boost_1_77_0.tar.bz2 -C /tmp/boost --strip-components=1
+
 
 if [[ -z "$FBMYSQL_BRANCH" ]]; then
   git clone --filter=blob:none --depth 1 https://github.com/facebook/mysql-5.6.git server
@@ -160,11 +154,50 @@ unset LDFLAGS
 # tree "$DEPS_DST"/{include,lib,lib64} | tee /workspace/deps_dst_tree.txt
 tree "$DEPS_DST"/{include,lib,lib64} > /workspace/deps_dst_tree.txt
 
-# build persona mysql
-mkdir -p /workspace/server/build /workspace/boost
-git clone --filter=blob:none --depth 1 https://github.com/boostorg/boost.git /workspace/boost
-cd /workspace/boost
-git submodule update --init --recursive
+# set boost
+# mkdir -p /workspace/server/build /workspace/boost
+# git clone --filter=blob:none --depth 1 https://github.com/boostorg/boost.git /workspace/boost
+# cd /workspace/boost
+# git submodule update --init --recursive
+
+# wget https://archives.boost.io/release/1.89.0/source/boost_1_89_0.tar.bz2
+# mkdir -p /tmp/boost
+# tar -xjf boost_1_89_0.tar.bz2 -C /tmp/boost --strip-components=1
+# wget  https://boostorg.jfrog.io/artifactory/main/release/1.77.0/source/boost_1_77_0.tar.bz2
+
+boost_version_str="boost_1_87_0"
+wget https://archives.boost.io/release/1.87.0/source/${boost_version_str}.tar.bz2
+mkdir -p /tmp/boost
+tar -xjf ${boost_version_str}.tar.bz2 -C /tmp/boost --strip-components=1
+
+# ====== 替换 boost.cmake ======
+cat > /workspace/server/cmake/boost.cmake << BOOST_CMAKE_EOF
+SET(BOOST_PACKAGE_NAME "${boost_version_str}")
+
+# Always use the bundled version.
+SET(BOOST_SOURCE_DIR "/tmp/boost")
+
+# Contains all header files we need.
+# (All the directories that contain at least one needed file).
+SET(BOOST_INCLUDE_DIR \${BOOST_SOURCE_DIR}/\${BOOST_PACKAGE_NAME})
+
+ADD_LIBRARY(boost INTERFACE)
+ADD_LIBRARY(extra::boost ALIAS boost)
+
+TARGET_INCLUDE_DIRECTORIES(boost SYSTEM BEFORE INTERFACE \${BOOST_INCLUDE_DIR})
+
+IF(NOT WIN32)
+  # See boost/container_hash/hash.hpp
+  # We pretend that the compiler is pre-c++98, in order to hide the
+  # usage of std::unary_function<..> (which was removed in C++17)
+  # For windows: see boost/config/stdlib/dinkumware.hpp
+  TARGET_COMPILE_DEFINITIONS(boost INTERFACE BOOST_NO_CXX98_FUNCTION_BASE)
+ENDIF()
+
+MESSAGE(STATUS "BOOST_INCLUDE_DIR \${BOOST_INCLUDE_DIR}")
+BOOST_CMAKE_EOF
+
+cat /workspace/server/cmake/boost.cmake
 
 cd /workspace/server/build
 
@@ -221,7 +254,7 @@ cmake .. -G Ninja \
     -DDEFAULT_CHARSET="utf8mb4" \
     -DDEFAULT_COLLATION="utf8mb4_bin" \
     -DENABLED_LOCAL_INFILE=1 \
-    -DWITH_BOOST="/workspace/boost" \
+    -DWITH_BOOST="/tmp/boost" -DDOWNLOAD_BOOST=0 \
     -DWITH_TESTS=0 \
     -DWITH_BENCHMARK_TOOLS=0 \
     -DWITH_GFLAGS=0 \
