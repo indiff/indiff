@@ -50,7 +50,7 @@ on:
         default: ""
         required: false
         options:
-          - "8.0"
+          - "8.4"
           - "trunk"
       demo_build_flag:
         description: 'Build demo flag'
