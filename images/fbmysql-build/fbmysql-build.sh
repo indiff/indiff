@@ -168,7 +168,8 @@ tree "$DEPS_DST"/{include,lib,lib64} > /workspace/deps_dst_tree.txt
 boost_version_str="boost_1_87_0"
 wget https://archives.boost.io/release/1.87.0/source/${boost_version_str}.tar.bz2
 mkdir -p /tmp/boost
-tar -xjf ${boost_version_str}.tar.bz2 -C /tmp/boost --strip-components=1
+tar -xjf ${boost_version_str}.tar.bz2 -C /tmp/boost 
+# --strip-components=1
 
 
 # ====== 替换 boost.cmake ======
@@ -277,7 +278,7 @@ cmake .. -G Ninja \
     -DPROTOBUF_PROTOC_EXECUTABLE="/opt/vcpkg/installed/x64-linux-dynamic/tools/protobuf/$PROTOC_BASENAME"  \
     -DPROTOBUF_PROTOC_LIBRARY="/opt/vcpkg/installed/x64-linux-dynamic/lib/libprotoc.so" \
     -DPROTOBUF_LITE_LIBRARY="/opt/vcpkg/installed/x64-linux-dynamic/lib/libprotobuf-lite.so" \
-    -DWITH_ICU=system  \
+    -DWITH_ICU=system -DWITH_EDITLINE=bundled \
     -DWITH_SSL=system -DOPENSSL_ROOT_DIR="$DEPS_DST" \
     -DWITH_FIDO=system \
     -DWITH_MECAB=OFF \
