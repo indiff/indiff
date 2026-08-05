@@ -198,7 +198,9 @@ ENDIF()
 MESSAGE(STATUS "BOOST_INCLUDE_DIR \${BOOST_INCLUDE_DIR}")
 BOOST_CMAKE_EOF
 
-cat /workspace/server/cmake/boost1.cmake
+sed -i 's|https://boostorg.jfrog.io/artifactory/main/release|https://archives.boost.io/release|g' /workspace/server/cmake/boost.cmake
+
+cat /workspace/server/cmake/boost.cmake
 
 mkdir /workspace/server/build
 cd /workspace/server/build
