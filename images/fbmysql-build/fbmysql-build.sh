@@ -161,7 +161,11 @@ unset LDFLAGS
 tree "$DEPS_DST"/{include,lib,lib64} > /workspace/deps_dst_tree.txt
 
 # build persona mysql
-mkdir -p /workspace/server/build /workspace/server/boost
+mkdir -p /workspace/server/build /workspace/boost
+git clone --filter=blob:none --depth 1 https://github.com/boostorg/boost.git /workspace/boost
+cd /workspace/boost
+git submodule update --init --recursive
+
 cd /workspace/server/build
 
 # 供 CMake/ld 查找 vcpkg 拷贝到 /opt 的头文件与库
@@ -217,7 +221,7 @@ cmake .. -G Ninja \
     -DDEFAULT_CHARSET="utf8mb4" \
     -DDEFAULT_COLLATION="utf8mb4_bin" \
     -DENABLED_LOCAL_INFILE=1 \
-    -DDOWNLOAD_BOOST=1 -DWITH_BOOST=../boost \
+    -DWITH_BOOST="/workspace/boost" \
     -DWITH_TESTS=0 \
     -DWITH_BENCHMARK_TOOLS=0 \
     -DWITH_GFLAGS=0 \

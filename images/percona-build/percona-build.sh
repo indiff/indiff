@@ -234,7 +234,11 @@ git submodule update --init --recursive
 sed -i '/#include <cstring>/a #include <string>' mysys/buffered_error_log.h
 
 # build persona mysql
-mkdir -p /workspace/server/build /workspace/server/boost
+mkdir -p /workspace/server/build /workspace/boost
+git clone --filter=blob:none --depth 1 https://github.com/boostorg/boost.git /workspace/boost
+cd /workspace/boost
+git submodule update --init --recursive
+
 cd /workspace/server/build
 
 # 避免外部 protobuf 干扰
@@ -248,6 +252,9 @@ export PKG_CONFIG_PATH=$DEPS_DST/lib/pkgconfig:$PKG_CONFIG_PATH
 #     -DCMAKE_CXX_FLAGS="-std=c++20 -include cstdint -include cstddef -I$DEPS_DST/include -O2 -pipe -fPIC -DPIC -march=native -Wno-aligned-new -Wno-implicit-fallthrough -Wno-int-in-bool-context -Wno-shift-negative-value -Wno-misleading-indentation -Wno-format-overflow -Wno-nonnull -Wno-unused-function  " \
 # -include cstdint -include cstddef 
 # -fuse-ld=mold 
+
+
+
 rsync -a /opt/vcpkg/installed/x64-linux/include/ /opt/percona80/include/
 rsync -a /opt/vcpkg/installed/x64-linux-dynamic/include/ /opt/percona80/include/
 cmake .. -G Ninja \
@@ -269,7 +276,7 @@ cmake .. -G Ninja \
     -DPROTOBUF_PROTOC_EXECUTABLE="/opt/vcpkg/installed/x64-linux-dynamic/tools/protobuf/$PROTOC_BASENAME"  \
     -DPROTOBUF_PROTOC_LIBRARY="/opt/vcpkg/installed/x64-linux-dynamic/lib/libprotoc.so" \
     -DPROTOBUF_LITE_LIBRARY="/opt/vcpkg/installed/x64-linux-dynamic/lib/libprotobuf-lite.so" \
-    -DDOWNLOAD_BOOST=1 -DWITH_BOOST=../boost \
+    -DWITH_BOOST="/workspace/boost" \
     -DMYSQL_MAINTAINER_MODE=ON \
     -DWITH_ROCKSDB=ON \
     -DWITH_MECAB=OFF \
@@ -279,12 +286,6 @@ cmake .. -G Ninja \
     -DWITH_CURL=system \
     -DWITH_FIDO=system \
     -DWITH_RAPIDJSON=bundled \
-    -DWITH_PROTOBUF=system  \
-    -DPROTOBUF_INCLUDE_DIR="/opt/mysql/include" \
-    -DPROTOBUF_LIBRARY="$DEPS_DST/lib/$LIBPROTOBUF_BASENAME" \
-    -DPROTOBUF_PROTOC_EXECUTABLE="$VCPKG_ROOT/installed/x64-linux-dynamic/tools/protobuf/$PROTOC_BASENAME"  \
-    -DPROTOBUF_PROTOC_LIBRARY="/opt/vcpkg/installed/x64-linux-dynamic/lib/libprotoc.so" \
-    -DPROTOBUF_LITE_LIBRARY="/opt/vcpkg/installed/x64-linux-dynamic/lib/libprotobuf-lite.so" \
     -DWITH_EXT_BACKTRACE=OFF \
     -DWITH_LZ4=system -DWITH_ZSTD=system -DWITH_SNAPPY=system -DWITH_JEMALLOC=system \
     -DWITH_SSL=system -DOPENSSL_ROOT_DIR="$DEPS_DST" \
