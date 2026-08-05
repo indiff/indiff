@@ -20,7 +20,8 @@ jobs:
           GH_REPO: ${{ github.repository }}
         run: |
           set -euo pipefail
-
+          gh run delete --help
+          
           gh run list \
             --repo "$GH_REPO" \
             --status failure \
@@ -29,7 +30,9 @@ jobs:
             --jq '.[].databaseId' |
           while read -r run_id; do
             echo "Deleting failed workflow run: $run_id"
+            # gh run delete "$run_id" \
+            #   --repo "$GH_REPO" \
+            #   --confirm
             gh run delete "$run_id" \
-              --repo "$GH_REPO" \
-              --confirm
+              --repo "$GH_REPO"  
           done
