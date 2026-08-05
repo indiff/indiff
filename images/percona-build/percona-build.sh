@@ -314,7 +314,7 @@ cmake .. -G Ninja \
     -DPROTOBUF_PROTOC_EXECUTABLE="/opt/vcpkg/installed/x64-linux-dynamic/tools/protobuf/$PROTOC_BASENAME"  \
     -DPROTOBUF_PROTOC_LIBRARY="/opt/vcpkg/installed/x64-linux-dynamic/lib/libprotoc.so" \
     -DPROTOBUF_LITE_LIBRARY="/opt/vcpkg/installed/x64-linux-dynamic/lib/libprotobuf-lite.so" \
-    -DWITH_BOOST="/tmp/boost/${boost_version_str}" -DDOWNLOAD_BOOST=0 \
+    -DWITH_BOOST="/tmp/boost" -DDOWNLOAD_BOOST=0 \
     -DMYSQL_MAINTAINER_MODE=ON \
     -DWITH_ROCKSDB=ON \
     -DWITH_MECAB=OFF \
