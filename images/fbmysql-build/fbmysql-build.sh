@@ -168,8 +168,7 @@ tree "$DEPS_DST"/{include,lib,lib64} > /workspace/deps_dst_tree.txt
 boost_version_str="boost_1_87_0"
 wget https://archives.boost.io/release/1.87.0/source/${boost_version_str}.tar.bz2
 mkdir -p /tmp/boost
-tar -xjf ${boost_version_str}.tar.bz2 -C /tmp/boost 
-# --strip-components=1
+tar -xjf ${boost_version_str}.tar.bz2 -C /tmp/boost --strip-components=1
 
 
 # ====== 替换 boost.cmake ======
@@ -177,11 +176,11 @@ cat > /workspace/server/cmake/boost.cmake << BOOST_CMAKE_EOF
 SET(BOOST_PACKAGE_NAME "${boost_version_str}")
 
 # Always use the bundled version.
-SET(BOOST_SOURCE_DIR "/tmp/boost/${boost_version_str}")
+SET(BOOST_SOURCE_DIR "/tmp/boost")
 
 # Contains all header files we need.
 # (All the directories that contain at least one needed file).
-SET(BOOST_INCLUDE_DIR \${BOOST_SOURCE_DIR}/\${BOOST_PACKAGE_NAME})
+SET(BOOST_INCLUDE_DIR \${BOOST_SOURCE_DIR})
 
 ADD_LIBRARY(boost INTERFACE)
 ADD_LIBRARY(extra::boost ALIAS boost)
