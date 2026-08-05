@@ -166,13 +166,13 @@ tree "$DEPS_DST"/{include,lib,lib64} > /workspace/deps_dst_tree.txt
 # wget  https://boostorg.jfrog.io/artifactory/main/release/1.77.0/source/boost_1_77_0.tar.bz2
 
 boost_version_str="boost_1_87_0"
-wget https://archives.boost.io/release/1.87.0/source/${boost_version_str}.tar.bz2
+# wget https://archives.boost.io/release/1.87.0/source/${boost_version_str}.tar.bz2
 mkdir -p /tmp/boost
-tar -xjf ${boost_version_str}.tar.bz2 -C /tmp/boost --strip-components=1
+#tar -xjf ${boost_version_str}.tar.bz2 -C /tmp/boost --strip-components=1
 
 
 # ====== 替换 boost.cmake ======
-cat > /workspace/server/cmake/boost.cmake << BOOST_CMAKE_EOF
+cat > /workspace/server/cmake/boost1.cmake << BOOST_CMAKE_EOF
 SET(BOOST_PACKAGE_NAME "${boost_version_str}")
 
 # Always use the bundled version.
@@ -198,7 +198,7 @@ ENDIF()
 MESSAGE(STATUS "BOOST_INCLUDE_DIR \${BOOST_INCLUDE_DIR}")
 BOOST_CMAKE_EOF
 
-cat /workspace/server/cmake/boost.cmake
+cat /workspace/server/cmake/boost1.cmake
 
 mkdir /workspace/server/build
 cd /workspace/server/build
@@ -256,7 +256,7 @@ cmake .. -G Ninja \
     -DDEFAULT_CHARSET="utf8mb4" \
     -DDEFAULT_COLLATION="utf8mb4_bin" \
     -DENABLED_LOCAL_INFILE=1 \
-    -DWITH_BOOST="/tmp/boost" -DDOWNLOAD_BOOST=0 \
+    -DWITH_BOOST="/tmp/boost" -DDOWNLOAD_BOOST=1 \
     -DWITH_TESTS=0 \
     -DWITH_BENCHMARK_TOOLS=0 \
     -DWITH_GFLAGS=0 \
