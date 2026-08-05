@@ -22,17 +22,18 @@ jobs:
           set -euo pipefail
           gh run delete --help
           
-          gh run list \
-            --repo "$GH_REPO" \
-            --status failure \
-            --limit 1000 \
-            --json databaseId \
-            --jq '.[].databaseId' |
-          while read -r run_id; do
-            echo "Deleting failed workflow run: $run_id"
-            # gh run delete "$run_id" \
-            #   --repo "$GH_REPO" \
-            #   --confirm
-            gh run delete "$run_id" \
-              --repo "$GH_REPO"  
+          # 获取所有失败和取消的 workflow run ID
+          echo "正在获取失败和取消的 workflow runs..."
+          {
+            gh run list --repo "$GH_REPO" --status failure --limit 1000 --json databaseId --jq '.[].databaseId'
+            gh run list --repo "$GH_REPO" --status cancelled --limit 1000 --json databaseId --jq '.[].databaseId'
+          } | sort -u | while read -r run_id; do
+            if [ -n "$run_id" ]; then
+              echo "正在删除 workflow run: $run_id"
+              if gh run delete "$run_id" --repo "$GH_REPO"; then
+                echo "✅ 成功删除: $run_id"
+              else
+                echo "⚠️  删除失败: $run_id"
+              fi
+            fi
           done
