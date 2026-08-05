@@ -243,7 +243,8 @@ sed -i '/#include <cstring>/a #include <string>' mysys/buffered_error_log.h
 boost_version_str="boost_1_87_0"
 wget https://archives.boost.io/release/1.87.0/source/${boost_version_str}.tar.bz2
 mkdir -p /tmp/boost
-tar -xjf ${boost_version_str}.tar.bz2 -C /tmp/boost --strip-components=1
+tar -xjf ${boost_version_str}.tar.bz2 -C /tmp/boost 
+# --strip-components=1
 
 
 # ====== 替换 boost.cmake ======
@@ -317,7 +318,7 @@ cmake .. -G Ninja \
     -DMYSQL_MAINTAINER_MODE=ON \
     -DWITH_ROCKSDB=ON \
     -DWITH_MECAB=OFF \
-    -DWITH_EDITLINE=system \
+    -DWITH_EDITLINE=bundled \
     -DWITH_LIBEVENT=system \
     -DWITH_ZLIB=system \
     -DWITH_CURL=system \
