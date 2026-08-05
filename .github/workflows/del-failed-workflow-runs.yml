@@ -2,9 +2,9 @@ name: Cleanup failed workflow runs
 
 on:
   workflow_dispatch:
-  schedule:
+  # schedule:
     # 每天 UTC 03:00 执行一次
-    - cron: "0 3 * * *"
+    # - cron: "0 3 * * *"
 
 permissions:
   actions: write
