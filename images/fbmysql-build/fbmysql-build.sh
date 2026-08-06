@@ -242,13 +242,29 @@ rsync -a /opt/vcpkg/installed/x64-linux-dynamic/include/ /opt/fbmysql/include/
 #-DWITH_ZLIB=bundled -DMYSQL_MAINTAINER_MODE=0 -DENABLED_LOCAL_INFILE=1 \
 #-DENABLE_DTRACE=0 -DCMAKE_CXX_FLAGS="-march=native"
 # make -j8
+
+# Manually-specified variables were not used by the project:
+#  ENABLE_DTRACE
+#     -DENABLE_PSI
+#     HAVE_PSI_INTERFACE
+#     WITH_BENCHMARK_TOOLS
+#     WITH_DOCS
+#     WITH_EXT_BACKTRACE
+#     WITH_GFLAGS
+#     WITH_MAN_PAGES
+#     WITH_PERFORMANCE_SCHEMA
+#     WITH_RAPID
+#     WITH_ROCKSDB
+#     WITH_SAFEMALLOC
+#     WITH_TESTS
+
+
 unset PROTOC
 cmake .. -G Ninja \
     -DCMAKE_INSTALL_PREFIX=$DEPS_DST \
     -DCMAKE_C_FLAGS=" -D__NO_STRING_INLINES -I$DEPS_DST/include -O2 -pipe -fPIC -DPIC " \
-    -DCMAKE_CXX_FLAGS="-std=c++20 -Uin_range -include cstdint -include cstddef -D__NO_STRING_INLINES -I$DEPS_DST/include -O2 -pipe -fPIC -DPIC " \
+    -DCMAKE_CXX_FLAGS="-Uin_range -include cstdint -include cstddef -D__NO_STRING_INLINES -I$DEPS_DST/include -O2 -pipe -fPIC -DPIC " \
     -DCMAKE_CXX_EXTENSIONS=OFF \
-    -DENABLE_DTRACE=0 \
     -DCMAKE_EXE_LINKER_FLAGS="-L/opt/vcpkg/installed/x64-linux/lib -L/usr/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -lpthread $(pkg-config --static --libs protobuf) -Wl,--strip-all -Wl,--gc-sections -Wl,--no-as-needed -ldl" \
     -DCMAKE_SHARED_LINKER_FLAGS="-L/usr/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--strip-all -Wl,--gc-sections -Wl,--no-as-needed -ldl" \
     -DCMAKE_MODULE_LINKER_FLAGS="-L/usr/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--strip-all -Wl,--gc-sections -Wl,--no-as-needed -ldl" \
