@@ -241,13 +241,13 @@ sed -i '/#include <cstring>/a #include <string>' mysys/buffered_error_log.h
 
 # wget https://archives.boost.io/release/1.87.0/source/boost_1_87_0.tar.bz2
 boost_version_str="boost_1_87_0"
-wget https://archives.boost.io/release/1.87.0/source/${boost_version_str}.tar.bz2
+# wget https://archives.boost.io/release/1.87.0/source/${boost_version_str}.tar.bz2
 mkdir -p /tmp/boost
-tar -xjf ${boost_version_str}.tar.bz2 -C /tmp/boost --strip-components=1
+# tar -xjf ${boost_version_str}.tar.bz2 -C /tmp/boost --strip-components=1
 
 
 # ====== 替换 boost.cmake ======
-cat > /workspace/server/cmake/boost.cmake << BOOST_CMAKE_EOF
+cat > /workspace/server/cmake/boost1.cmake << BOOST_CMAKE_EOF
 SET(BOOST_PACKAGE_NAME "${boost_version_str}")
 
 # Always use the bundled version.
@@ -273,6 +273,7 @@ ENDIF()
 MESSAGE(STATUS "BOOST_INCLUDE_DIR \${BOOST_INCLUDE_DIR}")
 BOOST_CMAKE_EOF
 
+# 自带的有 patchs
 cat /workspace/server/cmake/boost.cmake
 
 mkdir /workspace/server/build
@@ -313,7 +314,7 @@ cmake .. -G Ninja \
     -DPROTOBUF_PROTOC_EXECUTABLE="/opt/vcpkg/installed/x64-linux-dynamic/tools/protobuf/$PROTOC_BASENAME"  \
     -DPROTOBUF_PROTOC_LIBRARY="/opt/vcpkg/installed/x64-linux-dynamic/lib/libprotoc.so" \
     -DPROTOBUF_LITE_LIBRARY="/opt/vcpkg/installed/x64-linux-dynamic/lib/libprotobuf-lite.so" \
-    -DWITH_BOOST="/tmp/boost" -DDOWNLOAD_BOOST=0 \
+    -DWITH_BOOST="/tmp/boost" -DDOWNLOAD_BOOST=1 \
     -DMYSQL_MAINTAINER_MODE=ON \
     -DWITH_ROCKSDB=ON \
     -DWITH_MECAB=OFF \
