@@ -1,0 +1,37 @@
+# Database Performance Benchmark Configuration
+# Format: db.N.property=value where N is the database number
+
+# Custom-built MySQL (from indiff build)
+db.1.name=Custom MySQL (indiff build)
+db.1.type=mysql
+db.1.url=jdbc:mysql://localhost:3306/benchmark?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+db.1.username=root
+db.1.password=password
+
+# Standard MySQL (for comparison)
+db.2.name=Standard MySQL
+db.2.type=mysql
+db.2.url=jdbc:mysql://localhost:3307/benchmark?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+db.2.username=root
+db.2.password=password
+
+# Custom-built PostgreSQL (from indiff build)
+db.3.name=Custom PostgreSQL (indiff build)
+db.3.type=postgresql
+db.3.url=jdbc:postgresql://localhost:5432/benchmark
+db.3.username=postgres
+db.3.password=password
+
+# Standard PostgreSQL (for comparison)
+db.4.name=Standard PostgreSQL
+db.4.type=postgresql
+db.4.url=jdbc:postgresql://localhost:5433/benchmark
+db.4.username=postgres
+db.4.password=password
+
+# Custom-built MariaDB (from indiff build)
+db.5.name=Custom MariaDB (indiff build)
+db.5.type=mariadb
+db.5.url=jdbc:mariadb://localhost:3308/benchmark
+db.5.username=root
+db.5.password=password
