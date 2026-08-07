@@ -324,7 +324,7 @@ cmake .. -G Ninja \
     -DWITH_RAPIDJSON=bundled \
     -DWITH_EXT_BACKTRACE=OFF \
     -DWITH_LZ4=system -DWITH_ZSTD=system -DWITH_SNAPPY=system -DWITH_JEMALLOC=system \
-    -DWITH_SSL=system -DOPENSSL_ROOT_DIR="$DEPS_DST"   -DOPENSSL_USE_STATIC_LIBS=ON \
+    -DWITH_SSL=system -DOPENSSL_ROOT_DIR=/opt/vcpkg/installed/x64-linux -DOPENSSL_USE_STATIC_LIBS=ON \
     -DWITH_ICU=system \
     -DWITH_SYSTEM_LIBS=ON \
     -DCMAKE_BUILD_TYPE=Release \
