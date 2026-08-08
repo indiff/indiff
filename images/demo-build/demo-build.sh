@@ -86,6 +86,10 @@ echo "[INFO] 使用 gcc 路径: $(command -v gcc)"
 echo "[INFO] 使用 g++ 路径: $(command -v g++)"
 echo "[INFO] 预期链接器: $TOOLCHAIN/ld.lld"
 
+rm -rf /opt/gcc-indiff /opt/gcc-indiff.zip
+curl -sLo /opt/gcc-indiff.zip https://github.com/qwop/gcc-build/releases/download/20251222_2144_16.0.0/gcc-indiff-centos7-16.0.0-x86_64-20251222_2009.xz
+unzip /opt/gcc-indiff.zip -d /opt/gcc-indiff
+
 # 生成简单源代码
 cat > test.c <<'EOF'
 #include <stdio.h>
