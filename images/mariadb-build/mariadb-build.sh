@@ -193,7 +193,13 @@ cmake .. -G Ninja \
     -DWITH_CURL=system \
     -DWITH_LZ4=system -DWITH_ZSTD=system -DWITH_SNAPPY=system -DWITH_JEMALLOC=system \
     -DWITH_SSL=system -DOPENSSL_ROOT_DIR="$DEPS_DST" \
-    -DWITH_PROTOBUF=bundled \
+    -DWITH_PROTOBUF=system \
+    -DPROTOBUF_INCLUDE_DIR="$DEPS_DST/include" \
+    -DPROTOBUF_LIBRARY="$DEPS_DST/lib/$LIBPROTOBUF_BASENAME" \
+    -DPROTOBUF_PROTOC_EXECUTABLE="$VCPKG_ROOT/installed/x64-linux-dynamic/tools/protobuf/$PROTOC_BASENAME"  \
+    -DPROTOBUF_PROTOC_LIBRARY="/opt/vcpkg/installed/x64-linux-dynamic/lib/libprotoc.so" \
+    -DPROTOBUF_LITE_LIBRARY="/opt/vcpkg/installed/x64-linux-dynamic/lib/libprotobuf-lite.so" \
+    -DWITH_RAPIDJSON=system -DWITH_EDITLINE=system -DWITH_READLINE=system  \
     -DCMAKE_BUILD_TYPE=Release \
     -DMYSQL_MAINTAINER_MODE=OFF \
     -DWITH_SAFEMALLOC=OFF \

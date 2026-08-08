@@ -223,7 +223,9 @@ export TRIPLET=x64-linux
 yum install -y systemd-devel libgudev1
 
 CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ $VCPKG_ROOT/vcpkg install openssl curl[core,non-http,ssl,openssl,zstd] snappy \
-            protobuf[core,libprotoc] libfido2 --triplet x64-linux-dynamic --clean-after-build \
+            protobuf[core,libprotoc] libfido2 \
+            readline rapidjson libedit \
+            --triplet x64-linux-dynamic --clean-after-build \
             || cat /workspace/vcpkg/installed/vcpkg/issue_body.md
 CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ $VCPKG_ROOT/vcpkg install \
             zlib \
@@ -235,7 +237,6 @@ CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ $VCPKG_ROOT/vcpkg install
             libevent[openssl] \
             pcre2 \
             ncurses \
-            readline \
             libaio  \
             pkgconf \
             --triplet $TRIPLET --clean-after-build	

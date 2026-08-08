@@ -148,7 +148,9 @@ yum -y install https://packages.endpointdev.com/rhel/7/os/x86_64/endpoint-repo.x
 yum -y install git
 
 # build ninja 
-curl -sLo /opt/gcc-indiff.zip "${gcc_indiff_centos7_url}"
+# curl -sLo /opt/gcc-indiff.zip "${gcc_indiff_centos7_url}"
+curl -sLo /opt/gcc-indiff.zip https://github.com/qwop/gcc-build/releases/download/20251222_2144_16.0.0/gcc-indiff-centos7-16.0.0-x86_64-20251222_2009.xz
+
 unzip /opt/gcc-indiff.zip -d /opt/gcc-indiff
 ln -sf /opt/gcc-indiff/bin/ld.mold /usr/bin/ld.mold
 export LD_LIBRARY_PATH=/opt/gcc-indiff/lib64:/opt/gcc-indiff/lib
@@ -223,7 +225,9 @@ export TRIPLET=x64-linux
 yum install -y systemd-devel libgudev1
 
 CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ $VCPKG_ROOT/vcpkg install openssl curl[core,non-http,ssl,openssl,zstd] snappy \
-            protobuf[core,libprotoc] libfido2 --triplet x64-linux-dynamic --clean-after-build \
+            protobuf[core,libprotoc] libfido2 \
+            readline rapidjson libedit \
+            --triplet x64-linux-dynamic --clean-after-build \
             || cat /workspace/vcpkg/installed/vcpkg/issue_body.md
 CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ $VCPKG_ROOT/vcpkg install \
             zlib \
@@ -235,7 +239,6 @@ CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ $VCPKG_ROOT/vcpkg install
             libevent[openssl] \
             pcre2 \
             ncurses \
-            readline \
             libaio  \
             pkgconf \
             mecab  \

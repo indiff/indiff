@@ -288,7 +288,7 @@ cmake .. -G Ninja \
     -DWITH_RAPID=0 \
     -DWITH_ROUTER=0 \
     -DWITH_UNIT_TESTS=OFF \
-    -DWITH_READLINE=bundled \
+    -DWITH_RAPIDJSON=system -DWITH_EDITLINE=system -DWITH_READLINE=system  \
     -DWITH_ROCKSDB=ON \
     -DWITH_INNODB_MEMCACHED=ON \
     -DWITH_CURL=system \
@@ -300,7 +300,7 @@ cmake .. -G Ninja \
     -DPROTOBUF_PROTOC_EXECUTABLE="/opt/vcpkg/installed/x64-linux-dynamic/tools/protobuf/$PROTOC_BASENAME"  \
     -DPROTOBUF_PROTOC_LIBRARY="/opt/vcpkg/installed/x64-linux-dynamic/lib/libprotoc.so" \
     -DPROTOBUF_LITE_LIBRARY="/opt/vcpkg/installed/x64-linux-dynamic/lib/libprotobuf-lite.so" \
-    -DWITH_ICU=system -DWITH_EDITLINE=bundled \
+    -DWITH_ICU=system \
     -DWITH_SSL=system -DOPENSSL_ROOT_DIR="$DEPS_DST" \
     -DWITH_FIDO=system \
     -DWITH_MECAB=OFF \
