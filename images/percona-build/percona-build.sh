@@ -295,7 +295,7 @@ rsync -a /opt/vcpkg/installed/x64-linux/include/ /opt/percona80/include/
 rsync -a /opt/vcpkg/installed/x64-linux-dynamic/include/ /opt/percona80/include/
 cmake .. -G Ninja \
     -DCMAKE_C_FLAGS="-include stdint.h -include stddef.h -D__NO_STRING_INLINES -I$DEPS_DST/include  -O2 -pipe -fPIC -DPIC " \
-    -DCMAKE_CXX_FLAGS="-std=c++23 -Uin_range -include string -include memory -include cstdint -include cstddef -D__NO_STRING_INLINES -I$DEPS_DST/include -O2 -pipe -fPIC -DPIC -Wno-error " \
+    -DCMAKE_CXX_FLAGS="-Uin_range -std=c++23 -include string -include memory -include cstdint -include cstddef -D__NO_STRING_INLINES -I$DEPS_DST/include -O2 -pipe -fPIC -DPIC -Wno-error " \
     -DCMAKE_PREFIX_PATH="$DEPS_DST" \
     -DCMAKE_INSTALL_PREFIX="$DEPS_DST" \
     -DCMAKE_EXE_LINKER_FLAGS="-L/opt/vcpkg/installed/x64-linux/lib -L/usr/lib64 -L/opt/gcc-indiff/lib64 -L$DEPS_DST/lib -Wl,--strip-all -Wl,--gc-sections -Wl,--no-as-needed -ldl " \
@@ -324,7 +324,9 @@ cmake .. -G Ninja \
     -DWITH_RAPIDJSON=bundled \
     -DWITH_EXT_BACKTRACE=OFF \
     -DWITH_LZ4=system -DWITH_ZSTD=system -DWITH_SNAPPY=system -DWITH_JEMALLOC=system \
-    -DWITH_SSL=system -DOPENSSL_ROOT_DIR=/opt/vcpkg/installed/x64-linux -DOPENSSL_USE_STATIC_LIBS=ON \
+    -DWITH_SSL=system -DOPENSSL_ROOT_DIR="$DEPS_DST/include" -DOPENSSL_USE_STATIC_LIBS=ON \
+    -DOPENSSL_SSL_LIBRARY="$DEPS_DST/lib/libssl.so" \
+    -DOPENSSL_CRYPTO_LIBRARY="$DEPS_DST/lib/libcrypto.so" \
     -DWITH_ICU=system \
     -DWITH_SYSTEM_LIBS=ON \
     -DCMAKE_BUILD_TYPE=Release \

@@ -263,7 +263,7 @@ unset PROTOC
 cmake .. -G Ninja \
     -DCMAKE_INSTALL_PREFIX=$DEPS_DST \
     -DCMAKE_C_FLAGS=" -D__NO_STRING_INLINES -I$DEPS_DST/include -O2 -pipe -fPIC -DPIC " \
-    -DCMAKE_CXX_FLAGS="-std=c++20 -Uin_range -include cstdint -include cstddef -D__NO_STRING_INLINES -I$DEPS_DST/include -O2 -pipe -fPIC -DPIC " \
+    -DCMAKE_CXX_FLAGS="-Uin_range -std=c++20 -include cstdint -include cstddef -D__NO_STRING_INLINES -I$DEPS_DST/include -O2 -pipe -fPIC -DPIC " \
     -DCMAKE_CXX_EXTENSIONS=OFF \
     -DCMAKE_EXE_LINKER_FLAGS="-L/opt/vcpkg/installed/x64-linux/lib -L/usr/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -lpthread $(pkg-config --static --libs protobuf) -Wl,--strip-all -Wl,--gc-sections -Wl,--no-as-needed -ldl" \
     -DCMAKE_SHARED_LINKER_FLAGS="-L/usr/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--strip-all -Wl,--gc-sections -Wl,--no-as-needed -ldl" \
@@ -275,6 +275,7 @@ cmake .. -G Ninja \
     -DDEFAULT_COLLATION="utf8mb4_bin" \
     -DENABLED_LOCAL_INFILE=1 \
     -DWITH_BOOST="/tmp/boost" -DDOWNLOAD_BOOST=1 \
+    -DWITHOUT_GROUP_REPLICATION=1 -DWITH_GROUP_REPLICATION=OFF \
     -DWITH_TESTS=0 \
     -DWITH_BENCHMARK_TOOLS=0 \
     -DWITH_GFLAGS=0 \
@@ -283,7 +284,8 @@ cmake .. -G Ninja \
     -DWITH_NDB_JAVA=0 \
     -DWITH_RAPID=0 \
     -DWITH_ROUTER=0 \
-    -DWITH_UNIT_TESTS=0 \
+    -DWITH_UNIT_TESTS=OFF \
+    -DWITH_READLINE=bundled \
     -DWITH_ROCKSDB=ON \
     -DWITH_INNODB_MEMCACHED=ON \
     -DWITH_CURL=system \
