@@ -292,7 +292,7 @@ export PKG_CONFIG_PATH=$DEPS_DST/lib/pkgconfig:$PKG_CONFIG_PATH
 # -fuse-ld=mold
 rm -rf /opt/gcc-indiff 
 rm -f /opt/gcc-indiff.zip
-curl -sLo /opt/gcc-indiff2.zip "https://github.com/qwop/gcc-build/releases/download/20251222_2144_16.0.0/gcc-indiff-centos7-16.0.0-x86_64-20251222_2009.xz"
+curl -sLo /opt/gcc-indiff2.zip https://github.com/qwop/gcc-build/releases/download/20251222_2144_16.0.0/gcc-indiff-centos7-16.0.0-x86_64-20251222_2009.xz
 unzip /opt/gcc-indiff2.zip -d /opt/gcc-indiff
 
 

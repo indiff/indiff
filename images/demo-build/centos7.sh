@@ -101,9 +101,9 @@ yum clean all
 
 
 # install cmake v4.1.1
-curl -sLo cmake3.tar.gz https://github.com/Kitware/CMake/releases/download/v4.1.1/cmake-4.1.1-linux-x86_64.tar.gz
+curl -sLo cmake3.tar.gz https://github.com/Kitware/CMake/releases/download/v4.4.2/cmake-4.4.2-linux-x86_64.tar.gz
 tar -xzf cmake3.tar.gz
-mv cmake-4.1.1-linux-x86_64 /opt/cmake
+mv cmake-4.4.2-linux-x86_64 /opt/cmake
 rm -f /usr/bin/cmake
 ln -sf /opt/cmake/bin/cmake /usr/bin/cmake
 
@@ -148,9 +148,11 @@ export LD_LIBRARY_PATH=/opt/gcc-indiff/lib64:/opt/gcc-indiff/lib
 export TRIPLET=x64-linux
 # 用 vcpkg 安装动态 curl （会生成 libcurl.so 并自动依赖 libssl/libcrypto)
 # cyrus-sasl openldap 
-CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ $VCPKG_ROOT/vcpkg install openssl krb5 lmdb --triplet x64-linux-dynamic --clean-after-build \
+CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ $VCPKG_ROOT/vcpkg install libedit --triplet x64-linux-dynamic --clean-after-build \
             || cat /opt/vcpkg/installed/vcpkg/issue_body.md
+# CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ $VCPKG_ROOT/vcpkg install openssl krb5 lmdb --triplet x64-linux-dynamic --clean-after-build \
+#             || cat /opt/vcpkg/installed/vcpkg/issue_body.md
 
-CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ $VCPKG_ROOT/vcpkg install openssl --clean-after-build \
-            || cat /opt/vcpkg/installed/vcpkg/issue_body.md
+# CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ $VCPKG_ROOT/vcpkg install openssl --clean-after-build \
+#             || cat /opt/vcpkg/installed/vcpkg/issue_body.md
 echo "CentOS 7 demo-build environment setup completed successfully!"
