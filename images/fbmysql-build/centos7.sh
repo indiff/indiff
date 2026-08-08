@@ -226,7 +226,6 @@ yum install -y systemd-devel libgudev1
 
 export CC="/opt/gcc-indiff/bin/gcc"
 export CXX="/opt/gcc-indiff/bin/g++"
-export LDFLAGS="-L/opt/gcc-indiff/lib64 ${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH} -fuse-ld=mold"
 export ACLOCAL_PATH=/usr/share/aclocal:${ACLOCAL_PATH:-}
 # 克隆官方仓库（或镜像）
 git clone https://github.com/autotools-mirror/autoconf.git
