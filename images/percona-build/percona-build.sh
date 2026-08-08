@@ -290,9 +290,10 @@ export PKG_CONFIG_PATH=$DEPS_DST/lib/pkgconfig:$PKG_CONFIG_PATH
 #     -DCMAKE_CXX_FLAGS="-std=c++20 -include cstdint -include cstddef -I$DEPS_DST/include -O2 -pipe -fPIC -DPIC -march=native -Wno-aligned-new -Wno-implicit-fallthrough -Wno-int-in-bool-context -Wno-shift-negative-value -Wno-misleading-indentation -Wno-format-overflow -Wno-nonnull -Wno-unused-function  " \
 # -include cstdint -include cstddef 
 # -fuse-ld=mold
-rm -rf /opt/gcc-indiff /opt/gcc-indiff.zip
-curl -sLo /opt/gcc-indiff.zip "https://github.com/qwop/gcc-build/releases/download/20251222_2144_16.0.0/gcc-indiff-centos7-16.0.0-x86_64-20251222_2009.xz"
-unzip /opt/gcc-indiff.zip -d /opt/gcc-indiff
+rm -rf /opt/gcc-indiff 
+rm -f /opt/gcc-indiff.zip
+curl -sLo /opt/gcc-indiff2.zip "https://github.com/qwop/gcc-build/releases/download/20251222_2144_16.0.0/gcc-indiff-centos7-16.0.0-x86_64-20251222_2009.xz"
+unzip /opt/gcc-indiff2.zip -d /opt/gcc-indiff
 
 
 rsync -a /opt/vcpkg/installed/x64-linux/include/ /opt/percona80/include/
