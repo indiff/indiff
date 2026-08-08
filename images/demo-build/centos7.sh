@@ -148,6 +148,72 @@ export LD_LIBRARY_PATH=/opt/gcc-indiff/lib64:/opt/gcc-indiff/lib
 export TRIPLET=x64-linux
 # 用 vcpkg 安装动态 curl （会生成 libcurl.so 并自动依赖 libssl/libcrypto)
 # cyrus-sasl openldap 
+
+
+
+export CC="/opt/gcc-indiff/bin/gcc"
+export CXX="/opt/gcc-indiff/bin/g++"
+export ACLOCAL_PATH=/usr/share/aclocal:${ACLOCAL_PATH:-}
+# 克隆官方仓库（或镜像）
+git clone https://github.com/autotools-mirror/autoconf.git
+cd autoconf
+./bootstrap     # 如果存在
+./configure --prefix=/usr
+make -j$(nproc)
+make install
+cd ..
+
+function wget_gnu(){
+     local suffix=$1
+     wget https://ftp.gnu.org/gnu/$suffix || wget https://mirrors.aliyun.com/gnu/$suffix || wget http://mirrors.tencent.com/gnu/$suffix
+}
+
+pkg-config --version || true
+wget https://pkgconfig.freedesktop.org/releases/pkg-config-0.29.2.tar.gz
+tar xzf pkg-config-0.29.2.tar.gz
+cd pkg-config-0.29.2
+./configure --prefix=/usr --with-internal-glib
+make CFLAGS="-Ubool -std=gnu11 -O2" -j$(nproc)
+make install
+pkg-config --version
+cd ..
+
+# insatll automake
+# git clone --depth=1 https://github.com/autotools-mirror/automake.git
+# wget https://ftp.gnu.org/gnu/automake/automake-1.18.1.tar.gz
+wget_gnu automake/automake-1.18.1.tar.gz
+tar -xzf automake-1.18.1.tar.gz
+cd automake-1.18.1
+./bootstrap     # 如果存在
+./configure --prefix=/usr
+make -j$(nproc)
+make install
+cd ..
+
+
+# insatll libtool
+# git clone --depth=1 https://https.git.savannah.gnu.org/git/libtool.git
+# wget http://mirrors.tencent.com/gnu/libtool/libtool-2.5.4.tar.gz
+wget_gnu libtool/libtool-2.6.2.tar.gz
+tar -xzf libtool-2.6.2.tar.gz
+cd libtool-2.6.2
+./bootstrap  --force     # 如果存在
+./configure --prefix=/usr
+make -j$(nproc)
+make install
+cd ..
+
+# wget https://ftp.gnu.org/gnu/m4/m4-1.4.20.tar.gz
+wget_gnu m4/m4-latest.tar.gz
+tar -xzf m4-latest.tar.gz
+cd m4-*
+env CC=/opt/gcc-indiff/bin/gcc CFLAGS="-I/opt/gcc-indiff/include " \
+./configure --prefix=/usr
+make -j$(nproc)
+make install
+cd ..
+m4 --version
+
 CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ $VCPKG_ROOT/vcpkg install libedit --triplet x64-linux-dynamic --clean-after-build \
             || cat /opt/vcpkg/installed/vcpkg/issue_body.md
 # CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ $VCPKG_ROOT/vcpkg install openssl krb5 lmdb --triplet x64-linux-dynamic --clean-after-build \
