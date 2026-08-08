@@ -158,9 +158,8 @@ export ACLOCAL_PATH=/usr/share/aclocal:${ACLOCAL_PATH:-}
 git clone https://github.com/autotools-mirror/autoconf.git
 cd autoconf
 ./bootstrap     # 如果存在
-./configure --prefix=/usr
-make -j$(nproc)
-make install
+./configure --prefix=/usr --without-docs
+make -j$(nproc) install
 cd ..
 
 function wget_gnu(){
