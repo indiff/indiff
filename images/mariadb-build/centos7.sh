@@ -221,6 +221,8 @@ export TRIPLET=x64-linux
 # 用 vcpkg 安装动态 curl （会生成 libcurl.so 并自动依赖 libssl/libcrypto)
 # cyrus-sasl
 yum install -y systemd-devel libgudev1
+yum install -y epel-release
+yum install -y texinfo help2man patch
 
 export CC="/opt/gcc-indiff/bin/gcc"
 export CXX="/opt/gcc-indiff/bin/g++"
