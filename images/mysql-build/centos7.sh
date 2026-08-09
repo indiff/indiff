@@ -130,7 +130,7 @@ yum install -y \
     curl \
     file \
     zip
-yum install -y systemd-devel libgudev1
+yum install -y systemd-devel libgudev1 libgudev1-devel
 yum install -y epel-release
 yum install -y texinfo help2man patch
 
