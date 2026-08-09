@@ -307,7 +307,7 @@ m4 --version
 cd /opt/vcpkg/
 CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ LDOPTS="-fuse-ld=mold -Wl,--strip-all -Wl,--gc-sections " $VCPKG_ROOT/vcpkg install \
             numactl openssl curl[core,non-http,ssl,openssl,zstd] snappy krb5 lmdb protobuf[core,libprotoc] \
-            readline rapidjson libedit \
+            rapidjson \
             --triplet x64-linux-dynamic --clean-after-build \
             || cat /workspace/vcpkg/installed/vcpkg/issue_body.md
 CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ LDOPTS="-fuse-ld=mold -Wl,--strip-all -Wl,--gc-sections " $VCPKG_ROOT/vcpkg install \
@@ -320,7 +320,7 @@ CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ LDOPTS="-fuse-ld=mold -Wl
             libevent \
             pcre2 \
             ncurses \
-            libaio libfido2 \
+            libaio libfido2 readline  libedit \
             --triplet $TRIPLET --clean-after-build	\
             || cat /workspace/vcpkg/installed/vcpkg/issue_body.md
 
