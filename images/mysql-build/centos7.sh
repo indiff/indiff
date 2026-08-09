@@ -131,8 +131,8 @@ yum install -y \
     file \
     zip
 yum install -y systemd-devel libgudev1
-yum clean all
-
+yum install -y epel-release
+yum install -y texinfo help2man patch
 
 
 # https://github.com/Kitware/CMake/releases/download/v4.4.0/cmake-4.4.0-linux-x86_64.tar.gz
