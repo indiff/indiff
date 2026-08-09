@@ -150,8 +150,8 @@ export TRIPLET=x64-linux
 # cyrus-sasl openldap 
 
 yum install -y epel-release
-yum install -y texinfo help2man
-yum install -y texinfo
+yum install -y texinfo help2man patch
+
 
 
 export CC="/opt/gcc-indiff/bin/gcc"
