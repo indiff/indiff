@@ -216,7 +216,8 @@ make install
 cd ..
 m4 --version
 
-CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ $VCPKG_ROOT/vcpkg install libedit --triplet x64-linux-dynamic --clean-after-build \
+CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ $VCPKG_ROOT/vcpkg install libedit readline rapidjson libedit 
+--triplet x64-linux-dynamic --clean-after-build \
             || cat /opt/vcpkg/installed/vcpkg/issue_body.md
 # CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ $VCPKG_ROOT/vcpkg install openssl krb5 lmdb --triplet x64-linux-dynamic --clean-after-build \
 #             || cat /opt/vcpkg/installed/vcpkg/issue_body.md
