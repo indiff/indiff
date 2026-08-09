@@ -149,6 +149,7 @@ export TRIPLET=x64-linux
 # 用 vcpkg 安装动态 curl （会生成 libcurl.so 并自动依赖 libssl/libcrypto)
 # cyrus-sasl openldap 
 
+yum install -y texinfo
 
 
 export CC="/opt/gcc-indiff/bin/gcc"
