@@ -286,7 +286,7 @@ cd ..
 m4 --version
 
 CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ $VCPKG_ROOT/vcpkg install openssl curl[core,non-http,ssl,openssl,zstd] snappy \
-            protobuf[core,libprotoc] libfido2 \
+            protobuf[core,libprotoc] \
             readline rapidjson libedit \
             --triplet x64-linux-dynamic --clean-after-build \
             || cat /workspace/vcpkg/installed/vcpkg/issue_body.md
@@ -301,7 +301,7 @@ CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ $VCPKG_ROOT/vcpkg install
             pcre2 \
             ncurses \
             libaio  \
-            pkgconf \
+            pkgconf  libfido2 \
             --triplet $TRIPLET --clean-after-build	
 
 cd /opt
