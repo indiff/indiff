@@ -87,7 +87,7 @@ cd libedit-20260512-3.1
   --with-curses-dir="${DEPS_DST}"
 
 make -j$(nproc)
-sudo make install
+make install
 
 
 
