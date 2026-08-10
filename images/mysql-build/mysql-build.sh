@@ -84,7 +84,9 @@ cd libedit-20260512-3.1
 
 ./configure \
   --prefix=$DEPS_DST \
-  --with-curses-dir="${DEPS_DST}"
+  --enable-readline-compat \
+  --enable-static \
+  --enable-shared
 
 make -j$(nproc)
 make install
@@ -169,6 +171,8 @@ cmake .. -G Ninja \
     -DWITH_AUTHENTICATION_LDAP=OFF \
     -DWITH_LTO=ON \
     -DWITH_RAPIDJSON=system -DWITH_EDITLINE=system \
+    -DEDITLINE_INCLUDE_DIR=/opt/mysql/include/editline \
+-DEDITLINE_LIBRARY=/opt/mysql/lib/libedit.a \
     -DWITH_MYSQLX=0 -DWITH_NDBCLUSTER_STORAGE_ENGINE=OFF -DWITH_NDBMTD=OFF \
     -DWITH_LDAP=OFF -DWITH_SASL=OFF \
     -DWITH_EXT_BACKTRACE=OFF \
