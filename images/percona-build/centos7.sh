@@ -314,13 +314,9 @@ CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ LDOPTS="-fuse-ld=mold -Wl
             --triplet x64-linux-dynamic --clean-after-build \
             || cat /workspace/vcpkg/installed/vcpkg/issue_body.md
 
-CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++  \
-    LDOPTS="-fuse-ld=mold -Wl,--strip-all -Wl,--gc-sections " $VCPKG_ROOT/vcpkg install \
-    ncurses \
-    --triplet $TRIPLET --clean-after-build
 
 CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ LDOPTS="-fuse-ld=mold -Wl,--strip-all -Wl,--gc-sections " $VCPKG_ROOT/vcpkg install \
-            zlib \
+            ncurses zlib \
             lz4 \
             zstd \
             bzip2 \
@@ -328,7 +324,7 @@ CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ LDOPTS="-fuse-ld=mold -Wl
             libxml2 \
             libevent \
             pcre2 \
-            pkgconf mecab libaio readline-unix libedit \
+            pkgconf mecab libaio libedit \
             --triplet $TRIPLET --clean-after-build	\
             || cat /workspace/vcpkg/installed/vcpkg/issue_body.md
 
