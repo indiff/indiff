@@ -84,7 +84,7 @@ cd libedit-20260512-3.1
 
 ./configure \
   --prefix=$DEPS_DST \
-  --with-curses-dir="${I$DEPS_DST}"
+  --with-curses-dir="${DEPS_DST}"
 
 make -j$(nproc)
 sudo make install
