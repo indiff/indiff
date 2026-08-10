@@ -77,6 +77,22 @@ autoreconf -fi
 make -j$(nproc)
 make install
 cd ..
+
+wget https://thrysoee.dk/editline/libedit-20260512-3.1.tar.gz
+tar -zxvf libedit-20260512-3.1.tar.gz
+cd libedit-20260512-3.1
+
+./configure \
+  --prefix=$DEPS_DST \
+  --with-curses-dir="${I$DEPS_DST}"
+
+make -j$(nproc)
+sudo make install
+
+
+
+
+
 unset CPPFLAGS
 unset LDFLAGS
 
