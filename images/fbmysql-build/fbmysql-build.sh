@@ -229,7 +229,7 @@ cmake .. -G Ninja \
     -DWITH_RAPID=0 \
     -DWITH_ROUTER=0 \
     -DWITH_UNIT_TESTS=OFF \
-    -DWITH_RAPIDJSON=system -DWITH_EDITLINE=system -DWITH_READLINE=system  \
+    -DWITH_RAPIDJSON=system -DWITH_EDITLINE=system \
     -DWITH_ROCKSDB=ON \
     -DWITH_INNODB_MEMCACHED=ON \
     -DWITH_CURL=system \
