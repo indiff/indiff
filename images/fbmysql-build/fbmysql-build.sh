@@ -198,10 +198,6 @@ rsync -a /opt/vcpkg/installed/x64-linux-dynamic/include/ /opt/fbmysql/include/
 #     WITH_TESTS
 # -DWITH_FIDO=system \
 
-rm -rf /opt/gcc-indiff 
-rm -f /opt/gcc-indiff.zip
-curl -sLo /opt/gcc-indiff2.zip https://github.com/qwop/gcc-build/releases/download/20251222_2144_16.0.0/gcc-indiff-centos7-16.0.0-x86_64-20251222_2009.xz
-unzip /opt/gcc-indiff2.zip -d /opt/gcc-indiff
 
 unset PROTOC
 cmake .. -G Ninja \
@@ -229,7 +225,7 @@ cmake .. -G Ninja \
     -DWITH_RAPID=0 \
     -DWITH_ROUTER=0 \
     -DWITH_UNIT_TESTS=OFF \
-    -DWITH_RAPIDJSON=system -DWITH_EDITLINE=system \
+    -DWITH_RAPIDJSON=system -DWITH_EDITLINE=bundled \
     -DWITH_ROCKSDB=ON \
     -DWITH_INNODB_MEMCACHED=ON \
     -DWITH_CURL=system \
