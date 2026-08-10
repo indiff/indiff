@@ -128,7 +128,7 @@ cmake .. -G Ninja \
     -DPROTOBUF_PROTOC_EXECUTABLE="$VCPKG_ROOT/installed/x64-linux-dynamic/tools/protobuf/$PROTOC_BASENAME"  \
     -DPROTOBUF_PROTOC_LIBRARY="/opt/vcpkg/installed/x64-linux-dynamic/lib/libprotoc.so" \
     -DPROTOBUF_LITE_LIBRARY="/opt/vcpkg/installed/x64-linux-dynamic/lib/libprotobuf-lite.so" \
-    -DWITH_RAPIDJSON=system -DWITH_EDITLINE=system \
+    -DWITH_RAPIDJSON=system -DWITH_EDITLINE=bundled \
     -DCMAKE_BUILD_TYPE=Release \
     -DMYSQL_MAINTAINER_MODE=OFF \
     -DWITH_SAFEMALLOC=OFF \
