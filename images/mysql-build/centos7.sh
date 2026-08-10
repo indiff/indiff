@@ -301,7 +301,7 @@ CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ $VCPKG_ROOT/vcpkg install
             pcre2 \
             ncurses \
             libaio  \
-            pkgconf libfido2 readline  libedit \
+            pkgconf readline libedit \
             --triplet $TRIPLET --clean-after-build	
 
 cd /opt

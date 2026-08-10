@@ -231,16 +231,7 @@ yum install -y texinfo help2man patch
 #     CXXFLAGS="-I/opt/gcc-indiff/include" \
 #     $VCPKG_ROOT/vcpkg install jemalloc --triplet x64-linux-dynamic --clean-after-build || cat /opt/vcpkg/buildtrees/jemalloc/make-all-x64-linux-dynamic-dbg-err.log
 
-cd /opt/
-git clone https://github.com/facebook/jemalloc.git --depth 1
-cd jemalloc
-sed -i 's/std::__throw_bad_alloc()/throw std::bad_alloc()/g' src/jemalloc_cpp.cpp
-sh autogen.sh
-env CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ ./configure --prefix=/opt/fbjemalloc
-make -j$(nproc)
-make install
-
-
+cd /tmp
 export CC="/opt/gcc-indiff/bin/gcc"
 export CXX="/opt/gcc-indiff/bin/g++"
 export ACLOCAL_PATH=/usr/share/aclocal:${ACLOCAL_PATH:-}
@@ -248,10 +239,12 @@ export ACLOCAL_PATH=/usr/share/aclocal:${ACLOCAL_PATH:-}
 git clone https://github.com/autotools-mirror/autoconf.git
 cd autoconf
 ./bootstrap     # 如果存在
-./configure --prefix=/usr
+./configure --prefix=/opt/autoconf
 make -j$(nproc)
 make install
+/opt/autoconf/bin/autoconf --version
 cd ..
+
 
 function wget_gnu(){
      local suffix=$1
@@ -304,7 +297,17 @@ make install
 cd ..
 m4 --version
 
+cd /opt/
+git clone https://github.com/facebook/jemalloc.git --depth 1
+cd jemalloc
+sed -i 's/std::__throw_bad_alloc()/throw std::bad_alloc()/g' src/jemalloc_cpp.cpp
+sh autogen.sh
+env CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ ./configure --prefix=/opt/fbjemalloc
+make -j$(nproc)
+make install
+
 cd /opt/vcpkg/
+export PATH=/opt/autoconf/bin:$PATH
 CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ LDOPTS="-fuse-ld=mold -Wl,--strip-all -Wl,--gc-sections " $VCPKG_ROOT/vcpkg install \
             numactl openssl curl[core,non-http,ssl,openssl,zstd] snappy lmdb protobuf[core,libprotoc] \
             rapidjson \
@@ -320,7 +323,7 @@ CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ LDOPTS="-fuse-ld=mold -Wl
             libevent \
             pcre2 \
             ncurses \
-            libaio libfido2 readline  libedit krb5 \
+            libaio readline libedit \
             --triplet $TRIPLET --clean-after-build	\
             || cat /workspace/vcpkg/installed/vcpkg/issue_body.md
 
