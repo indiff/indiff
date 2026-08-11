@@ -11,6 +11,16 @@ LIBPROTOBUF_BASENAME=libprotobuf.so
 chmod +x /opt/vcpkg/installed/x64-linux-dynamic/tools/protobuf/${PROTOC_BASENAME}
 
 
+cd /opt/vcpkg
+
+# 删除 protobuf[core,libprotoc] x64‑linux‑dynamic
+./vcpkg remove protobuf[core,libprotoc]:x64-linux-dynamic || true
+
+./vcpkg remove protobuf[core,libprotoc]:x64-linux || true
+
+./vcpkg remove absl:x64-linux-dynamic || true
+./vcpkg remove absl:x64-linux || true
+
 
 if [[ -z "$FBMYSQL_BRANCH" ]]; then
   git clone --filter=blob:none --depth 1 https://github.com/facebook/mysql-5.6.git server
