@@ -11,6 +11,16 @@ PROTOC_BASENAME=$(basename $(find /opt/vcpkg/installed/x64-linux-dynamic/tools/p
 LIBPROTOBUF_BASENAME=libprotobuf.so
 chmod +x /opt/vcpkg/installed/x64-linux-dynamic/tools/protobuf/${PROTOC_BASENAME}
 
+cd /opt/vcpkg
+
+# 删除 protobuf[core,libprotoc] x64‑linux‑dynamic
+./vcpkg remove protobuf[core,libprotoc]:x64-linux-dynamic || true
+
+./vcpkg remove protobuf[core,libprotoc]:x64-linux || true
+
+./vcpkg remove absl:x64-linux-dynamic || true
+./vcpkg remove absl:x64-linux || true
+
 TRIPLET=x64-linux
 DEPS_SRC="$VCPKG_ROOT/installed/$TRIPLET"
 DEPS_DST="$PERCONA_INSTALL_PREFIX"
