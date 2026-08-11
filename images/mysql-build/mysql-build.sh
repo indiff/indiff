@@ -136,7 +136,7 @@ unset PROTOC
 cmake .. -G Ninja \
     -DCMAKE_INSTALL_PREFIX=$DEPS_DST \
     -DCMAKE_C_FLAGS=" -D__NO_STRING_INLINES -I$DEPS_DST/include -O2 -pipe -fPIC -DPIC " \
-    -DCMAKE_CXX_FLAGS="-std=c++23 -include cstdint -include cstddef -Uin_range -D__NO_STRING_INLINES -I$DEPS_DST/include -O2 -pipe -fPIC -DPIC " \
+    -DCMAKE_CXX_FLAGS="-std=c++23 -Uin_range -include cstdint -include cstddef -D__NO_STRING_INLINES -I$DEPS_DST/include -O2 -pipe -fPIC -DPIC " \
     -DCMAKE_CXX_EXTENSIONS=OFF \
     -DCMAKE_EXE_LINKER_FLAGS="-L/opt/vcpkg/installed/x64-linux/lib -L/usr/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--strip-all -Wl,--gc-sections -Wl,--no-as-needed -ldl" \
     -DCMAKE_SHARED_LINKER_FLAGS="-L/usr/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--strip-all -Wl,--gc-sections -Wl,--no-as-needed -ldl" \
@@ -171,8 +171,8 @@ cmake .. -G Ninja \
     -DWITH_AUTHENTICATION_LDAP=OFF \
     -DWITH_LTO=ON \
     -DWITH_RAPIDJSON=system -DWITH_EDITLINE=system \
-    -DEDITLINE_INCLUDE_DIR=/opt/mysql/include/editline \
--DEDITLINE_LIBRARY=/opt/mysql/lib/libedit.a \
+    -DEDITLINE_INCLUDE_DIR="/opt/mysql/include/editline" \
+    -DEDITLINE_LIBRARY="/opt/mysql/lib/libedit.a" \
     -DWITH_MYSQLX=0 -DWITH_NDBCLUSTER_STORAGE_ENGINE=OFF -DWITH_NDBMTD=OFF \
     -DWITH_LDAP=OFF -DWITH_SASL=OFF \
     -DWITH_EXT_BACKTRACE=OFF \

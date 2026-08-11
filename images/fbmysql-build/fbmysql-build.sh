@@ -198,6 +198,11 @@ rsync -a /opt/vcpkg/installed/x64-linux-dynamic/include/ /opt/fbmysql/include/
 #     WITH_TESTS
 # -DWITH_FIDO=system \
 
+# -DPROTOBUF_INCLUDE_DIR="/opt/fbmysql/include" \
+# -DPROTOBUF_LIBRARY="/opt/vcpkg/installed/x64-linux-dynamic/lib/libprotobuf.so" \
+# -DPROTOBUF_PROTOC_EXECUTABLE="/opt/vcpkg/installed/x64-linux-dynamic/tools/protobuf/$PROTOC_BASENAME"  \
+# -DPROTOBUF_PROTOC_LIBRARY="/opt/vcpkg/installed/x64-linux-dynamic/lib/libprotoc.so" \
+# -DPROTOBUF_LITE_LIBRARY="/opt/vcpkg/installed/x64-linux-dynamic/lib/libprotobuf-lite.so" \
 
 unset PROTOC
 cmake .. -G Ninja \
@@ -231,12 +236,7 @@ cmake .. -G Ninja \
     -DWITH_CURL=system \
     -DWITH_LIBEVENT=system \
     -DWITH_ZLIB=system -DWITH_LZ4=system -DWITH_ZSTD=system -DWITH_SNAPPY=system \
-    -DWITH_PROTOBUF=system \
-    -DPROTOBUF_INCLUDE_DIR="/opt/fbmysql/include" \
-    -DPROTOBUF_LIBRARY="/opt/vcpkg/installed/x64-linux-dynamic/lib/libprotobuf.so" \
-    -DPROTOBUF_PROTOC_EXECUTABLE="/opt/vcpkg/installed/x64-linux-dynamic/tools/protobuf/$PROTOC_BASENAME"  \
-    -DPROTOBUF_PROTOC_LIBRARY="/opt/vcpkg/installed/x64-linux-dynamic/lib/libprotoc.so" \
-    -DPROTOBUF_LITE_LIBRARY="/opt/vcpkg/installed/x64-linux-dynamic/lib/libprotobuf-lite.so" \
+    -DWITH_PROTOBUF=bundled \
     -DWITH_ICU=system \
     -DWITH_SSL=system -DOPENSSL_ROOT_DIR="$DEPS_DST" \
     -DWITH_MECAB=OFF \
