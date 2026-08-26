@@ -235,7 +235,7 @@ export PKG_CONFIG_PATH=$DEPS_DST/lib/pkgconfig:$PKG_CONFIG_PATH
 #     -DCMAKE_CXX_FLAGS="-std=c++20 -include cstdint -include cstddef -I$DEPS_DST/include -O2 -pipe -fPIC -DPIC -march=native -Wno-aligned-new -Wno-implicit-fallthrough -Wno-int-in-bool-context -Wno-shift-negative-value -Wno-misleading-indentation -Wno-format-overflow -Wno-nonnull -Wno-unused-function  " \
 # -include cstdint -include cstddef 
 # -fuse-ld=mold
-
+#     -DWITH_FIDO=bundled \
 
 rsync -a /opt/vcpkg/installed/x64-linux/include/ /opt/percona80/include/
 rsync -a /opt/vcpkg/installed/x64-linux-dynamic/include/ /opt/percona80/include/
@@ -265,7 +265,6 @@ cmake .. -G Ninja \
     -DWITH_LIBEVENT=system \
     -DWITH_ZLIB=system \
     -DWITH_CURL=system \
-    -DWITH_FIDO=bundled \
     -DWITH_RAPIDJSON=system -DWITH_EDITLINE=bundled \
     -DWITH_EXT_BACKTRACE=OFF \
     -DWITH_LZ4=system -DWITH_ZSTD=system -DWITH_SNAPPY=system -DWITH_JEMALLOC=system \
