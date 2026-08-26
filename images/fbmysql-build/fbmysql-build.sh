@@ -10,16 +10,11 @@ PROTOC_BASENAME=$(basename $(find /opt/vcpkg/installed/x64-linux-dynamic/tools/p
 LIBPROTOBUF_BASENAME=libprotobuf.so
 chmod +x /opt/vcpkg/installed/x64-linux-dynamic/tools/protobuf/${PROTOC_BASENAME}
 
-
-cd /opt/vcpkg
-
-# 删除 protobuf[core,libprotoc] x64‑linux‑dynamic
-./vcpkg remove protobuf[core,libprotoc]:x64-linux-dynamic || true
-
-./vcpkg remove protobuf[core,libprotoc]:x64-linux || true
-
-./vcpkg remove absl:x64-linux-dynamic || true
-./vcpkg remove absl:x64-linux || true
+# cd /opt/vcpkg
+# ./vcpkg remove protobuf[core,libprotoc]:x64-linux-dynamic || true
+# ./vcpkg remove protobuf[core,libprotoc]:x64-linux || true
+# ./vcpkg remove absl:x64-linux-dynamic || true
+# ./vcpkg remove absl:x64-linux || true
 
 
 if [[ -z "$FBMYSQL_BRANCH" ]]; then
@@ -113,13 +108,11 @@ tree "$DEPS_DST"/{include,lib,lib64} > /workspace/deps_dst_tree.txt
 # mkdir -p /tmp/boost
 # tar -xjf boost_1_89_0.tar.bz2 -C /tmp/boost --strip-components=1
 # wget  https://boostorg.jfrog.io/artifactory/main/release/1.77.0/source/boost_1_77_0.tar.bz2
-
-boost_version_str="boost_1_87_0"
 # wget https://archives.boost.io/release/1.87.0/source/${boost_version_str}.tar.bz2
-mkdir -p /tmp/boost
 #tar -xjf ${boost_version_str}.tar.bz2 -C /tmp/boost --strip-components=1
 
-
+boost_version_str="boost_1_87_0"
+mkdir -p /tmp/boost
 # ====== 替换 boost.cmake ======
 cat > /workspace/server/cmake/boost1.cmake << BOOST_CMAKE_EOF
 SET(BOOST_PACKAGE_NAME "${boost_version_str}")
@@ -208,11 +201,7 @@ rsync -a /opt/vcpkg/installed/x64-linux-dynamic/include/ /opt/fbmysql/include/
 #     WITH_TESTS
 # -DWITH_FIDO=system \
 
-# -DPROTOBUF_INCLUDE_DIR="/opt/fbmysql/include" \
-# -DPROTOBUF_LIBRARY="/opt/vcpkg/installed/x64-linux-dynamic/lib/libprotobuf.so" \
-# -DPROTOBUF_PROTOC_EXECUTABLE="/opt/vcpkg/installed/x64-linux-dynamic/tools/protobuf/$PROTOC_BASENAME"  \
-# -DPROTOBUF_PROTOC_LIBRARY="/opt/vcpkg/installed/x64-linux-dynamic/lib/libprotoc.so" \
-# -DPROTOBUF_LITE_LIBRARY="/opt/vcpkg/installed/x64-linux-dynamic/lib/libprotobuf-lite.so" \
+
 
 unset PROTOC
 cmake .. -G Ninja \
@@ -246,7 +235,12 @@ cmake .. -G Ninja \
     -DWITH_CURL=system \
     -DWITH_LIBEVENT=system \
     -DWITH_ZLIB=system -DWITH_LZ4=system -DWITH_ZSTD=system -DWITH_SNAPPY=system \
-    -DWITH_PROTOBUF=bundled \
+    -DWITH_PROTOBUF=system \
+    -DPROTOBUF_INCLUDE_DIR="$DEPS_DST/include" \
+    -DPROTOBUF_LIBRARY="$DEPS_DST/lib/libprotobuf.so" \
+    -DPROTOBUF_PROTOC_EXECUTABLE="/opt/vcpkg/installed/x64-linux-dynamic/tools/protobuf/$PROTOC_BASENAME"  \
+    -DPROTOBUF_PROTOC_LIBRARY="$DEPS_DST/lib/libprotoc.so" \
+    -DPROTOBUF_LITE_LIBRARY="$DEPS_DST/lib/libprotobuf-lite.so" \
     -DWITH_ICU=system \
     -DWITH_SSL=system -DOPENSSL_ROOT_DIR="$DEPS_DST" \
     -DWITH_MECAB=OFF \

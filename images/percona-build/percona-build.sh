@@ -252,7 +252,12 @@ cmake .. -G Ninja \
     -DWITH_COMPONENT_KEYRING_VAULT=ON \
     -DBUILD_CONFIG=mysql_release \
     -DWITH_PACKAGE_FLAGS=OFF \
-    -DWITH_PROTOBUF=bundled \
+    -DWITH_PROTOBUF=system \
+    -DPROTOBUF_INCLUDE_DIR="$DEPS_DST/include" \
+    -DPROTOBUF_LIBRARY="$DEPS_DST/lib/libprotobuf.so" \
+    -DPROTOBUF_PROTOC_EXECUTABLE="/opt/vcpkg/installed/x64-linux-dynamic/tools/protobuf/$PROTOC_BASENAME"  \
+    -DPROTOBUF_PROTOC_LIBRARY="$DEPS_DST/lib/libprotoc.so" \
+    -DPROTOBUF_LITE_LIBRARY="$DEPS_DST/lib/libprotobuf-lite.so" \
     -DWITH_BOOST="/tmp/boost" -DDOWNLOAD_BOOST=1 \
     -DMYSQL_MAINTAINER_MODE=OFF \
     -DWITH_ROCKSDB=ON \
