@@ -325,6 +325,7 @@ CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ LDOPTS="-fuse-ld=mold -Wl
             libevent \
             pcre2 \
             pkgconf mecab libaio libedit \
+            libaio  \
             --triplet $TRIPLET --clean-after-build	\
             || cat /workspace/vcpkg/installed/vcpkg/issue_body.md
 

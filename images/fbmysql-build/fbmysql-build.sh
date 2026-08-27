@@ -200,7 +200,11 @@ rsync -a /opt/vcpkg/installed/x64-linux-dynamic/include/ /opt/fbmysql/include/
 #     WITH_SAFEMALLOC
 #     WITH_TESTS
 # -DWITH_FIDO=system \
-
+FILE="../plugin/x/protocol/plugin/file_output.h"
+if grep -q 'bool write(const std::string &value, Types &&\.\.\. values)' "$FILE"; then
+        sed -i 's/bool write(const std::string &value, Types &&\.\.\. values)/bool write(std::string_view value, Types \&\&... values)/' "$FILE"
+        echo "[SUCCESS] file_output.h 第93行已修改为 std::string_view"
+fi
 
 
 unset PROTOC
