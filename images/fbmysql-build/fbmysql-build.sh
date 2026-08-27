@@ -132,7 +132,7 @@ sed -i 's|https://boostorg.jfrog.io/artifactory/main/release|https://archives.bo
 
 cat /workspace/server/cmake/boost.cmake
 # git clone --depth 1 https://github.com/PJK/libcbor.git
-git clone --depth 1 --branch v0.10.2 https://github.com/PJK/libcbor.git
+git clone --depth 1 https://github.com/PJK/libcbor.git
 cd libcbor
 cmake -B build -DCMAKE_INSTALL_PREFIX=$DEPS_DST \
       -DBUILD_SHARED_LIBS=ON \
