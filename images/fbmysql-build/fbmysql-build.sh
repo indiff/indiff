@@ -149,7 +149,10 @@ cmake -B build \
       -DCMAKE_PREFIX_PATH=$DEPS_DST \
       -DBUILD_SHARED_LIBS=ON \
       -DBUILD_EXAMPLES=OFF \
-      -DBUILD_TOOLS=OFF
+      -DBUILD_TOOLS=OFF \
+      -DUSE_UDEV=OFF \
+      -DUSE_PCSC=OFF \
+      -DOPENSSL_ROOT_DIR=$DEPS_DST
 cmake --build build -j$(nproc)
 cmake --install build
 cd ..
