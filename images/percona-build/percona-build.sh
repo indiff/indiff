@@ -220,28 +220,6 @@ cat /workspace/server/cmake/boost.cmake
 yum install -y systemd-libs systemd-devel
 
 
-# git clone --depth 1 https://github.com/PJK/libcbor.git
-git clone --depth 1  https://github.com/PJK/libcbor.git
-cd libcbor
-cmake -B build -DCMAKE_INSTALL_PREFIX=$DEPS_DST \
-      -DBUILD_SHARED_LIBS=ON \
-      -DWITH_EXAMPLES=OFF
-cmake --build build -j$(nproc)
-cmake --install build
-cd ..
-
-# git clone --depth 1 --branch v1.14.0 https://github.com/Yubico/libfido2.git
-git clone --depth 1 https://github.com/Yubico/libfido2.git
-cd libfido2
-cmake -B build \
-      -DCMAKE_INSTALL_PREFIX=$DEPS_DST \
-      -DCMAKE_PREFIX_PATH=$DEPS_DST \
-      -DBUILD_SHARED_LIBS=ON \
-      -DBUILD_EXAMPLES=OFF \
-      -DBUILD_TOOLS=OFF \
-      -DUSE_UDEV=OFF \
-      -DUSE_PCSC=OFF \
-      -DOPENSSL_ROOT_DIR=$DEPS_DST
 
 cmake --build build -j$(nproc)
 cmake --install build
@@ -292,7 +270,7 @@ cmake .. -G Ninja \
     -DWITH_LIBEVENT=system \
     -DWITH_ZLIB=system \
     -DWITH_CURL=system \
-    -DWITH_FIDO=system \
+    -DWITH_FIDO=bundled \
     -DWITH_RAPIDJSON=system -DWITH_EDITLINE=bundled \
     -DWITH_EXT_BACKTRACE=OFF \
     -DWITH_LZ4=system -DWITH_ZSTD=system -DWITH_SNAPPY=system -DWITH_JEMALLOC=system \
