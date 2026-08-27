@@ -216,6 +216,10 @@ BOOST_CMAKE_EOF
 # 自带的有 patchs
 cat /workspace/server/cmake/boost.cmake
 
+# 安装运行库 + 开发头文件
+yum install -y systemd-libs systemd-devel
+
+
 # git clone --depth 1 https://github.com/PJK/libcbor.git
 git clone --depth 1  https://github.com/PJK/libcbor.git
 cd libcbor
