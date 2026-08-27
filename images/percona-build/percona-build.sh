@@ -221,6 +221,29 @@ BOOST_CMAKE_EOF
 # 自带的有 patchs
 cat /workspace/server/cmake/boost.cmake
 
+# git clone --depth 1 https://github.com/PJK/libcbor.git
+git clone --depth 1 --branch v0.10.2 https://github.com/PJK/libcbor.git
+cd libcbor
+cmake -B build -DCMAKE_INSTALL_PREFIX=$DEPS_DST \
+      -DBUILD_SHARED_LIBS=ON \
+      -DWITH_EXAMPLES=OFF
+cmake --build build -j$(nproc)
+cmake --install build
+cd ..
+
+# git clone --depth 1 --branch v1.14.0 https://github.com/Yubico/libfido2.git
+git clone --depth 1 https://github.com/Yubico/libfido2.git
+cd libfido2
+cmake -B build \
+      -DCMAKE_INSTALL_PREFIX=$DEPS_DST \
+      -DCMAKE_PREFIX_PATH=$DEPS_DST \
+      -DBUILD_SHARED_LIBS=ON \
+      -DBUILD_EXAMPLES=OFF \
+      -DBUILD_TOOLS=OFF
+cmake --build build -j$(nproc)
+cmake --install build
+cd ..
+
 mkdir /workspace/server/build
 cd /workspace/server/build
 
