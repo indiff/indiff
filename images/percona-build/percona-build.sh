@@ -116,7 +116,7 @@ unset LDFLAGS
 # yum install pkgconfig -y
 # git clone --filter=blob:none --depth 1 https://git.openldap.org/openldap/openldap.git
 # cd openldap
-wget https://root.openldap.org/software/download/OpenLDAP/openldap-release/openldap-2.6.14.tgz
+wget --no-check-certificate https://root.openldap.org/software/download/OpenLDAP/openldap-release/openldap-2.6.14.tgz
 tar -xzf openldap-2.6.14.tgz
 cd openldap-2.6.14
 OPENLADP_DIR=$(pwd)
