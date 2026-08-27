@@ -132,6 +132,11 @@ sed -i 's|https://boostorg.jfrog.io/artifactory/main/release|https://archives.bo
 
 cat /workspace/server/cmake/boost.cmake
 # git clone --depth 1 https://github.com/PJK/libcbor.git
+
+# 安装运行库 + 开发头文件
+yum install -y systemd-libs systemd-devel
+
+
 git clone --depth 1 https://github.com/PJK/libcbor.git
 cd libcbor
 cmake -B build -DCMAKE_INSTALL_PREFIX=$DEPS_DST \
