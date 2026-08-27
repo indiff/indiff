@@ -5,18 +5,6 @@ set -xe
 find /opt/vcpkg/installed -name "*.so*"
 find /opt/vcpkg/installed -name "*.a*"
 
-PROTOC_BASENAME=$(basename $(find /opt/vcpkg/installed/x64-linux-dynamic/tools/protobuf -maxdepth 1 -name "protoc-*" | head -1))
-#PROTOC_LIB_BASENAME=$(basename $(find /opt/vcpkg/installed/x64-linux-dynamic/lib -maxdepth 1 -name "libprotoc*.so*" | head -1))
-LIBPROTOBUF_BASENAME=libprotobuf.so
-chmod +x /opt/vcpkg/installed/x64-linux-dynamic/tools/protobuf/${PROTOC_BASENAME}
-
-# cd /opt/vcpkg
-# ./vcpkg remove protobuf[core,libprotoc]:x64-linux-dynamic || true
-# ./vcpkg remove protobuf[core,libprotoc]:x64-linux || true
-# ./vcpkg remove absl:x64-linux-dynamic || true
-# ./vcpkg remove absl:x64-linux || true
-
-
 if [[ -z "$FBMYSQL_BRANCH" ]]; then
   git clone --filter=blob:none --depth 1 https://github.com/facebook/mysql-5.6.git server
 else
@@ -223,12 +211,18 @@ rsync -a /opt/vcpkg/installed/x64-linux-dynamic/include/ /opt/fbmysql/include/
 #     WITH_SAFEMALLOC
 #     WITH_TESTS
 # -DWITH_FIDO=system \
-FILE="../plugin/x/protocol/plugin/file_output.h"
-if grep -q 'bool write(const std::string &value, Types &&\.\.\. values)' "$FILE"; then
-        sed -i 's/bool write(const std::string &value, Types &&\.\.\. values)/bool write(std::string_view value, Types \&\&... values)/' "$FILE"
-        echo "[SUCCESS] file_output.h 第93行已修改为 std::string_view"
-fi
 
+# FILE="../plugin/x/protocol/plugin/file_output.h"
+# if grep -q 'bool write(const std::string &value, Types &&\.\.\. values)' "$FILE"; then
+#         sed -i 's/bool write(const std::string &value, Types &&\.\.\. values)/bool write(std::string_view value, Types \&\&... values)/' "$FILE"
+#         echo "[SUCCESS] file_output.h 第93行已修改为 std::string_view"
+# fi
+
+# -DPROTOBUF_INCLUDE_DIR="$DEPS_DST/include" \
+# -DPROTOBUF_LIBRARY="$DEPS_DST/lib/libprotobuf.so" \
+# -DPROTOBUF_PROTOC_EXECUTABLE="/opt/vcpkg/installed/x64-linux-dynamic/tools/protobuf/$PROTOC_BASENAME"  \
+# -DPROTOBUF_PROTOC_LIBRARY="$DEPS_DST/lib/libprotoc.so" \
+# -DPROTOBUF_LITE_LIBRARY="$DEPS_DST/lib/libprotobuf-lite.so" \
 
 unset PROTOC
 cmake .. -G Ninja \
@@ -262,12 +256,7 @@ cmake .. -G Ninja \
     -DWITH_CURL=system \
     -DWITH_LIBEVENT=system \
     -DWITH_ZLIB=system -DWITH_LZ4=system -DWITH_ZSTD=system -DWITH_SNAPPY=system \
-    -DWITH_PROTOBUF=system \
-    -DPROTOBUF_INCLUDE_DIR="$DEPS_DST/include" \
-    -DPROTOBUF_LIBRARY="$DEPS_DST/lib/libprotobuf.so" \
-    -DPROTOBUF_PROTOC_EXECUTABLE="/opt/vcpkg/installed/x64-linux-dynamic/tools/protobuf/$PROTOC_BASENAME"  \
-    -DPROTOBUF_PROTOC_LIBRARY="$DEPS_DST/lib/libprotoc.so" \
-    -DPROTOBUF_LITE_LIBRARY="$DEPS_DST/lib/libprotobuf-lite.so" \
+    -DWITH_PROTOBUF=bundled \
     -DWITH_ICU=system \
     -DWITH_SSL=system -DOPENSSL_ROOT_DIR="$DEPS_DST" \
     -DWITH_MECAB=OFF \

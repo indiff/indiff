@@ -290,8 +290,8 @@ make install
 cd ..
 m4 --version
 
+#             protobuf[core,libprotoc]  \
 CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ $VCPKG_ROOT/vcpkg install openssl curl[core,non-http,ssl,openssl,zstd] snappy \
-            protobuf[core,libprotoc]  \
             rapidjson \
             --triplet x64-linux-dynamic --clean-after-build \
             || cat /workspace/vcpkg/installed/vcpkg/issue_body.md

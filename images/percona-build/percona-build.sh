@@ -6,11 +6,6 @@ set -xe
 find /opt/vcpkg/installed -name "*.so*"
 find /opt/vcpkg/installed -name "*.a*"
 
-PROTOC_BASENAME=$(basename $(find /opt/vcpkg/installed/x64-linux-dynamic/tools/protobuf -maxdepth 1 -name "protoc-*" | head -1))
-#PROTOC_LIB_BASENAME=$(basename $(find /opt/vcpkg/installed/x64-linux-dynamic/lib -maxdepth 1 -name "libprotoc*.so*" | head -1))
-LIBPROTOBUF_BASENAME=libprotobuf.so
-chmod +x /opt/vcpkg/installed/x64-linux-dynamic/tools/protobuf/${PROTOC_BASENAME}
-
 cd /opt/vcpkg
 
 # 删除 protobuf[core,libprotoc] x64‑linux‑dynamic
@@ -260,6 +255,12 @@ export PKG_CONFIG_PATH=$DEPS_DST/lib/pkgconfig:$PKG_CONFIG_PATH
 # -fuse-ld=mold
 #     -DWITH_FIDO=bundled \
 
+# -DPROTOBUF_INCLUDE_DIR="$DEPS_DST/include" \
+# -DPROTOBUF_LIBRARY="$DEPS_DST/lib/libprotobuf.so" \
+# -DPROTOBUF_PROTOC_EXECUTABLE="/opt/vcpkg/installed/x64-linux-dynamic/tools/protobuf/$PROTOC_BASENAME"  \
+# -DPROTOBUF_PROTOC_LIBRARY="$DEPS_DST/lib/libprotoc.so" \
+# -DPROTOBUF_LITE_LIBRARY="$DEPS_DST/lib/libprotobuf-lite.so" \
+
 rsync -a /opt/vcpkg/installed/x64-linux/include/ /opt/percona80/include/
 rsync -a /opt/vcpkg/installed/x64-linux-dynamic/include/ /opt/percona80/include/
 cmake .. -G Ninja \
@@ -275,12 +276,7 @@ cmake .. -G Ninja \
     -DWITH_COMPONENT_KEYRING_VAULT=ON \
     -DBUILD_CONFIG=mysql_release \
     -DWITH_PACKAGE_FLAGS=OFF \
-    -DWITH_PROTOBUF=system \
-    -DPROTOBUF_INCLUDE_DIR="$DEPS_DST/include" \
-    -DPROTOBUF_LIBRARY="$DEPS_DST/lib/libprotobuf.so" \
-    -DPROTOBUF_PROTOC_EXECUTABLE="/opt/vcpkg/installed/x64-linux-dynamic/tools/protobuf/$PROTOC_BASENAME"  \
-    -DPROTOBUF_PROTOC_LIBRARY="$DEPS_DST/lib/libprotoc.so" \
-    -DPROTOBUF_LITE_LIBRARY="$DEPS_DST/lib/libprotobuf-lite.so" \
+    -DWITH_PROTOBUF=bundled \
     -DWITH_BOOST="/tmp/boost" -DDOWNLOAD_BOOST=1 \
     -DMYSQL_MAINTAINER_MODE=OFF \
     -DWITH_ROCKSDB=ON \
