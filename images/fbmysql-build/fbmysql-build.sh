@@ -136,33 +136,6 @@ cat /workspace/server/cmake/boost.cmake
 # 安装运行库 + 开发头文件
 yum install -y systemd-libs systemd-devel
 
-
-git clone --depth 1 https://github.com/PJK/libcbor.git
-cd libcbor
-cmake -B build -DCMAKE_INSTALL_PREFIX=$DEPS_DST \
-      -DBUILD_SHARED_LIBS=ON \
-      -DWITH_EXAMPLES=OFF
-cmake --build build -j$(nproc)
-cmake --install build
-cd ..
-
-# git clone --depth 1 --branch v1.14.0 https://github.com/Yubico/libfido2.git
-git clone --depth 1 https://github.com/Yubico/libfido2.git
-cd libfido2
-cmake -B build \
-      -DCMAKE_INSTALL_PREFIX=$DEPS_DST \
-      -DCMAKE_PREFIX_PATH=$DEPS_DST \
-      -DBUILD_SHARED_LIBS=ON \
-      -DBUILD_EXAMPLES=OFF \
-      -DBUILD_TOOLS=OFF \
-      -DUSE_UDEV=OFF \
-      -DUSE_PCSC=OFF \
-      -DOPENSSL_ROOT_DIR=$DEPS_DST
-cmake --build build -j$(nproc)
-cmake --install build
-cd ..
-
-
 mkdir /workspace/server/build
 cd /workspace/server/build
 
