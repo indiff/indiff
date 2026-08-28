@@ -228,6 +228,12 @@ cd ..
 mkdir /workspace/server/build
 cd /workspace/server/build
 
+wget --no-check-certificate https://releases.pagure.org/libaio/libaio-0.3.113.tar.gz
+tar -zxvf libaio-0.3.113.tar.gz
+cd libaio-0.3.113
+make -j$(nproc) CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++
+make install prefix=$DEPS_DST
+
 # 避免外部 protobuf 干扰
 unset PROTOC
 export PKG_CONFIG_PATH=$DEPS_DST/lib/pkgconfig:$PKG_CONFIG_PATH

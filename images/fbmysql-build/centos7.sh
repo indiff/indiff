@@ -157,7 +157,7 @@ export LD_LIBRARY_PATH=/opt/gcc-indiff/lib64:/opt/gcc-indiff/lib
 export LDOPTS="-fuse-ld=mold "
 git clone --filter=blob:none https://github.com/ninja-build/ninja.git --depth=1
 cd ninja
-cmake -Bbuild-cmake -DBUILD_TESTING=OFF -DCMAKE_EXE_LINKER_FLAGS="-static-libstdc++ -static-libgcc" -DCMAKE_BUILD_TYPE=release -DCMAKE_CXX_COMPILER=/opt/gcc-indiff/bin/g++
+cmake . -Bbuild-cmake -DBUILD_TESTING=OFF -DCMAKE_EXE_LINKER_FLAGS="-static-libstdc++ -static-libgcc" -DCMAKE_BUILD_TYPE=release -DCMAKE_CXX_COMPILER=/opt/gcc-indiff/bin/g++
 cmake --build build-cmake
 rm -f /usr/bin/ninja
 cp build-cmake/ninja /usr/bin/ninja
@@ -306,7 +306,7 @@ CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ $VCPKG_ROOT/vcpkg install
             libxml2 \
             libevent[openssl] \
             pcre2 \
-            pkgconf mecab libedit libaio\
+            pkgconf mecab libedit\
             --triplet $TRIPLET --clean-after-build \
             || cat /workspace/vcpkg/installed/vcpkg/issue_body.md
 cd /opt

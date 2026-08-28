@@ -139,6 +139,13 @@ yum install -y systemd-libs systemd-devel
 mkdir /workspace/server/build
 cd /workspace/server/build
 
+wget --no-check-certificate https://releases.pagure.org/libaio/libaio-0.3.113.tar.gz
+tar -zxvf libaio-0.3.113.tar.gz
+cd libaio-0.3.113
+make -j$(nproc) CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++
+make install prefix=$DEPS_DST
+
+
 # 供 CMake/ld 查找 vcpkg 拷贝到 /opt 的头文件与库
 export CMAKE_PREFIX_PATH="$DEPS_DST${CMAKE_PREFIX_PATH:+:$CMAKE_PREFIX_PATH}"
 export CMAKE_LIBRARY_PATH="$DEPS_DST/lib:$DEPS_DST/lib64${CMAKE_LIBRARY_PATH:+:$CMAKE_LIBRARY_PATH}"
