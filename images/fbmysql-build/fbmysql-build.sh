@@ -78,6 +78,15 @@ autoreconf -fi
 make -j$(nproc)
 make install
 cd ..
+
+
+wget --no-check-certificate https://releases.pagure.org/libaio/libaio-0.3.113.tar.gz
+tar -zxvf libaio-0.3.113.tar.gz
+cd libaio-0.3.113
+make -j$(nproc) CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++
+make install prefix=$DEPS_DST
+cd ..
+
 unset CPPFLAGS
 unset LDFLAGS
 
@@ -133,17 +142,13 @@ sed -i 's|https://boostorg.jfrog.io/artifactory/main/release|https://archives.bo
 cat /workspace/server/cmake/boost.cmake
 # git clone --depth 1 https://github.com/PJK/libcbor.git
 
-# 安装运行库 + 开发头文件
-yum install -y systemd-libs systemd-devel
+
+
 
 mkdir /workspace/server/build
 cd /workspace/server/build
 
-wget --no-check-certificate https://releases.pagure.org/libaio/libaio-0.3.113.tar.gz
-tar -zxvf libaio-0.3.113.tar.gz
-cd libaio-0.3.113
-make -j$(nproc) CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++
-make install prefix=$DEPS_DST
+
 
 
 # 供 CMake/ld 查找 vcpkg 拷贝到 /opt 的头文件与库

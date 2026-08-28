@@ -159,7 +159,15 @@ make -j$(nproc) LDAP_INC="-I$OPENLADP_DIR/include \
  -I$OPENLADP_DIR/servers/lloadd \
  -I$OPENLADP_DIR/clients/tools"
 make install
+cd ..
+cd ..
 
+wget --no-check-certificate https://releases.pagure.org/libaio/libaio-0.3.113.tar.gz
+tar -zxvf libaio-0.3.113.tar.gz
+cd libaio-0.3.113
+make -j$(nproc) CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++
+make install prefix=$DEPS_DST
+cd ..
 
 if [[ -z "$PERCONA_BRANCH" ]]; then
     git clone --filter=blob:none --depth 1 https://github.com/percona/percona-server.git -b 8.0 /workspace/server
@@ -216,23 +224,10 @@ BOOST_CMAKE_EOF
 # 自带的有 patchs
 cat /workspace/server/cmake/boost.cmake
 
-# 安装运行库 + 开发头文件
-yum install -y systemd-libs systemd-devel
-
-
-
-cmake --build build -j$(nproc)
-cmake --install build
-cd ..
-
 mkdir /workspace/server/build
 cd /workspace/server/build
 
-wget --no-check-certificate https://releases.pagure.org/libaio/libaio-0.3.113.tar.gz
-tar -zxvf libaio-0.3.113.tar.gz
-cd libaio-0.3.113
-make -j$(nproc) CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++
-make install prefix=$DEPS_DST
+
 
 # 避免外部 protobuf 干扰
 unset PROTOC
