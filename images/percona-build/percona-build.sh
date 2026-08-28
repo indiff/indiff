@@ -271,7 +271,6 @@ cmake .. -G Ninja \
     -DWITH_LIBEVENT=system \
     -DWITH_ZLIB=system \
     -DWITH_CURL=system \
-    -DWITH_FIDO=bundled \
     -DWITH_RAPIDJSON=system -DWITH_EDITLINE=bundled \
     -DWITH_EXT_BACKTRACE=OFF \
     -DWITH_LZ4=system -DWITH_ZSTD=system -DWITH_SNAPPY=system -DWITH_JEMALLOC=system \
