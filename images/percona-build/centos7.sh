@@ -312,7 +312,7 @@ export PATH=/opt/autoconf/bin:$PATH
 # protobuf[core,libprotoc] 
 CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ LDOPTS="-fuse-ld=mold -Wl,--strip-all -Wl,--gc-sections " $VCPKG_ROOT/vcpkg install \
             numactl openssl curl[core,non-http,ssl,openssl,zstd] snappy lmdb \
-            rapidjson \
+            rapidjson libfido2 \
             --triplet x64-linux-dynamic --clean-after-build \
             || cat /workspace/vcpkg/installed/vcpkg/issue_body.md
 
