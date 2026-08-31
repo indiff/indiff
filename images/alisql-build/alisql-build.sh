@@ -102,14 +102,14 @@ tree "$DEPS_DST"/{include,lib,lib64} > /workspace/deps_alisql_tree.txt
 # Download Boost 1.77.0 (required by MySQL 8.0.44 / AliSQL)
 # AliSQL build.sh expects: -DWITH_BOOST="extra/boost/boost_1_77_0"
 # ============================================================================
-mkdir -p /workspace/server/extra/boost
-cd /workspace/server/extra/boost
-if [ ! -d boost_1_77_0 ]; then
-    curl -sLo boost_1_77_0.tar.bz2 https://boostorg.jfrog.io/artifactory/main/release/1.77.0/source/boost_1_77_0.tar.bz2 || \
-    curl -sLo boost_1_77_0.tar.bz2 https://sourceforge.net/projects/boost/files/boost/1.77.0/boost_1_77_0.tar.bz2/download
-    tar -xjf boost_1_77_0.tar.bz2
-    rm -f boost_1_77_0.tar.bz2
-fi
+# mkdir -p /workspace/server/extra/boost
+# cd /workspace/server/extra/boost
+# if [ ! -d boost_1_77_0 ]; then
+#     curl -sLo boost_1_77_0.tar.bz2 https://boostorg.jfrog.io/artifactory/main/release/1.77.0/source/boost_1_77_0.tar.bz2 || \
+#     curl -sLo boost_1_77_0.tar.bz2 https://sourceforge.net/projects/boost/files/boost/1.77.0/boost_1_77_0.tar.bz2/download
+#     tar -xjf boost_1_77_0.tar.bz2
+#     rm -f boost_1_77_0.tar.bz2
+# fi
 
 cd /opt/
 git clone https://github.com/facebook/jemalloc.git --depth 1
@@ -146,11 +146,25 @@ export PKG_CONFIG_PATH="/usr/lib64/pkgconfig:/usr/share/pkgconfig:$DEPS_DST/lib/
 export LIBRARY_PATH="/opt/gcc-indiff/lib64:$DEPS_DST/lib:$DEPS_DST/lib64${LIBRARY_PATH:+:$LIBRARY_PATH}"
 export LD_LIBRARY_PATH="/opt/gcc-indiff/lib64:$DEPS_DST/lib:$DEPS_DST/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
 
-# Avoid external protobuf interference
-unset PROTOC
 
+cd /workspace/server/extra/duckdb
+mkdir build
+cd build
+BUILD_EXTENSIONS='autocomplete;httpfs;icu;json;tpch' GEN=ninja make -j`nproc`
+rm -rf /workspace/server/extra/duckdb/build/CMakeCache.txt /workspace/server/extra/duckdb/build/CMakeFiles
+# cmake ..
+# make -j`nproc`
+
+mkdir /workspace/server/build
+cd /workspace/server/build
+# 在 cmake 配置前执行
+
+# 避免外部 protobuf 干扰
+unset PROTOC
+rm -rf /workspace/server/CMakeCache.txt /workspace/server/CMakeFiles
+rm -rf CMakeCache.txt CMakeFiles
 # AliSQL CMake: in-source build (matches official build.sh)
-cmake . -G Ninja \
+cmake .. -G Ninja \
     -DFORCE_INSOURCE_BUILD=ON \
     -DCMAKE_INSTALL_PREFIX=$DEPS_DST \
     -DMYSQL_DATADIR="$DEPS_DST/data" \
@@ -161,19 +175,13 @@ cmake . -G Ninja \
     -DMYSQL_MAINTAINER_MODE=0 \
     -DWITH_DEBUG=OFF \
     -DENABLE_GCOV=OFF \
-    -DWITH_EMBEDDED_SERVER=0 \
     -DWITH_EXTRA_CHARSETS=all \
     -DDEFAULT_CHARSET=utf8mb4 \
     -DDEFAULT_COLLATION=utf8mb4_0900_ai_ci \
     -DENABLED_PROFILING=1 \
     -DENABLED_LOCAL_INFILE=1 \
-    -DENABLED_PROFILING=ON \
-    -DENABLED_LOCAL_INFILE=ON \
     -DWITH_UNIT_TESTS=0 \
-    -DWITH_TESTS=0 \
-    -DWITH_XPLUGIN_TESTS=0 \
     -DWITH_DOCS=OFF \
-    -DWITH_MAN_PAGES=OFF \
     -DCMAKE_C_FLAGS=" -D__NO_STRING_INLINES -D_GLIBCXX_USE_CXX11_ABI=0 -I$DEPS_DST/include -O2 -march=native -fno-strict-aliasing -fexceptions -fno-omit-frame-pointer -D_GLIBCXX_USE_CXX11_ABI=0  " \
     -DCMAKE_CXX_FLAGS=" -include cstdint -include cstddef -D__NO_STRING_INLINES -D_GLIBCXX_USE_CXX11_ABI=0 -I$DEPS_DST/include -O2 -march=native -fno-strict-aliasing -fexceptions -fno-omit-frame-pointer -D_GLIBCXX_USE_CXX11_ABI=0 " \
     -DCMAKE_EXE_LINKER_FLAGS="-L/usr/lib64 -L/opt/gcc-indiff/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--strip-all -Wl,--gc-sections -Wl,--no-as-needed -ldl -fuse-ld=mold" \
