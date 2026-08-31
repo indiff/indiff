@@ -252,8 +252,40 @@ rsync -a /opt/vcpkg/installed/x64-linux/include/ /opt/percona80/include/
 rsync -a /opt/vcpkg/installed/x64-linux-dynamic/include/ /opt/percona80/include/
 
 if [ -f /workspace/server/cmake/fido2.cmake ]; then
+    # 备份原文件
+    cp /workspace/server/cmake/fido2.cmake /workspace/server/cmake/fido2.cmake.bak
+
+# 用空宏覆盖整个文件（保留其他可能被引用的宏/函数）
+cat > /workspace/server/cmake/fido2.cmake << 'EOF'
+# Patched: All FIDO checks disabled
+MACRO(MYSQL_CHECK_FIDO)
+MESSAGE(STATUS "FIDO check skipped (patched)")
+SET(WITH_FIDO "none" CACHE STRING "" FORCE)
+ENDMACRO()
+
+# Stub out other macros/functions that may be referenced elsewhere
+MACRO(FIND_FIDO_VERSION)
+ENDMACRO()
+
+FUNCTION(WARN_MISSING_SYSTEM_UDEV OUTPUT_WARNING)
+SET(${OUTPUT_WARNING} 0 PARENT_SCOPE)
+ENDFUNCTION()
+
+FUNCTION(FIND_SYSTEM_UDEV_OR_HID)
+ENDFUNCTION()
+
+FUNCTION(WARN_MISSING_SYSTEM_FIDO OUTPUT_WARNING)
+SET(${OUTPUT_WARNING} 0 PARENT_SCOPE)
+ENDFUNCTION()
+
+FUNCTION(FIND_SYSTEM_FIDO)
+ENDFUNCTION()
+
+FUNCTION(MYSQL_USE_BUNDLED_FIDO)
+ENDFUNCTION()
+EOF
+
     cat /workspace/server/cmake/fido2.cmake
-    sed -i '209a\  IF(NOT WITH_FIDO OR WITH_FIDO STREQUAL "bundled")\n    RETURN()\n  ENDIF()' /workspace/server/cmake/fido2.cmake
 fi
 
 cmake .. -G Ninja \

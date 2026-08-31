@@ -110,6 +110,16 @@ if [ ! -d boost_1_77_0 ]; then
     tar -xjf boost_1_77_0.tar.bz2
     rm -f boost_1_77_0.tar.bz2
 fi
+
+cd /opt/
+git clone https://github.com/facebook/jemalloc.git --depth 1
+cd jemalloc
+sed -i 's/std::__throw_bad_alloc()/throw std::bad_alloc()/g' src/jemalloc_cpp.cpp
+sh autogen.sh
+env CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ ./configure --prefix="$DEPS_DST"
+make -j$(nproc)
+make install
+
 cd /workspace/server
 
 # ============================================================================
@@ -230,7 +240,7 @@ rm -f $DEPS_DST/lib64/*.a
 # ============================================================================
 # Package final artifact
 # ============================================================================
-zip -r -q -9 /workspace/alisql-oraclelinux7-x86_64-$(date +'%Y%m%d_%H%M').zip .
+zip -r -q -9 /workspace/alisql-centos7-x86_64-$(date +'%Y%m%d_%H%M').zip .
 
 # free memory
 free -h
