@@ -226,7 +226,7 @@ cat /workspace/server/cmake/boost.cmake
 
 mkdir /workspace/server/build
 cd /workspace/server/build
-
+# 在 cmake 配置前执行
 
 
 # 避免外部 protobuf 干扰
@@ -250,6 +250,12 @@ export PKG_CONFIG_PATH=$DEPS_DST/lib/pkgconfig:$PKG_CONFIG_PATH
 
 rsync -a /opt/vcpkg/installed/x64-linux/include/ /opt/percona80/include/
 rsync -a /opt/vcpkg/installed/x64-linux-dynamic/include/ /opt/percona80/include/
+
+if [ -f /workspace/server/cmake/fido2.cmake ]; then
+    cat /workspace/server/cmake/fido2.cmake
+    sed -i '209a\  IF(NOT WITH_FIDO OR WITH_FIDO STREQUAL "bundled")\n    RETURN()\n  ENDIF()' /workspace/server/cmake/fido2.cmake
+fi
+
 cmake .. -G Ninja \
     -DCMAKE_C_FLAGS="-include stdint.h -include stddef.h -D__NO_STRING_INLINES -I$DEPS_DST/include  -O2 -pipe -fPIC -DPIC " \
     -DCMAKE_CXX_FLAGS="-I$DEPS_DST/include  -O2 -march=native -pipe -fPIC -DPIC -Wno-error " \

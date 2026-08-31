@@ -148,10 +148,10 @@ cmake . -G Ninja \
     -DCMAKE_BUILD_TYPE=RelWithDebInfo \
     -DMINIMAL_RELWITHDEBINFO=0 \
     -DINSTALL_LAYOUT=STANDALONE \
-    -DMYSQL_MAINTAINER_MODE=OFF \
+    -DMYSQL_MAINTAINER_MODE=0 \
     -DWITH_DEBUG=OFF \
     -DENABLE_GCOV=OFF \
-    -DWITH_EMBEDDED_SERVER=OFF \
+    -DWITH_EMBEDDED_SERVER=0 \
     -DWITH_EXTRA_CHARSETS=all \
     -DDEFAULT_CHARSET=utf8mb4 \
     -DDEFAULT_COLLATION=utf8mb4_0900_ai_ci \
@@ -173,8 +173,8 @@ cmake . -G Ninja \
     -DCMAKE_BUILD_RPATH='$ORIGIN/../lib64:$ORIGIN/../lib' \
     -DCMAKE_INSTALL_RPATH_USE_LINK_PATH=ON \
     -DWITH_BOOST="extra/boost/boost_1_77_0" \
-    -DWITH_ZLIB=bundled \
-    -DWITH_ZSTD=bundled \
+    -DWITH_ZLIB=system \
+    -DWITH_ZSTD=system \
     -DWITH_TIRPC=bundled \
     -DWITH_LZ4=system \
     -DWITH_SNAPPY=system \
