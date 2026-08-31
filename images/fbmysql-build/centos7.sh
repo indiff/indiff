@@ -306,7 +306,7 @@ CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ $VCPKG_ROOT/vcpkg install
             libxml2 \
             libevent[openssl] \
             pcre2 \
-            pkgconf mecab libedit\
+            pkgconf mecab libedit libaio \
             --triplet $TRIPLET --clean-after-build \
             || cat /workspace/vcpkg/installed/vcpkg/issue_body.md
 cd /opt

@@ -80,12 +80,12 @@ make install
 cd ..
 
 
-wget --no-check-certificate https://releases.pagure.org/libaio/libaio-0.3.113.tar.gz
-tar -zxvf libaio-0.3.113.tar.gz
-cd libaio-0.3.113
-make -j$(nproc) CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++
-make install prefix=$DEPS_DST
-cd ..
+# wget --no-check-certificate https://releases.pagure.org/libaio/libaio-0.3.113.tar.gz
+# tar -zxvf libaio-0.3.113.tar.gz
+# cd libaio-0.3.113
+# make -j$(nproc) CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++
+# make install prefix=$DEPS_DST
+# cd ..
 
 unset CPPFLAGS
 unset LDFLAGS

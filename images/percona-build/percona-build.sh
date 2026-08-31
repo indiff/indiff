@@ -162,12 +162,12 @@ make install
 cd ..
 cd ..
 
-wget --no-check-certificate https://releases.pagure.org/libaio/libaio-0.3.113.tar.gz
-tar -zxvf libaio-0.3.113.tar.gz
-cd libaio-0.3.113
-make -j$(nproc) CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++
-make install prefix=$DEPS_DST
-cd ..
+# wget --no-check-certificate https://releases.pagure.org/libaio/libaio-0.3.113.tar.gz
+# tar -zxvf libaio-0.3.113.tar.gz
+# cd libaio-0.3.113
+# make -j$(nproc) CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++
+# make install prefix=$DEPS_DST
+# cd ..
 
 if [[ -z "$PERCONA_BRANCH" ]]; then
     git clone --filter=blob:none --depth 1 https://github.com/percona/percona-server.git -b 8.0 /workspace/server

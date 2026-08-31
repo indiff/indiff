@@ -309,10 +309,10 @@ make install
 cd /opt/vcpkg/
 export PATH=/opt/autoconf/bin:$PATH
 
-# protobuf[core,libprotoc] 
+# protobuf[core,libprotoc] libfido2 
 CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ LDOPTS="-fuse-ld=mold -Wl,--strip-all -Wl,--gc-sections " $VCPKG_ROOT/vcpkg install \
             numactl openssl curl[core,non-http,ssl,openssl,zstd] snappy lmdb \
-            rapidjson libfido2 \
+            rapidjson \
             --triplet x64-linux-dynamic --clean-after-build \
             || cat /workspace/vcpkg/installed/vcpkg/issue_body.md
 
@@ -326,7 +326,7 @@ CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ LDOPTS="-fuse-ld=mold -Wl
             libxml2 \
             libevent \
             pcre2 \
-            pkgconf mecab libedit \
+            pkgconf mecab libedit libaio \
             --triplet $TRIPLET --clean-after-build	\
             || cat /workspace/vcpkg/installed/vcpkg/issue_body.md
 
