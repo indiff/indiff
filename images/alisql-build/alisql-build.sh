@@ -148,7 +148,7 @@ export LD_LIBRARY_PATH="/opt/gcc-indiff/lib64:$DEPS_DST/lib:$DEPS_DST/lib64${LD_
 
 
 cd /workspace/server/extra/duckdb
-BUILD_EXTENSIONS='autocomplete;httpfs;icu;json;tpch' GEN=ninja make -j`nproc` bundle-library
+BUILD_EXTENSIONS='autocomplete;icu;json;tpch' GEN=ninja make -j`nproc` bundle-library
 rm -rf /workspace/server/extra/duckdb/build/CMakeCache.txt /workspace/server/extra/duckdb/build/CMakeFiles
 ls -lh /workspace/server/extra/duckdb/build/release/libduckdb_bundle.a
 # cmake ..
