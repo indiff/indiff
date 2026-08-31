@@ -44,6 +44,13 @@ on:
           - "12.1" 
           - "12.0" 
           - "11.8" 
+      alisql_build_branch:
+        description: 'Build alisql Branch'
+        type: choice
+        default: ""
+        required: false
+        options:
+          - "master"
       percona_build_branch:
         description: 'Build percona Branch'
         type: choice
@@ -76,6 +83,8 @@ env:
   FBMYSQL_INSTALL_PREFIX: "/opt/fbmysql"
   MARIADB_BRANCH: "${{ github.event.inputs.mariadb_build_branch }}"
   MARIADB_INSTALL_PREFIX: "/opt/mariadb"
+  ALISQL_BRANCH: "${{ github.event.inputs.alisql_build_branch }}"
+  ALISQL_INSTALL_PREFIX: "/opt/alisql"
   PERCONA_BRANCH: "${{ github.event.inputs.percona_build_branch }}"
   PERCONA_INSTALL_PREFIX: "/opt/percona80"
 jobs:
@@ -86,7 +95,7 @@ jobs:
       fail-fast: false
       matrix:
         runner: [ubuntu-latest] # centos7 can not use ,ubuntu-24.04-arm
-        target: ${{ fromJSON( github.event.inputs.demo_build_flag == 'true' && '["demo"]' || '["mysql","fbmysql","percona","mariadb"]' ) }}
+        target: ${{ fromJSON( github.event.inputs.demo_build_flag == 'true' && '["demo"]' || '["mysql","fbmysql","percona","mariadb","alisql"]' ) }}
     runs-on: ${{ matrix.runner }}
     permissions:
       contents: read
@@ -198,6 +207,8 @@ jobs:
           export FBMYSQL_INSTALL_PREFIX='${{ env.FBMYSQL_INSTALL_PREFIX }}';
           export MARIADB_BRANCH='${{ env.MARIADB_BRANCH }}';
           export MARIADB_INSTALL_PREFIX='${{ env.MARIADB_INSTALL_PREFIX }}';
+          export ALISQL_BRANCH='${{ env.ALISQL_BRANCH }}';
+          export ALISQL_INSTALL_PREFIX='${{ env.ALISQL_INSTALL_PREFIX }}';
           export gcc_indiff_centos7_url='${{ env.gcc_indiff_centos7_url }}';
           EOF
           docker run --rm \
