@@ -287,8 +287,12 @@ if [ -f extra/duckdb/Makefile ] && \
   fi
 fi
 
-# export CC=/opt/gcc-indiff/bin/gcc
-# export CXX=/opt/gcc-indiff/bin/g++
+unset CC
+unset CXX
+
+
+export CC=gcc
+export CXX=g++
 # export LD_LIBRARY_PATH=/opt/gcc-indiff/lib:$LD_LIBRARY_PATH
 
 
