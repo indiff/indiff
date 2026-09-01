@@ -287,25 +287,10 @@ if [ -f extra/duckdb/Makefile ] && \
   fi
 fi
 
-export CC=/opt/gcc-indiff/bin/gcc
-export CXX=/opt/gcc-indiff/bin/g++
-export LD_LIBRARY_PATH=/opt/gcc-indiff/lib:$LD_LIBRARY_PATH
+# export CC=/opt/gcc-indiff/bin/gcc
+# export CXX=/opt/gcc-indiff/bin/g++
+# export LD_LIBRARY_PATH=/opt/gcc-indiff/lib:$LD_LIBRARY_PATH
 
-# ---- Toolchain repo (devtoolset-10) ----
-cat >/etc/yum.repos.d/ol7-scl.repo <<'REPO'
-[ol7_software_collections]
-name=Oracle Linux 7 Software Collections ($basearch)
-baseurl=https://yum.oracle.com/repo/OracleLinux/OL7/SoftwareCollections/$basearch/
-gpgcheck=1
-enabled=1
-gpgkey=https://yum.oracle.com/RPM-GPG-KEY-oracle-ol7
-REPO
-
-yum clean all
-yum makecache
-yum install -y git wget \
-devtoolset-10-gcc devtoolset-10-gcc-c++ devtoolset-10-binutils \
-openssl openssl-devel ncurses-devel libaio-devel perl-IPC-Cmd bison
 
 rm -rf /opt/gcc-indiff
 rm -rf "$ALISQL_INSTALL_PREFIX"

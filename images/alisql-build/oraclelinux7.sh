@@ -114,6 +114,10 @@ yum install -y \
 
 yum install -y systemd-devel libgudev1 || true
 
+yum install -y wget \
+devtoolset-10-gcc devtoolset-10-gcc-c++ devtoolset-10-binutils \
+openssl openssl-devel ncurses-devel libaio-devel perl-IPC-Cmd bison
+
 # ============================================================================
 # Base build tools and development libraries
 # ============================================================================
