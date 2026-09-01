@@ -194,6 +194,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Build ${{ matrix.target }} in Docker
+        timeout-minutes: 180
         run: |
           # sudo timedatectl set-timezone Asia/Shanghai
           ls
