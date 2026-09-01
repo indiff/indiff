@@ -89,14 +89,6 @@ export CPPFLAGS="-I$DEPS_DST/include"
 export LDFLAGS="-L/opt/gcc-indiff/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH} -fuse-ld=mold"
 export ACLOCAL_PATH=/usr/share/aclocal:${ACLOCAL_PATH:-}
 
-# Note: AliSQL (MySQL 8.0) does NOT require cyrus-sasl build.
-# MySQL 8.0 has built-in authentication plugins (caching_sha2_password, etc.)
-# and does not depend on external SASL for LDAP auth in the same way MariaDB does.
-
-# ============================================================================
-# Dependency tree snapshot for debugging
-# ============================================================================
-tree "$DEPS_DST"/{include,lib,lib64} > /workspace/deps_alisql_tree.txt
 
 # ============================================================================
 # Download Boost 1.77.0 (required by MySQL 8.0.44 / AliSQL)
@@ -241,12 +233,27 @@ if [ -z "$VERSION_FILE" ]; then
     echo "ERROR: neither MYSQL_VERSION nor VERSION found in source root" >&2
     exit 1
 fi
-sed -i \
-    -e "s/^MYSQL_VERSION_MAJOR=.*/MYSQL_VERSION_MAJOR=${MAJOR}/" \
-    -e "s/^MYSQL_VERSION_MINOR=.*/MYSQL_VERSION_MINOR=${MINOR}/" \
-    -e "s/^MYSQL_VERSION_PATCH=.*/MYSQL_VERSION_PATCH=${PATCH}/" \
-    -e "s/^MYSQL_VERSION_EXTRA=.*/MYSQL_VERSION_EXTRA=-${EXTRA}/" \
-    "$VERSION_FILE"
+
+# MAJOR="8"
+# MINOR="0"
+# PATCH="44"
+# EXTRA=""
+# sed -i \
+#     -e "s/^MYSQL_VERSION_MAJOR=.*/MYSQL_VERSION_MAJOR=${MAJOR}/" \
+#     -e "s/^MYSQL_VERSION_MINOR=.*/MYSQL_VERSION_MINOR=${MINOR}/" \
+#     -e "s/^MYSQL_VERSION_PATCH=.*/MYSQL_VERSION_PATCH=${PATCH}/" \
+#     -e "s/^MYSQL_VERSION_EXTRA=.*/MYSQL_VERSION_EXTRA=-${EXTRA}/" \
+#     "$VERSION_FILE"
+
+
+# cat > $VERSION_FILE << 'EOF'
+# MYSQL_VERSION_MAJOR=8
+# MYSQL_VERSION_MINOR=0
+# MYSQL_VERSION_PATCH=44
+# MYSQL_VERSION_EXTRA=
+# MYSQL_VERSION_STABILITY="LTS"
+# EOF
+
 echo "--- ${VERSION_FILE} after injection ---"
 cat "$VERSION_FILE"
 
