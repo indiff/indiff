@@ -232,6 +232,7 @@ cd /workspace/server/build
 # ============================================================================
 # 2. Inject version from tag into MYSQL_VERSION (8.0 branch) or VERSION (5.7)
 # ============================================================================
+cd /workspace/server
 VERSION_FILE=""
 for f in MYSQL_VERSION VERSION; do
     [ -f "$f" ] && VERSION_FILE="$f" && break
