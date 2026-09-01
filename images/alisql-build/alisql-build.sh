@@ -287,13 +287,20 @@ if [ -f extra/duckdb/Makefile ] && \
   fi
 fi
 
+
 unset CC
 unset CXX
+unset CFLAGS
+unset CXXFLAGS
+unset LDFLAGS
+unset LD_LIBRARY_PATH
+unset PKG_CONFIG_PATH
 
+export LD_LIBRARY_PATH="/opt/rh/devtoolset-10/root/usr/lib64:/opt/vcpkg/installed/x64-linux-dynamic/lib"
+export PKG_CONFIG_PATH="/opt/rh/devtoolset-10/root/usr/lib64/pkgconfig:/usr/lib64/pkgconfig:/opt/vcpkg/installed/x64-linux-dynamic/lib/pkgconfig"
 
 export CC=gcc
 export CXX=g++
-# export LD_LIBRARY_PATH=/opt/gcc-indiff/lib:$LD_LIBRARY_PATH
 
 
 rm -rf /opt/gcc-indiff
