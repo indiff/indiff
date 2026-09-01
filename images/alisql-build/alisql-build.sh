@@ -219,32 +219,15 @@ cd /workspace/server/build
 # ============================================================================
 # Build and install with Ninja
 # ============================================================================
-cmake --build . -j"$(nproc)" --target install
-cmake --install .
+# cmake --build . -j"$(nproc)" --target install
+# cmake --install .
 
 # ============================================================================
 # Post-install cleanup: remove test suites, debug binaries, static libs
 # ============================================================================
-cd $DEPS_DST
-rm -rf $DEPS_DST/sql-bench
-rm -rf $DEPS_DST/man
-rm -rf $DEPS_DST/mariadb-test
-rm -rf $DEPS_DST/mysql-test
-rm -rf $DEPS_DST/bin/mysqld-debug
-rm -rf $DEPS_DST/sbin/mysqld-debug
-rm -f $DEPS_DST/bin/mysqltest_safe_process
-rm -f $DEPS_DST/bin/ps_mysqld_helper
-rm -f $DEPS_DST/bin/ps-admin
-rm -f $DEPS_DST/bin/mysqltest
-rm -f $DEPS_DST/bin/mysqlxtest
-rm -f $DEPS_DST/bin/mytap
-rm -f $DEPS_DST/lib/*.a
-rm -f $DEPS_DST/lib64/*.a
 
-# ============================================================================
-# Package final artifact
-# ============================================================================
-# zip -r -q -9 /workspace/alisql-centos7-x86_64-$(date +'%Y%m%d_%H%M').zip .
+
+
 
 # ============================================================================
 # 2. Inject version from tag into MYSQL_VERSION (8.0 branch) or VERSION (5.7)
@@ -314,18 +297,38 @@ GLIBC="glibc$(ldd --version | awk 'NR==1{print $NF}')"
 ARCH="$(uname -m)"
 PKG="alisql-${VER}-linux-${GLIBC}-${ARCH}.tar.xz"
 TOPDIR="${PKG%.tar.xz}"
-XZ_OPT='-T0 -9' tar -cJf "${OUT_DIR}/${PKG}" \
-  --transform="s,^${INSTALL_BASE},${TOPDIR}," \
-  --exclude="${INSTALL_BASE}/mysql-test" \
-  --exclude="${INSTALL_BASE}/run" \
-  --exclude="${INSTALL_BASE}/var" \
-  --exclude="${INSTALL_BASE}/LICENSE-test" \
-  --exclude="${INSTALL_BASE}/LICENSE.router" \
-  --exclude="${INSTALL_BASE}/README-test" \
-  --exclude="${INSTALL_BASE}/README.router" \
-  --exclude="${INSTALL_BASE}/mysqlrouter-log-rotate" \
-  "${INSTALL_BASE}/"
-ls -lh "${OUT_DIR}/${PKG}"
+
+# ============================================================================
+# Package final artifact
+# ============================================================================
+rm -rf $DEPS_DST/sql-bench
+rm -rf $DEPS_DST/man
+rm -rf $DEPS_DST/mariadb-test
+rm -rf $DEPS_DST/mysql-test
+rm -rf $DEPS_DST/bin/mysqld-debug
+rm -rf $DEPS_DST/sbin/mysqld-debug
+rm -f $DEPS_DST/bin/mysqltest_safe_process
+rm -f $DEPS_DST/bin/ps_mysqld_helper
+rm -f $DEPS_DST/bin/ps-admin
+rm -f $DEPS_DST/bin/mysqltest
+rm -f $DEPS_DST/bin/mysqlxtest
+rm -f $DEPS_DST/bin/mytap
+rm -f $DEPS_DST/lib/*.a
+rm -f $DEPS_DST/lib64/*.a
+zip -r -q -9 /workspace/alisql-centos7-x86_64-$(date +'%Y%m%d_%H%M').zip .
+
+# XZ_OPT='-T0 -9' tar -cJf "${OUT_DIR}/${PKG}" \
+#   --transform="s,^${INSTALL_BASE},${TOPDIR}," \
+#   --exclude="${INSTALL_BASE}/mysql-test" \
+#   --exclude="${INSTALL_BASE}/run" \
+#   --exclude="${INSTALL_BASE}/var" \
+#   --exclude="${INSTALL_BASE}/LICENSE-test" \
+#   --exclude="${INSTALL_BASE}/LICENSE.router" \
+#   --exclude="${INSTALL_BASE}/README-test" \
+#   --exclude="${INSTALL_BASE}/README.router" \
+#   --exclude="${INSTALL_BASE}/mysqlrouter-log-rotate" \
+#   "${INSTALL_BASE}/"
+# ls -lh "${OUT_DIR}/${PKG}"
 
 # free memory
 free -h
