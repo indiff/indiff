@@ -23,7 +23,16 @@ yum install -y yum-utils
 yum-config-manager --enable ol7_optional_latest || true
 yum-config-manager --enable ol7_addons || true
 
-# Oracle EPEL (compatible with Fedora EPEL for EL7)
+# Software Collections repo for devtoolset-10 (matches official CI)
+cat >/etc/yum.repos.d/ol7-scl.repo <<'REPO'
+[ol7_software_collections]
+name=Oracle Linux 7 Software Collections ($basearch)
+baseurl=https://yum.oracle.com/repo/OracleLinux/OL7/SoftwareCollections/$basearch/
+gpgcheck=1
+enabled=1
+gpgkey=https://yum.oracle.com/RPM-GPG-KEY-oracle-ol7
+REPO
+# Oracle EPEL
 yum install -y oracle-epel-release-el7 || \
     yum install -y https://dl.fedoraproject.org/pub/archive/epel/7/x86_64/Packages/e/epel-release-7-14.noarch.rpm || true
 
@@ -104,6 +113,22 @@ yum install -y \
     zip
 
 yum install -y systemd-devel libgudev1 || true
+
+# ============================================================================
+# Base build tools and development libraries
+# ============================================================================
+yum install -y \
+    git wget \
+    devtoolset-10-gcc devtoolset-10-gcc-c++ devtoolset-10-binutils \
+    openssl openssl-devel ncurses-devel libaio-devel perl-IPC-Cmd bison \
+    flex gperf patch libtool automake gcc gcc-c++ autoconf \
+    pkgconfig make zstd ninja-build xz xz-devel which bzip2 \
+    zip unzip rsync curl tar tree sed gawk bc \
+    perl-ExtUtils-Embed perl-Data-Dumper perl-Time-Piece \
+    readline-devel expat-devel zlib-devel systemd-devel libgudev1 \
+    texinfo help2man
+    
+    
 yum clean all
 
 # ============================================================================

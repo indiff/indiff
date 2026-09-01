@@ -1,6 +1,6 @@
 FROM oraclelinux:7
 LABEL maintainer="indiff"
-LABEL description="Oracle Linux 7 build environment for AliSQL compilation"
+LABEL description="Oracle Linux 7 build environment for AliSQL (aligned with official CI: devtoolset-10 + CMake 3.28.6 + build.sh)"
 
 # gcc-indiff toolchain (RHEL7-compatible, works on both CentOS7 and OracleLinux7)
 ARG gcc_indiff_centos7_url

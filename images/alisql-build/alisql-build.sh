@@ -26,7 +26,7 @@ else
     git clone --filter=blob:none --depth 1 https://github.com/alibaba/AliSQL.git -b $ALISQL_BRANCH server
 fi
 cd server
-git submodule update --init --recursive
+git submodule update --init --recursive || true
 
 # ============================================================================
 # Dependency sync: copy vcpkg headers/libs + gcc-indiff + ICU to install prefix
@@ -146,78 +146,75 @@ export PKG_CONFIG_PATH="/usr/lib64/pkgconfig:/usr/share/pkgconfig:$DEPS_DST/lib/
 export LIBRARY_PATH="/opt/gcc-indiff/lib64:$DEPS_DST/lib:$DEPS_DST/lib64${LIBRARY_PATH:+:$LIBRARY_PATH}"
 export LD_LIBRARY_PATH="/opt/gcc-indiff/lib64:$DEPS_DST/lib:$DEPS_DST/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
 
-
-cd /workspace/server/extra/duckdb
-BUILD_EXTENSIONS='autocomplete;icu;json;tpch' GEN=ninja make -j`nproc` bundle-library
-rm -rf /workspace/server/extra/duckdb/build/CMakeCache.txt /workspace/server/extra/duckdb/build/CMakeFiles
-ls -lh /workspace/server/extra/duckdb/build/release/libduckdb_bundle.a
-# cmake ..
-# make -j`nproc`
+# build duckdb
+# cd /workspace/server/extra/duckdb
+# BUILD_EXTENSIONS='autocomplete;icu;json;tpch' GEN=ninja make -j`nproc` bundle-library
+# rm -rf /workspace/server/extra/duckdb/build/CMakeCache.txt /workspace/server/extra/duckdb/build/CMakeFiles
+# ls -lh /workspace/server/extra/duckdb/build/release/libduckdb_bundle.a
 
 mkdir /workspace/server/build
 cd /workspace/server/build
 # 在 cmake 配置前执行
 
 # 避免外部 protobuf 干扰
-unset PROTOC
-rm -rf /workspace/server/CMakeCache.txt /workspace/server/CMakeFiles
-rm -rf CMakeCache.txt CMakeFiles
-# AliSQL CMake: in-source build (matches official build.sh)
-cmake .. -G Ninja \
-    -DFORCE_INSOURCE_BUILD=ON \
-    -DCMAKE_INSTALL_PREFIX=$DEPS_DST \
-    -DMYSQL_DATADIR="$DEPS_DST/data" \
-    -DSYSCONFDIR="$DEPS_DST" \
-    -DCMAKE_BUILD_TYPE=RelWithDebInfo \
-    -DMINIMAL_RELWITHDEBINFO=0 \
-    -DINSTALL_LAYOUT=STANDALONE \
-    -DMYSQL_MAINTAINER_MODE=0 \
-    -DWITH_DEBUG=OFF \
-    -DENABLE_GCOV=OFF \
-    -DWITH_EXTRA_CHARSETS=all \
-    -DDEFAULT_CHARSET=utf8mb4 \
-    -DDEFAULT_COLLATION=utf8mb4_0900_ai_ci \
-    -DENABLED_PROFILING=1 \
-    -DENABLED_LOCAL_INFILE=1 \
-    -DWITH_UNIT_TESTS=0 \
-    -DWITH_DOCS=OFF \
-    -DCMAKE_C_FLAGS=" -D__NO_STRING_INLINES -D_GLIBCXX_USE_CXX11_ABI=0 -I$DEPS_DST/include -O2 -march=native -fno-strict-aliasing -fexceptions -fno-omit-frame-pointer -D_GLIBCXX_USE_CXX11_ABI=0  " \
-    -DCMAKE_CXX_FLAGS=" -include cstdint -include cstddef -D__NO_STRING_INLINES -D_GLIBCXX_USE_CXX11_ABI=0 -I$DEPS_DST/include -O2 -march=native -fno-strict-aliasing -fexceptions -fno-omit-frame-pointer -D_GLIBCXX_USE_CXX11_ABI=0 " \
-    -DCMAKE_EXE_LINKER_FLAGS="-L/usr/lib64 -L/opt/gcc-indiff/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--strip-all -Wl,--gc-sections -Wl,--no-as-needed -ldl -fuse-ld=mold" \
-    -DCMAKE_SHARED_LINKER_FLAGS="-L/usr/lib64 -L/opt/gcc-indiff/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--strip-all -Wl,--gc-sections -Wl,--no-as-needed -ldl -fuse-ld=mold" \
-    -DCMAKE_MODULE_LINKER_FLAGS="-L/usr/lib64 -L/opt/gcc-indiff/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--strip-all -Wl,--gc-sections -Wl,--no-as-needed -ldl -fuse-ld=mold" \
-    -DCMAKE_INSTALL_RPATH='$ORIGIN/../lib64:$ORIGIN/../lib' \
-    -DCMAKE_BUILD_RPATH='$ORIGIN/../lib64:$ORIGIN/../lib' \
-    -DCMAKE_INSTALL_RPATH_USE_LINK_PATH=ON \
-    -DWITH_BOOST="extra/boost/boost_1_77_0" \
-    -DWITH_ZLIB=system \
-    -DWITH_ZSTD=system \
-    -DWITH_TIRPC=bundled \
-    -DWITH_LZ4=system \
-    -DWITH_SNAPPY=system \
-    -DWITH_JEMALLOC=system \
-    -DWITH_EDITLINE=bundled \
-    -DWITH_SSL=system -DOPENSSL_ROOT_DIR="$DEPS_DST" \
-    -DWITH_CURL=system \
-    -DWITH_PROTOBUF=system \
-    -DPROTOBUF_INCLUDE_DIR="$DEPS_DST/include" \
-    -DPROTOBUF_LIBRARY="$DEPS_DST/lib/$LIBPROTOBUF_BASENAME" \
-    -DPROTOBUF_PROTOC_EXECUTABLE="$VCPKG_ROOT/installed/x64-linux-dynamic/tools/protobuf/$PROTOC_BASENAME" \
-    -DPROTOBUF_PROTOC_LIBRARY="/opt/vcpkg/installed/x64-linux-dynamic/lib/libprotoc.so" \
-    -DPROTOBUF_LITE_LIBRARY="/opt/vcpkg/installed/x64-linux-dynamic/lib/libprotobuf-lite.so" \
-    -DWITH_RAPIDJSON=system \
-    -DWITH_MYISAM_STORAGE_ENGINE=1 \
-    -DWITH_INNOBASE_STORAGE_ENGINE=1 \
-    -DWITH_CSV_STORAGE_ENGINE=1 \
-    -DWITH_ARCHIVE_STORAGE_ENGINE=1 \
-    -DWITH_BLACKHOLE_STORAGE_ENGINE=1 \
-    -DWITH_FEDERATED_STORAGE_ENGINE=1 \
-    -DWITH_PERFSCHEMA_STORAGE_ENGINE=1 \
-    -DWITH_EXAMPLE_STORAGE_ENGINE=0 \
-    -DWITH_TEMPTABLE_STORAGE_ENGINE=1 \
-    -DWITH_ASAN=OFF \
-    -DWITH_TSAN=OFF \
-    -DMYSQL_SERVER_SUFFIX="-indiff"
+# unset PROTOC
+# rm -rf /workspace/server/CMakeCache.txt /workspace/server/CMakeFiles
+# rm -rf CMakeCache.txt CMakeFiles
+# cmake .. -G Ninja \
+#     -DFORCE_INSOURCE_BUILD=ON \
+#     -DCMAKE_INSTALL_PREFIX=$DEPS_DST \
+#     -DMYSQL_DATADIR="$DEPS_DST/data" \
+#     -DSYSCONFDIR="$DEPS_DST" \
+#     -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+#     -DMINIMAL_RELWITHDEBINFO=0 \
+#     -DINSTALL_LAYOUT=STANDALONE \
+#     -DMYSQL_MAINTAINER_MODE=0 \
+#     -DWITH_DEBUG=OFF \
+#     -DENABLE_GCOV=OFF \
+#     -DWITH_EXTRA_CHARSETS=all \
+#     -DDEFAULT_CHARSET=utf8mb4 \
+#     -DDEFAULT_COLLATION=utf8mb4_0900_ai_ci \
+#     -DENABLED_PROFILING=1 \
+#     -DENABLED_LOCAL_INFILE=1 \
+#     -DWITH_UNIT_TESTS=0 \
+#     -DWITH_DOCS=OFF \
+#     -DCMAKE_C_FLAGS=" -D__NO_STRING_INLINES -D_GLIBCXX_USE_CXX11_ABI=0 -I$DEPS_DST/include -O2 -march=native -fno-strict-aliasing -fexceptions -fno-omit-frame-pointer -D_GLIBCXX_USE_CXX11_ABI=0  " \
+#     -DCMAKE_CXX_FLAGS=" -include cstdint -include cstddef -D__NO_STRING_INLINES -D_GLIBCXX_USE_CXX11_ABI=0 -I$DEPS_DST/include -O2 -march=native -fno-strict-aliasing -fexceptions -fno-omit-frame-pointer -D_GLIBCXX_USE_CXX11_ABI=0 " \
+#     -DCMAKE_EXE_LINKER_FLAGS="-L/usr/lib64 -L/opt/gcc-indiff/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--strip-all -Wl,--gc-sections -Wl,--no-as-needed -ldl -fuse-ld=mold" \
+#     -DCMAKE_SHARED_LINKER_FLAGS="-L/usr/lib64 -L/opt/gcc-indiff/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--strip-all -Wl,--gc-sections -Wl,--no-as-needed -ldl -fuse-ld=mold" \
+#     -DCMAKE_MODULE_LINKER_FLAGS="-L/usr/lib64 -L/opt/gcc-indiff/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--strip-all -Wl,--gc-sections -Wl,--no-as-needed -ldl -fuse-ld=mold" \
+#     -DCMAKE_INSTALL_RPATH='$ORIGIN/../lib64:$ORIGIN/../lib' \
+#     -DCMAKE_BUILD_RPATH='$ORIGIN/../lib64:$ORIGIN/../lib' \
+#     -DCMAKE_INSTALL_RPATH_USE_LINK_PATH=ON \
+#     -DWITH_BOOST="extra/boost/boost_1_77_0" \
+#     -DWITH_ZLIB=system \
+#     -DWITH_ZSTD=system \
+#     -DWITH_TIRPC=bundled \
+#     -DWITH_LZ4=system \
+#     -DWITH_SNAPPY=system \
+#     -DWITH_JEMALLOC=system \
+#     -DWITH_EDITLINE=bundled \
+#     -DWITH_SSL=system -DOPENSSL_ROOT_DIR="$DEPS_DST" \
+#     -DWITH_CURL=system \
+#     -DWITH_PROTOBUF=system \
+#     -DPROTOBUF_INCLUDE_DIR="$DEPS_DST/include" \
+#     -DPROTOBUF_LIBRARY="$DEPS_DST/lib/$LIBPROTOBUF_BASENAME" \
+#     -DPROTOBUF_PROTOC_EXECUTABLE="$VCPKG_ROOT/installed/x64-linux-dynamic/tools/protobuf/$PROTOC_BASENAME" \
+#     -DPROTOBUF_PROTOC_LIBRARY="/opt/vcpkg/installed/x64-linux-dynamic/lib/libprotoc.so" \
+#     -DPROTOBUF_LITE_LIBRARY="/opt/vcpkg/installed/x64-linux-dynamic/lib/libprotobuf-lite.so" \
+#     -DWITH_RAPIDJSON=system \
+#     -DWITH_MYISAM_STORAGE_ENGINE=1 \
+#     -DWITH_INNOBASE_STORAGE_ENGINE=1 \
+#     -DWITH_CSV_STORAGE_ENGINE=1 \
+#     -DWITH_ARCHIVE_STORAGE_ENGINE=1 \
+#     -DWITH_BLACKHOLE_STORAGE_ENGINE=1 \
+#     -DWITH_FEDERATED_STORAGE_ENGINE=1 \
+#     -DWITH_PERFSCHEMA_STORAGE_ENGINE=1 \
+#     -DWITH_EXAMPLE_STORAGE_ENGINE=0 \
+#     -DWITH_TEMPTABLE_STORAGE_ENGINE=1 \
+#     -DWITH_ASAN=OFF \
+#     -DWITH_TSAN=OFF \
+#     -DMYSQL_SERVER_SUFFIX="-indiff"
 
 # ============================================================================
 # Build and install with Ninja
@@ -247,7 +244,89 @@ rm -f $DEPS_DST/lib64/*.a
 # ============================================================================
 # Package final artifact
 # ============================================================================
-zip -r -q -9 /workspace/alisql-centos7-x86_64-$(date +'%Y%m%d_%H%M').zip .
+# zip -r -q -9 /workspace/alisql-centos7-x86_64-$(date +'%Y%m%d_%H%M').zip .
+
+# ============================================================================
+# 2. Inject version from tag into MYSQL_VERSION (8.0 branch) or VERSION (5.7)
+# ============================================================================
+VERSION_FILE=""
+for f in MYSQL_VERSION VERSION; do
+    [ -f "$f" ] && VERSION_FILE="$f" && break
+done
+if [ -z "$VERSION_FILE" ]; then
+    echo "ERROR: neither MYSQL_VERSION nor VERSION found in source root" >&2
+    exit 1
+fi
+sed -i \
+    -e "s/^MYSQL_VERSION_MAJOR=.*/MYSQL_VERSION_MAJOR=${MAJOR}/" \
+    -e "s/^MYSQL_VERSION_MINOR=.*/MYSQL_VERSION_MINOR=${MINOR}/" \
+    -e "s/^MYSQL_VERSION_PATCH=.*/MYSQL_VERSION_PATCH=${PATCH}/" \
+    -e "s/^MYSQL_VERSION_EXTRA=.*/MYSQL_VERSION_EXTRA=-${EXTRA}/" \
+    "$VERSION_FILE"
+echo "--- ${VERSION_FILE} after injection ---"
+cat "$VERSION_FILE"
+
+# ============================================================================
+# 3. Limit DuckDB parallel build jobs (match official CI)
+# ============================================================================
+MAX_JOBS="$(nproc 2>/dev/null || true)"
+if [ -z "$MAX_JOBS" ]; then
+    MAX_JOBS="$(grep -c '^processor[[:space:]]*:' /proc/cpuinfo 2>/dev/null || true)"
+fi
+if ! [[ "$MAX_JOBS" =~ ^[1-9][0-9]*$ ]]; then
+    MAX_JOBS=2
+fi
+if [ "$MAX_JOBS" -gt 32 ]; then
+    MAX_JOBS=32
+fi
+export MAX_JOBS
+echo "DuckDB build jobs: ${MAX_JOBS}"
+
+if [ -f extra/duckdb/Makefile ] && \
+   grep -Eq '^[[:space:]]*cmake --build \. --config Release -j ' \
+     extra/duckdb/Makefile; then
+  sed -i -E \
+    "s#(^[[:space:]]*cmake --build \\. --config Release -j) .+#\\1 ${MAX_JOBS}#" \
+    extra/duckdb/Makefile
+  if ! grep -Eq \
+    "^[[:space:]]*cmake --build \\. --config Release -j ${MAX_JOBS}[[:space:]]*$" \
+    extra/duckdb/Makefile; then
+    echo "ERROR: failed to limit DuckDB release build parallelism" >&2
+    exit 1
+  fi
+fi
+
+export CC=/opt/gcc-indiff/bin/gcc
+export CXX=/opt/gcc-indiff/bin/g++
+export LD_LIBRARY_PATH=/opt/gcc-indiff/lib:$LD_LIBRARY_PATH
+
+sh build.sh -t release -d "$ALISQL_INSTALL_PREFIX"
+make install
+
+# ============================================================================
+# 5. Package final artifact (same naming as official releases)
+#    alisql-${VER}-linux-glibc2.17-${ARCH}.tar.xz
+# ============================================================================
+INSTALL_BASE="$(basename "$ALISQL_INSTALL_PREFIX")"
+INSTALL_PARENT="$(dirname "$ALISQL_INSTALL_PREFIX")"
+cd "$INSTALL_PARENT"
+GLIBC="glibc$(ldd --version | awk 'NR==1{print $NF}')"
+ARCH="$(uname -m)"
+PKG="alisql-${VER}-linux-${GLIBC}-${ARCH}.tar.xz"
+TOPDIR="${PKG%.tar.xz}"
+XZ_OPT='-T0 -9' tar -cJf "${OUT_DIR}/${PKG}" \
+  --transform="s,^${INSTALL_BASE},${TOPDIR}," \
+  --exclude="${INSTALL_BASE}/mysql-test" \
+  --exclude="${INSTALL_BASE}/run" \
+  --exclude="${INSTALL_BASE}/var" \
+  --exclude="${INSTALL_BASE}/LICENSE-test" \
+  --exclude="${INSTALL_BASE}/LICENSE.router" \
+  --exclude="${INSTALL_BASE}/README-test" \
+  --exclude="${INSTALL_BASE}/README.router" \
+  --exclude="${INSTALL_BASE}/mysqlrouter-log-rotate" \
+  "${INSTALL_BASE}/"
+ls -lh "${OUT_DIR}/${PKG}"
 
 # free memory
 free -h
+
