@@ -328,7 +328,7 @@ export CXXFLAGS="-B${MOLD_BIN}"
 
 
 export PATH="$MOLD_BIN:$PATH"
-export LDFLAGS="-fuse-ld=mold -Wl,--strip-all -Wl,--gc-sections"
+export LDFLAGS=" -Wl,--strip-all -Wl,--gc-sections"
 
 # ---- Build & install ----
 source /opt/rh/devtoolset-10/enable
