@@ -54,7 +54,7 @@ on:
       percona_build_branch:
         description: 'Build percona Branch'
         type: choice
-        default: ""
+        default: "8.4"
         required: false
         options:
           - "8.4"

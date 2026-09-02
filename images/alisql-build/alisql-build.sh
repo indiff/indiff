@@ -341,7 +341,7 @@ rm -f $DEPS_DST/bin/mysqlxtest
 rm -f $DEPS_DST/bin/mytap
 rm -f $DEPS_DST/lib/*.a
 rm -f $DEPS_DST/lib64/*.a
-zip -r -q -9 /workspace/alisql-centos7-x86_64-$(date +'%Y%m%d_%H%M').zip .
+zip -r -q -9 /workspace/alisql-centos7-x86_64-$(date +'%Y%m%d_%H%M').xz .
 
 # XZ_OPT='-T0 -9' tar -cJf "${OUT_DIR}/${PKG}" \
 #   --transform="s,^${INSTALL_BASE},${TOPDIR}," \

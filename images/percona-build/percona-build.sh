@@ -170,7 +170,7 @@ cd ..
 # cd ..
 
 if [[ -z "$PERCONA_BRANCH" ]]; then
-    git clone --filter=blob:none --depth 1 https://github.com/percona/percona-server.git -b 8.0 /workspace/server
+    git clone --filter=blob:none --depth 1 https://github.com/percona/percona-server.git /workspace/server
 else
     git clone --filter=blob:none --depth 1 https://github.com/percona/percona-server.git -b $PERCONA_BRANCH /workspace/server
 fi
