@@ -287,7 +287,6 @@ if [ -f extra/duckdb/Makefile ] && \
   fi
 fi
 
-
 unset CC
 unset CXX
 unset CFLAGS
@@ -309,7 +308,7 @@ mkdir "$ALISQL_INSTALL_PREFIX"
 
 # ---- Build & install ----
 source /opt/rh/devtoolset-10/enable
-sh build.sh -t release -d "$ALISQL_INSTALL_PREFIX"
+sh -x -v build.sh -t release -d "$ALISQL_INSTALL_PREFIX"
 make install
 
 # ============================================================================
@@ -348,6 +347,37 @@ rm -f $DEPS_DST/bin/mysqlxtest
 rm -f $DEPS_DST/bin/mytap
 rm -f $DEPS_DST/lib/*.a
 rm -f $DEPS_DST/lib64/*.a
+
+rm -rf $DEPS_DST/include/
+# 2. 删除测试插件和测试二进制
+rm -f $DEPS_DST/lib/plugin/component_test_*
+rm -f $DEPS_DST/lib/plugin/libtest_*
+rm -f $DEPS_DST/lib/plugin/ha_mock.so
+rm -f $DEPS_DST/lib/plugin/mypluglib.so
+rm -f $DEPS_DST/bin/mysql_client_test
+rm -f $DEPS_DST/bin/mysql_test_event_tracking
+rm -f $DEPS_DST/bin/mysql_keyring_encryption_test
+# 3. 删除开发文件
+rm -rf $DEPS_DST/lib/pkgconfig/ $DEPS_DST/lib64/pkgconfig/
+rm -f $DEPS_DST/lib/*.la $DEPS_DST/lib64/*.la
+rm -rf $DEPS_DST/share/aclocal/
+rm -rf $DEPS_DST/lib/icu/*/Makefile.inc $DEPS_DST/lib/icu/*/pkgdata.inc
+rm -rf $DEPS_DST/lib/icu/Makefile.inc $DEPS_DST/lib/icu/pkgdata.inc
+# 4. 删除构建工具
+rm -rf $DEPS_DST/tools/
+rm -rf $DEPS_DST/lib64/mold/
+# 5. 删除测试文档
+rm -f $DEPS_DST/LICENSE-test $DEPS_DST/README-test
+# 6. 删除 man 手册
+rm -rf $DEPS_DST/share/man/
+# 7. 删除冗余 lib64 中与 lib 重复的库
+# (先确认 lib/ 中有同名文件再删)
+for f in $DEPS_DST/lib64/libzstd.so*; do
+    base=$(basename "$f")
+    [ -e "$DEPS_DST/lib/$base" ] && rm -f "$f"
+done
+
+
 zip -r -q -9 /workspace/alisql-centos7-x86_64-$(date +'%Y%m%d_%H%M').xz .
 
 # XZ_OPT='-T0 -9' tar -cJf "${OUT_DIR}/${PKG}" \
