@@ -318,7 +318,7 @@ make install
 # ============================================================================
 INSTALL_BASE="$(basename "$ALISQL_INSTALL_PREFIX")"
 INSTALL_PARENT="$(dirname "$ALISQL_INSTALL_PREFIX")"
-cd "$ALISQL_INSTALL_PREFIX"
+cd "$DEPS_DST"
 GLIBC="glibc$(ldd --version | awk 'NR==1{print $NF}')"
 ARCH="$(uname -m)"
 PKG="alisql-${VER}-linux-${GLIBC}-${ARCH}.tar.xz"
@@ -328,7 +328,14 @@ TOPDIR="${PKG%.tar.xz}"
 # Package final artifact
 # ============================================================================
 rm -rf $DEPS_DST/sql-bench
+rm -rf $DEPS_DST/LICENSE-test
+rm -rf $DEPS_DST/LICENSE.router
+rm -rf $DEPS_DST/README-test
+rm -rf $DEPS_DST/README.router
+rm -rf $DEPS_DST/mysqlrouter-log-rotate
+rm -rf $DEPS_DST/run
 rm -rf $DEPS_DST/man
+rm -rf $DEPS_DST/var
 rm -rf $DEPS_DST/mariadb-test
 rm -rf $DEPS_DST/mysql-test
 rm -rf $DEPS_DST/bin/mysqld-debug
