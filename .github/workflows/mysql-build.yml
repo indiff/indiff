@@ -437,19 +437,22 @@ jobs:
             cat <<'EOF' >> hello.md
             Proxy download:
             ```bash         
-            curl -#Lo /opt/percona80.zip "https://ghproxy.cfd/https://github.com/indiff/indiff/releases/download/${{ env.TAG_NAME }}/shit1centos7"
+            curl -#Lo /opt/percona80.zip "https://ghfast.top/https://github.com/indiff/indiff/releases/download/${{ env.TAG_NAME }}/shit1centos7"
             ```
             ```bash         
-            curl -#Lo /opt/mariadb.zip "https://ghproxy.cfd/https://github.com/indiff/indiff/releases/download/${{ env.TAG_NAME }}/shit2centos7"
+            curl -#Lo /opt/mariadb.zip "https://ghfast.top/https://github.com/indiff/indiff/releases/download/${{ env.TAG_NAME }}/shit2centos7"
             ```
             ```bash         
-            curl -#Lo /opt/percona80.zip "https://ghproxy.cfd/https://github.com/indiff/indiff/releases/download/${{ env.TAG_NAME }}/shit3ubuntu"
+            curl -#Lo /opt/percona80.zip "https://ghfast.top/https://github.com/indiff/indiff/releases/download/${{ env.TAG_NAME }}/shit3ubuntu"
             ```
              ```bash         
-            curl -#Lo /opt/fbmysql.zip "https://ghproxy.cfd/https://github.com/indiff/indiff/releases/download/${{ env.TAG_NAME }}/shit5centos7"
+            curl -#Lo /opt/fbmysql.zip "https://ghfast.top/https://github.com/indiff/indiff/releases/download/${{ env.TAG_NAME }}/shit5centos7"
             ```
              ```bash         
-            curl -#Lo /opt/omysql.zip "https://ghproxy.cfd/https://github.com/indiff/indiff/releases/download/${{ env.TAG_NAME }}/shit6centos7"
+            curl -#Lo /opt/omysql.zip "https://ghfast.top/https://github.com/indiff/indiff/releases/download/${{ env.TAG_NAME }}/shit6centos7"
+            ```
+             ```bash         
+            curl -#Lo /opt/alisql.zip "https://ghfast.top/https://github.com/indiff/indiff/releases/download/${{ env.TAG_NAME }}/shit7centos7"
             ```
             
             Direct download:
@@ -465,9 +468,13 @@ jobs:
             ```bash         
             curl -#Lo /opt/omysql.zip "https://github.com/indiff/indiff/releases/download/${{ env.TAG_NAME }}/shit6centos7"
             ```
+            ```bash         
+            curl -#Lo /opt/alisql.zip "https://github.com/indiff/indiff/releases/download/${{ env.TAG_NAME }}/shit7centos7"
+            ```
             EOF
             centos7_fbmysql_bname="$(basename artifacts/*/*fbmysql*centos7*.xz)"
             centos7_omysql_bname="$(basename artifacts/*/mysql*centos7*.xz)"
+            centos7_alisql_bname="$(basename artifacts/*/alisql*centos7*.xz)"
             centos7_percona_bname="$(basename artifacts/*/*percona*centos7*.xz)"
             centos7_mariadb_bname="$(basename artifacts/*/*mariadb*centos7*.xz)"
             ubuntu_percona_bname="$(basename artifacts/*/*percona*ubuntu*.xz)"
@@ -476,6 +483,7 @@ jobs:
             sed -i "s/shit3ubuntu/${ubuntu_percona_bname}/g" hello.md
             sed -i "s/shit5centos7/${centos7_fbmysql_bname}/g" hello.md
             sed -i "s/shit6centos7/${centos7_omysql_bname}/g" hello.md
+            sed -i "s/shit7centos7/${centos7_omysql_bname}/g" hello.md
 
             gh release create ${{ env.TAG_NAME }} -F hello.md "artifacts/*/*.xz"
           env:

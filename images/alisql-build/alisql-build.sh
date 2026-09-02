@@ -318,7 +318,7 @@ make install
 # ============================================================================
 INSTALL_BASE="$(basename "$ALISQL_INSTALL_PREFIX")"
 INSTALL_PARENT="$(dirname "$ALISQL_INSTALL_PREFIX")"
-cd "$INSTALL_PARENT"
+cd "$ALISQL_INSTALL_PREFIX"
 GLIBC="glibc$(ldd --version | awk 'NR==1{print $NF}')"
 ARCH="$(uname -m)"
 PKG="alisql-${VER}-linux-${GLIBC}-${ARCH}.tar.xz"
