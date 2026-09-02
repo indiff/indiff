@@ -301,14 +301,19 @@ export PKG_CONFIG_PATH="/opt/rh/devtoolset-10/root/usr/lib64/pkgconfig:/usr/lib6
 export CC=gcc
 export CXX=g++
 
-
 rm -rf /opt/gcc-indiff
 rm -rf "$ALISQL_INSTALL_PREFIX"
 mkdir "$ALISQL_INSTALL_PREFIX"
 
+MOLD_BIN=$(mktemp -d)
+ln -sf "$(which mold)" "$MOLD_BIN/ld"
+ln -sf "$(which mold)" "$MOLD_BIN/ld.mold"
+export PATH="$MOLD_BIN:$PATH"
+export LDFLAGS="-fuse-ld=mold -Wl,--strip-all -Wl,--gc-sections"
+
 # ---- Build & install ----
 source /opt/rh/devtoolset-10/enable
-sh -x -v build.sh -t release -d "$ALISQL_INSTALL_PREFIX"
+sh -x -v build.sh -t release -d "$ALISQL_INSTALL_PREFIX" -s "indiff"
 make install
 
 # ============================================================================

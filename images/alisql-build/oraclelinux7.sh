@@ -318,4 +318,22 @@ rm -rf /usr/local/icu || true
 make -j$(nproc)
 make install
 
+source /opt/rh/devtoolset-10/enable
+mkdir -p /opt/thetools
+mkdir -p /opt/mold
+cd /opt/thetools
+# git clone --branch stable https://github.com/rui314/mold.git
+git clone --depth 1 https://github.com/rui314/mold.git
+cd mold
+cmake -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_C_COMPILER="/opt/rh/devtoolset-10/root/bin/gcc" \
+      -DCMAKE_CXX_COMPILER="/opt/rh/devtoolset-10/root/bin/g++" \
+      -DCMAKE_INSTALL_PREFIX="/opt/mold" \
+      -B build
+cmake --build build -j$(nproc)
+cmake --install build || ( cd build && make install ) || true
+ln -sf "/opt/mold/bin/mold" /usr/local/bin/ld.mold
+ln -sf "/opt/mold/bin/mold" /usr/local/bin/ld
+ln -sf "/opt/mold/bin/mold" /usr/bin/ld
+ld --version
 echo "Oracle Linux 7 AliSQL build environment setup completed successfully!"
