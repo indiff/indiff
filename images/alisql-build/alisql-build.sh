@@ -305,9 +305,27 @@ rm -rf /opt/gcc-indiff
 rm -rf "$ALISQL_INSTALL_PREFIX"
 mkdir "$ALISQL_INSTALL_PREFIX"
 
+CC=gcc
+export CXX=g++
+CXX=g++
+
+rm -rf /opt/gcc-indiff
+rm -rf /opt/alisql
+mkdir -p /opt/alisql
+
+# 固定mold安装路径，不要which
+MOLD_INSTALL="/opt/mold"
 MOLD_BIN=$(mktemp -d)
-ln -sf "$(which mold)" "$MOLD_BIN/ld"
-ln -sf "$(which mold)" "$MOLD_BIN/ld.mold"
+
+# 创建ld软链接指向mold
+ln -sf "${MOLD_INSTALL}/bin/mold" "${MOLD_BIN}/ld"
+
+# 把临时目录传给gcc -B，告诉gcc在这里找ld
+export CFLAGS="-B${MOLD_BIN}"
+export CXXFLAGS="-B${MOLD_BIN}"
+export LDFLAGS="-fuse-ld=mold"
+
+
 export PATH="$MOLD_BIN:$PATH"
 export LDFLAGS="-fuse-ld=mold -Wl,--strip-all -Wl,--gc-sections"
 
