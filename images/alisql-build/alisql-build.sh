@@ -323,7 +323,8 @@ ln -sf "${MOLD_INSTALL}/bin/mold" "${MOLD_BIN}/ld"
 # 把临时目录传给gcc -B，告诉gcc在这里找ld
 export CFLAGS="-B${MOLD_BIN}"
 export CXXFLAGS="-B${MOLD_BIN}"
-export LDFLAGS="-fuse-ld=mold"
+
+# export LDFLAGS="-fuse-ld=mold"
 
 
 export PATH="$MOLD_BIN:$PATH"
