@@ -186,7 +186,6 @@ log-error=/opt/mariadb/log/error.log
 socket=/opt/mariadb/data/mariadb.sock
 user=mariadb
 general-log
-innodb_based_binlog = ON
 innodb_flush_log_at_trx_commit=1
 log_bin = mariadb-bin
 binlog_format = ROW
@@ -226,7 +225,13 @@ GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' WITH GRANT OPTION;
 FLUSH PRIVILEGES;
 "
 
-echo "启动成功"
+echo "start success,please use command like this:"
+echo "/opt/mariadb/bin/mysql --socket=/opt/mariadb/data/mariadb.sock"
+echo "create database maria;"
+echo "use maria;"
+echo "create table test (id varchar(100) not null);"
+echo "insert into test values ('百闻不如一见');"
+
 OUTER_EOF
 
 zip -r -q -9 /workspace/mariadb-centos7-x86_64-$(date +'%Y%m%d_%H%M').xz .
