@@ -332,6 +332,7 @@ export LDFLAGS=" -Wl,--strip-all -Wl,--gc-sections"
 
 # ---- Build & install ----
 source /opt/rh/devtoolset-10/enable
+sed -i 's/RelWithDebInfo/Release/g' build.sh
 sh -x -v build.sh -t release -d "$ALISQL_INSTALL_PREFIX" -s "indiff"
 make install
 

@@ -288,6 +288,7 @@ EOF
     cat /workspace/server/cmake/fido2.cmake
 fi
 
+#     -DALLOW_NO_SSE42=ON \
 cmake .. -G Ninja \
     -DCMAKE_C_FLAGS="-include stdint.h -include stddef.h -D__NO_STRING_INLINES -I$DEPS_DST/include  -O2 -pipe -fPIC -DPIC " \
     -DCMAKE_CXX_FLAGS="-I$DEPS_DST/include  -O2 -march=native -pipe -fPIC -DPIC -Wno-error " \
@@ -299,7 +300,10 @@ cmake .. -G Ninja \
     -DCMAKE_TOOLCHAIN_FILE="/opt/vcpkg/scripts/buildsystems/vcpkg.cmake" \
     -DVCPKG_TARGET_TRIPLET="x64-linux" \
     -DWITH_COMPONENT_KEYRING_VAULT=OFF \
-    -DBUILD_CONFIG=mysql_release \
+    -DWITH_LTO=ON \
+    -DBUILD_CONFIG="mysql_release" \
+    -DCMAKE_BUILD_TYPE="Release" \
+    -DWITH_DEBUG=0 -DENABLE_GCOV=0 -DWITH_ASAN=0 -DWITH_TSAN=0 -DINSTALL_LAYOUT=STANDALONE -DWITH_EMBEDDED_SERVER=0 -DWITH_EXTRA_CHARSETS=all -DWITH_UNIT_TESTS=0 \
     -DWITH_PACKAGE_FLAGS=OFF \
     -DWITH_PROTOBUF=bundled \
     -DWITH_BOOST="/tmp/boost" -DDOWNLOAD_BOOST=1 \
@@ -317,14 +321,12 @@ cmake .. -G Ninja \
     -DOPENSSL_CRYPTO_LIBRARY="$DEPS_DST/lib/libcrypto.so" \
     -DWITH_ICU=system \
     -DWITH_SYSTEM_LIBS=ON \
-    -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_INSTALL_RPATH='$ORIGIN/../lib:$ORIGIN/../lib64' \
     -DCMAKE_BUILD_RPATH='/opt/gcc-indiff/lib64:$ORIGIN/../lib:$ORIGIN/../lib64' \
     -DCMAKE_INSTALL_RPATH_USE_LINK_PATH=ON \
     -DWITH_AUTHENTICATION_LDAP=OFF \
     -DWITH_PAM=OFF \
     -DWITH_TESTS=0 \
-    -DALLOW_NO_SSE42=ON \
     -DWITH_PERCONA_AUTHENTICATION_LDAP=OFF \
     -DWITH_ROUTER=OFF \
     -DWITH_UNIT_TESTS=0 \

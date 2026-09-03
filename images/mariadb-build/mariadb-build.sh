@@ -118,6 +118,14 @@ cmake .. -G Ninja \
     -DCMAKE_SHARED_LINKER_FLAGS="-L/usr/lib64 -L/opt/gcc-indiff/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--strip-all -Wl,--gc-sections -Wl,--no-as-needed -ldl" \
     -DCMAKE_MODULE_LINKER_FLAGS="-L/usr/lib64 -L/opt/gcc-indiff/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--strip-all -Wl,--gc-sections -Wl,--no-as-needed -ldl" \
     -DWITH_BOOST=boost -DDOWNLOAD_BOOST=1 -DWITH_BOOST=../boost \
+    -DWITH_LTO=ON \
+    -DBUILD_CONFIG="mysql_release" \
+    -DCMAKE_BUILD_TYPE="Release" \
+    -DWITH_DEBUG=0 -DENABLE_GCOV=0 -DWITH_ASAN=0 -DWITH_TSAN=0 -DINSTALL_LAYOUT=STANDALONE -DWITH_EMBEDDED_SERVER=0 -DWITH_EXTRA_CHARSETS=all -DWITH_UNIT_TESTS=0 \
+    -DDEFAULT_CHARSET="utf8mb4" \
+    -DDEFAULT_COLLATION="utf8mb4_0900_ai_ci" \
+    -DENABLED_LOCAL_INFILE=1 \
+    -DPLUGIN_ROCKSDB=ON \
     -DWITH_ROCKSDB=ON \
     -DWITH_CURL=system \
     -DWITH_LZ4=system -DWITH_ZSTD=system -DWITH_SNAPPY=system -DWITH_JEMALLOC=system \
@@ -129,7 +137,6 @@ cmake .. -G Ninja \
     -DPROTOBUF_PROTOC_LIBRARY="/opt/vcpkg/installed/x64-linux-dynamic/lib/libprotoc.so" \
     -DPROTOBUF_LITE_LIBRARY="/opt/vcpkg/installed/x64-linux-dynamic/lib/libprotobuf-lite.so" \
     -DWITH_RAPIDJSON=system -DWITH_EDITLINE=bundled \
-    -DCMAKE_BUILD_TYPE=Release \
     -DMYSQL_MAINTAINER_MODE=OFF \
     -DWITH_SAFEMALLOC=OFF \
     -DCMAKE_INSTALL_RPATH='$ORIGIN/../lib64:$ORIGIN/../lib' \
@@ -164,6 +171,63 @@ rm -f $DEPS_DST/bin/mysqlxtest
 rm -f $DEPS_DST/bin/mytap
 rm -f $DEPS_DST/lib/*.a
 rm -f $DEPS_DST/lib64/*.a
+
+
+cat > "$DEPS_DST/start.sh" << 'OUTER_EOF'
+rm -f /opt/mariadb/my.cnf
+sleep 5
+
+cat > /opt/mariadb/my.cnf << 'INNER_EOF'
+[mysqld]
+basedir=/opt/mariadb
+datadir=/opt/mariadb/data
+pid-file=/opt/mariadb/run/mysqld.pid
+log-error=/opt/mariadb/log/error.log
+socket=/opt/mariadb/data/mariadb.sock
+user=mariadb
+general-log
+innodb_based_binlog = ON
+innodb_flush_log_at_trx_commit=1
+log_bin = mariadb-bin
+binlog_format = ROW
+port=3306
+default-storage-engine=InnoDB
+character_set_server=UTF8MB4
+skip-external-locking
+server-id = 1
+lower-case-table-names=1
+max_connections = 100
+max_connect_errors = 100
+open_files_limit = 65535
+plugin-load-add=ha_rocksdb.so
+INNER_EOF
+
+groupdel mariadb 2>/dev/null || true
+userdel -r mariadb 2>/dev/null || true
+groupadd --system mariadb
+useradd -r -s /sbin/nologin mariadb -g mariadb
+
+rm -rf /opt/mariadb/{data,log,run,tmp}
+mkdir -p /opt/mariadb/{data,log,run,tmp}
+touch /opt/mariadb/log/error.log
+chown -R mariadb:mariadb /opt/mariadb
+chmod 700 /opt/mariadb/data
+
+/opt/mariadb/scripts/mariadb-install-db --defaults-file=/opt/mariadb/my.cnf --user=mariadb
+
+chown -R mariadb:mariadb /opt/mariadb
+
+/opt/mariadb/bin/mariadbd-safe --defaults-file='/opt/mariadb/my.cnf' --user=mariadb >/dev/null 2>&1 &
+
+sleep 3
+/opt/mariadb/bin/mysql --protocol=socket --socket=/opt/mariadb/data/mariadb.sock -uroot -e "
+CREATE USER IF NOT EXISTS 'root'@'%' IDENTIFIED BY 'Admin001';
+GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' WITH GRANT OPTION;
+FLUSH PRIVILEGES;
+"
+
+echo "启动成功"
+OUTER_EOF
 
 zip -r -q -9 /workspace/mariadb-centos7-x86_64-$(date +'%Y%m%d_%H%M').xz .
 

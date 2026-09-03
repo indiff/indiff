@@ -1102,7 +1102,7 @@ jobs:
             -DCMAKE_SHARED_LINKER_FLAGS="-L/usr/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--no-as-needed -ldl" \
             -DCMAKE_MODULE_LINKER_FLAGS="-L/usr/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--no-as-needed -ldl" \
             -DDEFAULT_CHARSET="utf8mb4" \
-            -DDEFAULT_COLLATION="utf8mb4_bin" \
+            -DDEFAULT_COLLATION="utf8mb4_0900_ai_ci" \
             -DWITH_BOOST="/tmp/boost" \
             -DWITH_TESTS=0 \
             -DWITH_BENCHMARK_TOOLS=0 \
@@ -1497,7 +1497,7 @@ jobs:
             -DCMAKE_SHARED_LINKER_FLAGS="-L/usr/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--no-as-needed -ldl" \
             -DCMAKE_MODULE_LINKER_FLAGS="-L/usr/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--no-as-needed -ldl" \
             -DDEFAULT_CHARSET="utf8mb4" \
-            -DDEFAULT_COLLATION="utf8mb4_bin" \
+            -DDEFAULT_COLLATION="utf8mb4_0900_ai_ci" \
             -DFORCE_INSOURCE_BUILD=ON \
             -DCMAKE_BUILD_TYPE="Release" \
             -DMYSQL_MAINTAINER_MODE=0 \
