@@ -125,7 +125,7 @@ cmake .. -G Ninja \
     -DDEFAULT_CHARSET="utf8mb4" \
     -DDEFAULT_COLLATION="utf8mb4_0900_ai_ci" \
     -DENABLED_LOCAL_INFILE=1 \
-    -DPLUGIN_ROCKSDB=ON \
+    -DPLUGIN_ROCKSDB=YES \
     -DWITH_ROCKSDB=ON \
     -DWITH_CURL=system \
     -DWITH_LZ4=system -DWITH_ZSTD=system -DWITH_SNAPPY=system -DWITH_JEMALLOC=system \

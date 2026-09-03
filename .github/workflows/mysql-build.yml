@@ -19,7 +19,7 @@ on:
       mysql_build_branch:
         description: 'Build mysql Branch'
         type: choice
-        default: ""
+        default: "trunk"
         required: false
         options:
           - "trunk" 
@@ -28,7 +28,7 @@ on:
       fbmysql_build_branch:
         description: 'Build fbmysql Branch'
         type: choice
-        default: ""
+        default: "fb-mysql-8.0.32"
         required: false
         options:
           - "fb-mysql-8.0.32"
@@ -37,7 +37,7 @@ on:
       mariadb_build_branch:
         description: 'Build mariadb Branch'
         type: choice
-        default: ""
+        default: "main"
         required: false
         options:
           - "main"
