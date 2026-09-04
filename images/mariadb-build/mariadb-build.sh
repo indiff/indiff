@@ -102,6 +102,10 @@ export PKG_CONFIG_PATH="/usr/lib64/pkgconfig:/usr/share/pkgconfig:$DEPS_DST/lib/
 # 链接期搜索路径(关键修复 -ljemalloc not found)
 export LIBRARY_PATH="/opt/gcc-indiff/lib64:$DEPS_DST/lib:$DEPS_DST/lib64${LIBRARY_PATH:+:$LIBRARY_PATH}"
 export LD_LIBRARY_PATH="/opt/gcc-indiff/lib64:$DEPS_DST/lib:$DEPS_DST/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+rm -f /usr/bin/ld.mold
+rm -f /usr/local/bin/ld.mold
+ln -sf /opt/gcc-indiff/bin/mold /usr/bin/ld.mold
+ln -sf /opt/gcc-indiff/bin/mold /usr/local/bin/ld.mold
 
 # 避免外部 protobuf 干扰
 # cmake ../server -DCONC_WITH_{UNITTEST,SSL}=OFF 
@@ -118,6 +122,7 @@ cmake .. -G Ninja \
     -DCMAKE_SHARED_LINKER_FLAGS="-L/usr/lib64 -L/opt/gcc-indiff/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--strip-all -Wl,--gc-sections -Wl,--no-as-needed -ldl" \
     -DCMAKE_MODULE_LINKER_FLAGS="-L/usr/lib64 -L/opt/gcc-indiff/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--strip-all -Wl,--gc-sections -Wl,--no-as-needed -ldl" \
     -DWITH_BOOST=boost -DDOWNLOAD_BOOST=1 -DWITH_BOOST=../boost \
+    -DCMAKE_LINKER_TYPE=MOLD \
     -DWITH_LTO=ON \
     -DBUILD_CONFIG="mysql_release" \
     -DCMAKE_BUILD_TYPE="Release" \
