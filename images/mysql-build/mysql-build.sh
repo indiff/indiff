@@ -118,6 +118,11 @@ export PKG_CONFIG_PATH="/usr/lib64/pkgconfig:/usr/share/pkgconfig:$DEPS_DST/lib/
 export LIBRARY_PATH="/opt/gcc-indiff/lib64:$DEPS_DST/lib:$DEPS_DST/lib64${LIBRARY_PATH:+:$LIBRARY_PATH}"
 export LD_LIBRARY_PATH="/opt/gcc-indiff/lib64:$DEPS_DST/lib:$DEPS_DST/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
 
+rm -f /usr/bin/ld.mold
+rm -f /usr/local/bin/ld.mold
+ln -sf /opt/gcc-indiff/bin/mold /usr/bin/ld.mold
+ln -sf /opt/gcc-indiff/bin/mold /usr/local/bin/ld.mold
+
 # 避免外部 protobuf 干扰
 # cmake ../server -DCONC_WITH_{UNITTEST,SSL}=OFF 
 # -DWITH_UNIT_TESTS=OFF 
@@ -141,6 +146,7 @@ cmake .. -G Ninja \
     -DCMAKE_EXE_LINKER_FLAGS="-L/opt/vcpkg/installed/x64-linux/lib -L/usr/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--strip-all -Wl,--gc-sections -Wl,--no-as-needed -ldl" \
     -DCMAKE_SHARED_LINKER_FLAGS="-L/usr/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--strip-all -Wl,--gc-sections -Wl,--no-as-needed -ldl" \
     -DCMAKE_MODULE_LINKER_FLAGS="-L/usr/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--strip-all -Wl,--gc-sections -Wl,--no-as-needed -ldl" \
+    -DCMAKE_LINKER_TYPE=MOLD \
     -DCMAKE_TOOLCHAIN_FILE="/opt/vcpkg/scripts/buildsystems/vcpkg.cmake" \
     -DVCPKG_TARGET_TRIPLET="x64-linux" \
     -DDEFAULT_CHARSET="utf8mb4" \
@@ -220,6 +226,37 @@ rm -f $DEPS_DST/bin/mysqlxtest
 rm -f $DEPS_DST/bin/mytap
 rm -f $DEPS_DST/lib/*.a
 rm -f $DEPS_DST/lib64/*.a
+
+rm -rf $DEPS_DST/include/
+# 2. 删除测试插件和测试二进制
+rm -f $DEPS_DST/lib/plugin/component_test_*
+rm -f $DEPS_DST/lib/plugin/libtest_*
+rm -f $DEPS_DST/lib/plugin/ha_mock.so
+rm -f $DEPS_DST/lib/plugin/mypluglib.so
+rm -f $DEPS_DST/bin/mysql_client_test
+rm -f $DEPS_DST/bin/mysql_test_event_tracking
+rm -f $DEPS_DST/bin/mysql_keyring_encryption_test
+# 3. 删除开发文件
+rm -rf $DEPS_DST/lib/pkgconfig/ $DEPS_DST/lib64/pkgconfig/
+rm -f $DEPS_DST/lib/*.la $DEPS_DST/lib64/*.la
+rm -rf $DEPS_DST/share/aclocal/
+rm -rf $DEPS_DST/lib/icu/*/Makefile.inc $DEPS_DST/lib/icu/*/pkgdata.inc
+rm -rf $DEPS_DST/lib/icu/Makefile.inc $DEPS_DST/lib/icu/pkgdata.inc
+# 4. 删除构建工具
+rm -rf $DEPS_DST/tools/
+rm -rf $DEPS_DST/lib64/mold/
+# 5. 删除测试文档
+rm -f $DEPS_DST/LICENSE-test $DEPS_DST/README-test
+# 6. 删除 man 手册
+rm -rf $DEPS_DST/share/man/
+# 7. 删除冗余 lib64 中与 lib 重复的库
+# (先确认 lib/ 中有同名文件再删)
+for f in $DEPS_DST/lib64/libzstd.so*; do
+    base=$(basename "$f")
+    [ -e "$DEPS_DST/lib/$base" ] && rm -f "$f"
+done
+
+
 zip -r -q -9 /workspace/mysql-centos7-x86_64-$MYSQL_BRANCH-$(date +'%Y%m%d_%H%M').xz .
 
 # free memory

@@ -130,6 +130,7 @@ cmake .. -G Ninja \
     -DDEFAULT_CHARSET="utf8mb4" \
     -DDEFAULT_COLLATION="utf8mb4_0900_ai_ci" \
     -DENABLED_LOCAL_INFILE=1 \
+    -DPLUGIN_COLUMNSTORE=YES \
     -DPLUGIN_ROCKSDB=YES \
     -DWITH_ROCKSDB=ON \
     -DWITH_CURL=system \
@@ -160,6 +161,7 @@ cmake .. -G Ninja \
 # 只会编译并安装最终产物(不会编译 tests)  [3343/4756]
 cmake --build . -j"$(nproc)" --target install
 cmake --install .
+
 
 cd $DEPS_DST
 # ============================================================================

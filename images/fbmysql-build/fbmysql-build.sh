@@ -181,8 +181,8 @@ export LD_LIBRARY_PATH="/opt/gcc-indiff/lib64:$DEPS_DST/lib:$DEPS_DST/lib64${LD_
 #     -DPROTOBUF_LITE_LIBRARIES="/opt/vcpkg/installed/x64-linux-dynamic/lib/libprotobuf-lite.so" \
 #     -DWITH_LTO=ON \
 
-rsync -a /opt/vcpkg/installed/x64-linux/include/ /opt/fbmysql/include/
-rsync -a /opt/vcpkg/installed/x64-linux-dynamic/include/ /opt/fbmysql/include/
+rsync -a /opt/vcpkg/installed/x64-linux/include/ $DEPS_DST/include/
+rsync -a /opt/vcpkg/installed/x64-linux-dynamic/include/ $DEPS_DST/include/
 
 # cmake . -DCMAKE_BUILD_TYPE=RelWithDebInfo -DWITH_SSL=system \
 #-DWITH_ZLIB=bundled -DMYSQL_MAINTAINER_MODE=0 -DENABLED_LOCAL_INFILE=1 \
@@ -216,12 +216,15 @@ rsync -a /opt/vcpkg/installed/x64-linux-dynamic/include/ /opt/fbmysql/include/
 # -DPROTOBUF_PROTOC_EXECUTABLE="/opt/vcpkg/installed/x64-linux-dynamic/tools/protobuf/$PROTOC_BASENAME"  \
 # -DPROTOBUF_PROTOC_LIBRARY="$DEPS_DST/lib/libprotoc.so" \
 # -DPROTOBUF_LITE_LIBRARY="$DEPS_DST/lib/libprotobuf-lite.so" \
+export MOLD_BIN="/opt/gcc-indiff/bin/mold"
+export CFLAGS="-B${MOLD_BIN}"
+export CXXFLAGS="-B${MOLD_BIN}"
 
 unset PROTOC
 cmake .. -G Ninja \
     -DCMAKE_INSTALL_PREFIX=$DEPS_DST \
-    -DCMAKE_C_FLAGS=" -D__NO_STRING_INLINES -I$DEPS_DST/include -O2 -pipe -fPIC -DPIC " \
-    -DCMAKE_CXX_FLAGS="-std=c++20 -include cstdint -include cstddef -I$DEPS_DST/include -O2 -pipe -fPIC -DPIC -march=native -Wno-aligned-new -Wno-implicit-fallthrough -Wno-int-in-bool-context -Wno-shift-negative-value -Wno-misleading-indentation -Wno-format-overflow -Wno-nonnull -Wno-unused-function -fpermissive -Wno-error" \
+    -DCMAKE_C_FLAGS="-B${MOLD_BIN} -D__NO_STRING_INLINES -I$DEPS_DST/include -O2 -pipe -fPIC -DPIC " \
+    -DCMAKE_CXX_FLAGS="-B${MOLD_BIN} -std=c++20 -include cstdint -include cstddef -I$DEPS_DST/include -O2 -pipe -fPIC -DPIC -march=native -Wno-aligned-new -Wno-implicit-fallthrough -Wno-int-in-bool-context -Wno-shift-negative-value -Wno-misleading-indentation -Wno-format-overflow -Wno-nonnull -Wno-unused-function -fpermissive -Wno-error" \
     -DCMAKE_CXX_EXTENSIONS=OFF \
     -DCMAKE_EXE_LINKER_FLAGS="-L/opt/vcpkg/installed/x64-linux/lib -L/usr/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -lpthread $(pkg-config --static --libs protobuf) -Wl,--strip-all -Wl,--gc-sections -Wl,--no-as-needed -ldl" \
     -DCMAKE_SHARED_LINKER_FLAGS="-L/usr/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64 -Wl,--strip-all -Wl,--gc-sections -Wl,--no-as-needed -ldl" \
