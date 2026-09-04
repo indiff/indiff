@@ -107,6 +107,14 @@ rm -f /usr/local/bin/ld.mold
 ln -sf /opt/gcc-indiff/bin/mold /usr/bin/ld.mold
 ln -sf /opt/gcc-indiff/bin/mold /usr/local/bin/ld.mold
 
+grep -rn "\-\-add-needed" /workspace/server/storage/columnstore/
+
+# 替换：去掉 --add-needed，只保留 --no-as-needed
+sed -i 's/set(ENGINE_LDFLAGS "-Wl,--no-as-needed -Wl,--add-needed")/set(ENGINE_LDFLAGS "-Wl,--no-as-needed")/' \
+    /workspace/server/storage/columnstore/columnstore/cmake/compiler_flags.cmake
+
+grep -n "ENGINE_LDFLAGS" /workspace/server/storage/columnstore/columnstore/cmake/compiler_flags.cmake
+
 # 避免外部 protobuf 干扰
 # cmake ../server -DCONC_WITH_{UNITTEST,SSL}=OFF 
 # -DWITH_UNIT_TESTS=OFF 
