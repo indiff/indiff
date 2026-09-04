@@ -162,8 +162,18 @@ cmake --build . -j"$(nproc)" --target install
 cmake --install .
 
 cd $DEPS_DST
+# ============================================================================
+# Package final artifact
+# ============================================================================
 rm -rf $DEPS_DST/sql-bench
+rm -rf $DEPS_DST/LICENSE-test
+rm -rf $DEPS_DST/LICENSE.router
+rm -rf $DEPS_DST/README-test
+rm -rf $DEPS_DST/README.router
+rm -rf $DEPS_DST/mysqlrouter-log-rotate
+rm -rf $DEPS_DST/run
 rm -rf $DEPS_DST/man
+rm -rf $DEPS_DST/var
 rm -rf $DEPS_DST/mariadb-test
 rm -rf $DEPS_DST/mysql-test
 rm -rf $DEPS_DST/bin/mysqld-debug
@@ -176,6 +186,35 @@ rm -f $DEPS_DST/bin/mysqlxtest
 rm -f $DEPS_DST/bin/mytap
 rm -f $DEPS_DST/lib/*.a
 rm -f $DEPS_DST/lib64/*.a
+
+rm -rf $DEPS_DST/include/
+# 2. 删除测试插件和测试二进制
+rm -f $DEPS_DST/lib/plugin/component_test_*
+rm -f $DEPS_DST/lib/plugin/libtest_*
+rm -f $DEPS_DST/lib/plugin/ha_mock.so
+rm -f $DEPS_DST/lib/plugin/mypluglib.so
+rm -f $DEPS_DST/bin/mysql_client_test
+rm -f $DEPS_DST/bin/mysql_test_event_tracking
+rm -f $DEPS_DST/bin/mysql_keyring_encryption_test
+# 3. 删除开发文件
+rm -rf $DEPS_DST/lib/pkgconfig/ $DEPS_DST/lib64/pkgconfig/
+rm -f $DEPS_DST/lib/*.la $DEPS_DST/lib64/*.la
+rm -rf $DEPS_DST/share/aclocal/
+rm -rf $DEPS_DST/lib/icu/*/Makefile.inc $DEPS_DST/lib/icu/*/pkgdata.inc
+rm -rf $DEPS_DST/lib/icu/Makefile.inc $DEPS_DST/lib/icu/pkgdata.inc
+# 4. 删除构建工具
+rm -rf $DEPS_DST/tools/
+rm -rf $DEPS_DST/lib64/mold/
+# 5. 删除测试文档
+rm -f $DEPS_DST/LICENSE-test $DEPS_DST/README-test
+# 6. 删除 man 手册
+rm -rf $DEPS_DST/share/man/
+# 7. 删除冗余 lib64 中与 lib 重复的库
+# (先确认 lib/ 中有同名文件再删)
+for f in $DEPS_DST/lib64/libzstd.so*; do
+    base=$(basename "$f")
+    [ -e "$DEPS_DST/lib/$base" ] && rm -f "$f"
+done
 
 
 cat > "$DEPS_DST/start.sh" << 'OUTER_EOF'
