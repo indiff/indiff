@@ -248,12 +248,13 @@ export CC="/opt/gcc-indiff/bin/gcc"
 export CXX="/opt/gcc-indiff/bin/g++"
 export ACLOCAL_PATH=/usr/share/aclocal:${ACLOCAL_PATH:-}
 # 克隆官方仓库（或镜像）
-git clone https://github.com/autotools-mirror/autoconf.git
+git clone --filter=blob:none --depth 1  https://github.com/autotools-mirror/autoconf.git
 cd autoconf
 ./bootstrap     # 如果存在
 ./configure --prefix=/usr
 make -j$(nproc)
 make install
+autoconf --version
 cd ..
 
 function wget_gnu(){
@@ -307,6 +308,11 @@ make install
 cd ..
 m4 --version
 
+
+CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ $VCPKG_ROOT/vcpkg install \
+            libedit \
+            --triplet x64-linux-dynamic --clean-after-build \
+            || cat /workspace/vcpkg/installed/vcpkg/issue_body.md
 
 # libfido2 readline-unix 
 # unixODBC
