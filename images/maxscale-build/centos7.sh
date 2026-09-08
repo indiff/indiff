@@ -247,6 +247,15 @@ yum install -y texinfo help2man patch unixODBC unixODBC-devel
 export CC="/opt/gcc-indiff/bin/gcc"
 export CXX="/opt/gcc-indiff/bin/g++"
 export ACLOCAL_PATH=/usr/share/aclocal:${ACLOCAL_PATH:-}
+
+wget -c https://mirrors.aliyun.com/gnu/autoconf/autoconf-2.72.tar.xz
+tar -Jxf autoconf-2.72.tar.xz
+cd autoconf-2.72
+./configure --prefix=/usr
+make -j$(nproc)
+make install
+autoconf --version
+
 # 克隆官方仓库（或镜像）
 git clone --filter=blob:none --depth 1  https://github.com/autotools-mirror/autoconf.git
 cd autoconf
