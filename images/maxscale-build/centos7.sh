@@ -164,7 +164,7 @@ sed -i \
     -e 's|^baseurl=http://mirror.centos.org|baseurl=https://mirrors.aliyun.com|g' \
     -e 's|^baseurl=http://vault.centos.org|baseurl=https://mirrors.aliyun.com|g' \
     /etc/yum.repos.d/CentOS-*.repo
-    
+
 yum -y install git
 
 # build ninja 
@@ -242,7 +242,7 @@ export TRIPLET=x64-linux
 # cyrus-sasl
 yum install -y systemd-devel libgudev1 libgudev1-devel
 yum install -y epel-release
-yum install -y texinfo help2man patch
+yum install -y texinfo help2man patch unixODBC unixODBC-devel
 
 export CC="/opt/gcc-indiff/bin/gcc"
 export CXX="/opt/gcc-indiff/bin/g++"
@@ -309,11 +309,11 @@ m4 --version
 
 
 # libfido2 readline-unix 
+# unixODBC
 CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ $VCPKG_ROOT/vcpkg install \
             openssl \
             curl[core,http2,http3,ssl,openssl,zstd] \
             libgnutls[nls,openssl] \
-            unixODBC \
             libaio \
             pcre \
             pcre2 \
