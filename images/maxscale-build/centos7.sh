@@ -248,6 +248,24 @@ export CC="/opt/gcc-indiff/bin/gcc"
 export CXX="/opt/gcc-indiff/bin/g++"
 export ACLOCAL_PATH=/usr/share/aclocal:${ACLOCAL_PATH:-}
 
+function wget_gnu(){
+     local suffix=$1
+     wget https://ftp.gnu.org/gnu/$suffix || wget https://mirrors.aliyun.com/gnu/$suffix || wget http://mirrors.tencent.com/gnu/$suffix
+}
+
+
+# wget https://ftp.gnu.org/gnu/m4/m4-1.4.20.tar.gz
+wget_gnu m4/m4-latest.tar.gz
+tar -xzf m4-latest.tar.gz
+cd m4-*
+env CC=/opt/gcc-indiff/bin/gcc CFLAGS="-I/opt/gcc-indiff/include " \
+./configure --prefix=/usr
+make -j$(nproc)
+make install
+cd ..
+m4 --version
+
+
 wget -c https://mirrors.aliyun.com/gnu/autoconf/autoconf-2.72.tar.xz
 tar -Jxf autoconf-2.72.tar.xz
 cd autoconf-2.72
@@ -266,10 +284,6 @@ make install
 autoconf --version
 cd ..
 
-function wget_gnu(){
-     local suffix=$1
-     wget https://ftp.gnu.org/gnu/$suffix || wget https://mirrors.aliyun.com/gnu/$suffix || wget http://mirrors.tencent.com/gnu/$suffix
-}
 
 pkg-config --version || true
 wget https://pkgconfig.freedesktop.org/releases/pkg-config-0.29.2.tar.gz
@@ -306,16 +320,6 @@ make -j$(nproc)
 make install
 cd ..
 
-# wget https://ftp.gnu.org/gnu/m4/m4-1.4.20.tar.gz
-wget_gnu m4/m4-latest.tar.gz
-tar -xzf m4-latest.tar.gz
-cd m4-*
-env CC=/opt/gcc-indiff/bin/gcc CFLAGS="-I/opt/gcc-indiff/include " \
-./configure --prefix=/usr
-make -j$(nproc)
-make install
-cd ..
-m4 --version
 
 
 CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ $VCPKG_ROOT/vcpkg install \
