@@ -73,11 +73,10 @@ yum update -y
 
 
 yum clean all
-yum install -y https://dl.fedoraproject.org/pub/archive/epel/7/x86_64/Packages/e/epel-release-7-14.noarch.rpm || true
+rpm -q epel-release &>/dev/null || \
+    yum install -y https://mirrors.aliyun.com/epel/7/x86_64/Packages/e/epel-release-7-14.noarch.rpm
 
-
-# ====== 修复 CentOS 7 EOL 后 vault.centos.org 403 问题 ======
-# 使用阿里云/清华等仍维护 CentOS 7 Vault 镜像的源
+# ====== 1. 修复 CentOS 7 Base repos ======
 sed -i \
     -e 's|^mirrorlist=|#mirrorlist=|g' \
     -e 's|^#baseurl=http://mirror.centos.org|baseurl=https://mirrors.aliyun.com|g' \
@@ -86,14 +85,16 @@ sed -i \
     -e 's|^baseurl=http://vault.centos.org|baseurl=https://mirrors.aliyun.com|g' \
     /etc/yum.repos.d/CentOS-*.repo
 
-# 如果存在 epel repo 也一并修复
-if [ -f /etc/yum.repos.d/epel.repo ]; then
-    sed -i \
-        -e 's|^metalink=|#metalink=|g' \
-        -e 's|^#baseurl=https\?://download.fedoraproject.org/pub/epel|baseurl=https://mirrors.aliyun.com/epel|g' \
-        -e 's|^baseurl=https\?://download.fedoraproject.org/pub/epel|baseurl=https://mirrors.aliyun.com/epel|g' \
-        /etc/yum.repos.d/epel.repo
-fi
+# ====== 2. 修复 EPEL repo（直接重写）======
+cat > /etc/yum.repos.d/epel.repo <<'EOF'
+[epel]
+name=Extra Packages for Enterprise Linux 7 - $basearch
+baseurl=https://mirrors.aliyun.com/epel/7/$basearch/
+enabled=1
+gpgcheck=1
+gpgkey=https://mirrors.aliyun.com/epel/RPM-GPG-KEY-EPEL-7
+failovermethod=priority
+EOF
 
 yum clean all
 yum makecache fast
