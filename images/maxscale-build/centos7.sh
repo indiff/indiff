@@ -8,12 +8,12 @@ echo 'LC_ALL=zh_CN.UTF-8' >> /etc/environment
 echo 'LC_CTYPE=zh_CN.UTF-8' >> /etc/environment
 
 # Define mirror list for CentOS 7.9.2009
+#     "https://vault.centos.org/7.9.2009"
 MIRRORS=(
     "http://mirror.rackspace.com/centos-vault/7.9.2009"
     "https://mirror.nsc.liu.se/centos-store/7.9.2009"
     "https://linuxsoft.cern.ch/centos-vault/7.9.2009"
     "https://archive.kernel.org/centos-vault/7.9.2009"
-    "https://vault.centos.org/7.9.2009"
 )
 
 # Initialize variables
@@ -59,10 +59,6 @@ echo "name=CentOS-centosplus" >> /etc/yum.repos.d/CentOS-Base.repo
 echo "baseurl=${FASTEST_MIRROR}/centosplus/\$basearch/" >> /etc/yum.repos.d/CentOS-Base.repo
 echo "gpgcheck=0" >> /etc/yum.repos.d/CentOS-Base.repo
 
-yum clean all
-yum makecache
-yum install -y https://dl.fedoraproject.org/pub/archive/epel/7/x86_64/Packages/e/epel-release-7-14.noarch.rpm
-
 # Set timezone
 yum -y install tzdata
 ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
@@ -71,19 +67,10 @@ echo 'Asia/Shanghai' > /etc/timezone
 # Update system
 yum update -y
 
-
 yum clean all
 rpm -q epel-release &>/dev/null || \
     yum install -y https://mirrors.aliyun.com/epel/7/x86_64/Packages/e/epel-release-7-14.noarch.rpm
 
-# ====== 1. 修复 CentOS 7 Base repos ======
-sed -i \
-    -e 's|^mirrorlist=|#mirrorlist=|g' \
-    -e 's|^#baseurl=http://mirror.centos.org|baseurl=https://mirrors.aliyun.com|g' \
-    -e 's|^#baseurl=http://vault.centos.org|baseurl=https://mirrors.aliyun.com|g' \
-    -e 's|^baseurl=http://mirror.centos.org|baseurl=https://mirrors.aliyun.com|g' \
-    -e 's|^baseurl=http://vault.centos.org|baseurl=https://mirrors.aliyun.com|g' \
-    /etc/yum.repos.d/CentOS-*.repo
 
 # ====== 2. 修复 EPEL repo（直接重写）======
 cat > /etc/yum.repos.d/epel.repo <<'EOF'
@@ -170,6 +157,14 @@ ln -sf /opt/cmake/bin/cmake /usr/bin/cmake
 # update git
 yum -y remove git
 yum -y install https://packages.endpointdev.com/rhel/7/os/x86_64/endpoint-repo.x86_64.rpm
+sed -i \
+    -e 's|^mirrorlist=|#mirrorlist=|g' \
+    -e 's|^#baseurl=http://mirror.centos.org|baseurl=https://mirrors.aliyun.com|g' \
+    -e 's|^#baseurl=http://vault.centos.org|baseurl=https://mirrors.aliyun.com|g' \
+    -e 's|^baseurl=http://mirror.centos.org|baseurl=https://mirrors.aliyun.com|g' \
+    -e 's|^baseurl=http://vault.centos.org|baseurl=https://mirrors.aliyun.com|g' \
+    /etc/yum.repos.d/CentOS-*.repo
+    
 yum -y install git
 
 # build ninja 
