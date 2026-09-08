@@ -274,16 +274,6 @@ make -j$(nproc)
 make install
 autoconf --version
 
-# 克隆官方仓库（或镜像）
-git clone --filter=blob:none --depth 1  https://github.com/autotools-mirror/autoconf.git
-cd autoconf
-./bootstrap     # 如果存在
-./configure --prefix=/usr
-make -j$(nproc)
-make install
-autoconf --version
-cd ..
-
 
 pkg-config --version || true
 wget https://pkgconfig.freedesktop.org/releases/pkg-config-0.29.2.tar.gz
