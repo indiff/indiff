@@ -95,7 +95,7 @@ jobs:
       fail-fast: false
       matrix:
         runner: [ubuntu-latest] # centos7 can not use ,ubuntu-24.04-arm
-        target: ${{ fromJSON( github.event.inputs.demo_build_flag == 'true' && '["demo"]' || '["mysql","fbmysql","percona","mariadb","alisql"]' ) }}
+        target: ${{ fromJSON( github.event.inputs.demo_build_flag == 'true' && '["demo"]' || '["mysql","fbmysql","percona","mariadb","alisql","maxscale"]' ) }}
     runs-on: ${{ matrix.runner }}
     permissions:
       contents: read
@@ -179,7 +179,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target: ${{ fromJSON( github.event.inputs.demo_build_flag == 'true' && '["demo"]' || '["mysql","fbmysql","percona","mariadb","alisql"]' ) }}
+        target: ${{ fromJSON( github.event.inputs.demo_build_flag == 'true' && '["demo"]' || '["mysql","fbmysql","percona","mariadb","alisql","maxscale"]' ) }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
