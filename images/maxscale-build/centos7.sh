@@ -74,7 +74,31 @@ yum update -y
 
 yum clean all
 yum install -y https://dl.fedoraproject.org/pub/archive/epel/7/x86_64/Packages/e/epel-release-7-14.noarch.rpm || true
+
+
+# ====== 修复 CentOS 7 EOL 后 vault.centos.org 403 问题 ======
+# 使用阿里云/清华等仍维护 CentOS 7 Vault 镜像的源
+sed -i \
+    -e 's|^mirrorlist=|#mirrorlist=|g' \
+    -e 's|^#baseurl=http://mirror.centos.org|baseurl=https://mirrors.aliyun.com|g' \
+    -e 's|^#baseurl=http://vault.centos.org|baseurl=https://mirrors.aliyun.com|g' \
+    -e 's|^baseurl=http://mirror.centos.org|baseurl=https://mirrors.aliyun.com|g' \
+    -e 's|^baseurl=http://vault.centos.org|baseurl=https://mirrors.aliyun.com|g' \
+    /etc/yum.repos.d/CentOS-*.repo
+
+# 如果存在 epel repo 也一并修复
+if [ -f /etc/yum.repos.d/epel.repo ]; then
+    sed -i \
+        -e 's|^metalink=|#metalink=|g' \
+        -e 's|^#baseurl=https\?://download.fedoraproject.org/pub/epel|baseurl=https://mirrors.aliyun.com/epel|g' \
+        -e 's|^baseurl=https\?://download.fedoraproject.org/pub/epel|baseurl=https://mirrors.aliyun.com/epel|g' \
+        /etc/yum.repos.d/epel.repo
+fi
+
+yum clean all
 yum makecache fast
+# ====== 修复结束，后续正常安装 ======
+
 
 yum -y install tzdata
 ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
