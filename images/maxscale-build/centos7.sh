@@ -321,7 +321,9 @@ CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ $VCPKG_ROOT/vcpkg install
             unixODBC \
             libaio \
             pcre \
+            pcre2 \
             sqlite3 \
+            krb5 \
             boost-system boost-filesystem boost-program-options \
             --triplet $TRIPLET --clean-after-build \
             || cat /workspace/vcpkg/installed/vcpkg/issue_body.md
