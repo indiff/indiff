@@ -126,6 +126,7 @@ cmake .. -G Ninja \
     -DLIBUUID_LIBRARIES=/opt/vcpkg/installed/x64-linux/lib/libuuid.a \
     -DNODEJS_EXECUTABLE=/opt/node-v26.8.1-linux-x64-glibc-217/bin/node \
     -DNPM_EXECUTABLE=/opt/node-v26.8.1-linux-x64-glibc-217/bin/npm \
+    -DBUILD_NOSQL=OFF \
     -DWITH_SYSTEM_NODEJS=ON
 
 
