@@ -82,6 +82,11 @@ cd ..
 
 
 # build  MaxScale
+cd /workspace/MaxScale/
+mkdir -p pcre2/build
+ln -sf /opt/vcpkg/installed/x64-linux/lib/libpcre2-8.a pcre2/build/libpcre2-8.a
+
+
 mkdir -p /workspace/MaxScale/_build
 cd /workspace/MaxScale/_build
 
