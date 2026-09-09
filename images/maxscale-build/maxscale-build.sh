@@ -100,16 +100,28 @@ cmake .. -G Ninja \
     -DCMAKE_BUILD_TYPE="Release" \
     -DCMAKE_TOOLCHAIN_FILE="/opt/vcpkg/scripts/buildsystems/vcpkg.cmake" \
     -DVCPKG_TARGET_TRIPLET="x64-linux" \
-    -DZSTD_INCLUDE_DIR=/opt/vcpkg/installed/x64-linux/include \
+    -DVCPKG_INSTALLED_DIR=/opt/vcpkg/installed \
+    -DBUILD_SHARED_LIBS=OFF \
+    -DFORCE_BUNDLE=OFF \
+    -DBUNDLE=OFF \
     -DCMAKE_C_COMPILER=/opt/gcc-indiff/bin/gcc \
     -DCMAKE_CXX_COMPILER=/opt/gcc-indiff/bin/g++ \
     -DCMAKE_LIBRARY_PATH=/opt/gcc-indiff/lib64 \
+    -DCMAKE_PREFIX_PATH=/opt/vcpkg/installed/x64-linux \
     -DBoost_INCLUDE_DIR=/opt/vcpkg/installed/x64-linux/include \
+    -DZSTD_INCLUDE_DIR=/opt/vcpkg/installed/x64-linux/include \
+    -DZSTD_LIBRARIES=/opt/vcpkg/installed/x64-linux/lib/libzstd.a \
     -DSQLITE_INCLUDE_DIR=/opt/vcpkg/installed/x64-linux/include \
     -DSQLITE_LIBRARIES=/opt/vcpkg/installed/x64-linux/lib/libsqlite3.a \
+    -DPCRE2_INCLUDE_DIRS=/opt/vcpkg/installed/x64-linux/include \
+    -DPCRE2_LIBRARIES=/opt/vcpkg/installed/x64-linux/lib/libpcre2-8.a \
+    -DJANSSON_INCLUDE_DIR=/opt/vcpkg/installed/x64-linux/include \
+    -DJANSSON_LIBRARIES=/opt/vcpkg/installed/x64-linux/lib/libjansson.a \
+    -DLIBUUID_HEADERS=/opt/vcpkg/installed/x64-linux/include \
+    -DLIBUUID_LIBRARIES=/opt/vcpkg/installed/x64-linux/lib/libuuid.a \
     -DNODEJS_EXECUTABLE=/opt/node-v26.8.1-linux-x64-glibc-217/bin/node \
-    -DNPM_EXECUTABLE=/opt/node-v26.8.1-linux-x64-glibc-217/bin/npm \
-    -DCMAKE_PREFIX_PATH=""
+    -DNPM_EXECUTABLE=/opt/node-v26.8.1-linux-x64-glibc-217/bin/npm
+
 
 # cmake .. -LH | tee /workspace/cmake-cache-vars-omysql-centos7.txt
 
