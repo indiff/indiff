@@ -128,7 +128,7 @@ cmake .. -G Ninja \
     -DNPM_EXECUTABLE=/opt/node-v26.8.1-linux-x64-glibc-217/bin/npm \
     -DBUILD_NOSQL=OFF \
     -DBUILD_TESTS=OFF \
-    -DFORCE_BUNDLE=OFF \
+    -DFORCE_BUNDLE=ON \
     -DWITH_SYSTEM_NODEJS=ON
 
 
