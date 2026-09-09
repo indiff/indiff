@@ -6,10 +6,12 @@ find /opt/vcpkg/installed -name "*.so*"
 find /opt/vcpkg/installed -name "*.a*"
 
 
-if [[ -z "$MAXSCALE_BRANCH" ]]; then
+if [ ! -d MaxScale/.git ]; then
+  if [[ -z "$MAXSCALE_BRANCH" ]]; then
     git clone --filter=blob:none --depth 1 https://github.com/mariadb-corporation/MaxScale.git MaxScale
-else
+  else
     git clone --filter=blob:none --depth 1 https://github.com/mariadb-corporation/MaxScale.git  -b $MAXSCALE_BRANCH MaxScale
+  fi
 fi
 
 cd MaxScale
@@ -72,12 +74,18 @@ export LDFLAGS="-L/opt/gcc-indiff/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64${LD_LI
 export ACLOCAL_PATH=/usr/share/aclocal:${ACLOCAL_PATH:-}
 
 
-git clone --filter=blob:none --depth 1 https://github.com/cyrusimap/cyrus-sasl.git
+export CMAKE_POLICY_VERSION_MINIMUM=3.5
+export NODE_OPTIONS=--openssl-legacy-provider
+if [ ! -d cyrus-sasl/.git ]; then
+  git clone --filter=blob:none --depth 1 https://github.com/cyrusimap/cyrus-sasl.git
+fi
 cd cyrus-sasl
-autoreconf -fi
-./configure --with-openssl="$DEPS_DST" --prefix="$DEPS_DST"
-make -j$(nproc)
-make install
+if [ ! -f "$DEPS_DST/lib/libsasl2.a" ] && [ ! -f "$DEPS_DST/lib/libsasl2.so" ]; then
+  autoreconf -fi
+  ./configure --with-openssl="$DEPS_DST" --prefix="$DEPS_DST"
+  make -j$(nproc)
+  make install
+fi
 cd ..
 
 
@@ -106,14 +114,15 @@ export PKG_CONFIG_PATH="/usr/lib64/pkgconfig:/usr/share/pkgconfig:$DEPS_DST/lib/
 export LIBRARY_PATH="/opt/gcc-indiff/lib64:$DEPS_DST/lib:$DEPS_DST/lib64${LIBRARY_PATH:+:$LIBRARY_PATH}"
 export LD_LIBRARY_PATH="/opt/gcc-indiff/lib64:$DEPS_DST/lib:$DEPS_DST/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
 
-yum install -y tcl
+rpm -q tcl >/dev/null 2>&1 || yum install -y tcl
 TCLSH_SHELL=$(which tclsh)
 
 #     -DBUILD_SHARED_LIBS=OFF \
 #     -DFORCE_BUNDLE=OFF \
 #     -DBUNDLE=OFF \
 
-cmake .. -G Ninja \
+cmake .. -G "Unix Makefiles" \
+    -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
     -DCMAKE_INSTALL_PREFIX=/opt/maxscale \
     -DCMAKE_BUILD_TYPE="Release" \
     -DTCL_TCLSH="$TCLSH_SHELL" \
@@ -137,6 +146,10 @@ cmake .. -G Ninja \
     -DLIBUUID_LIBRARIES=/opt/vcpkg/installed/x64-linux/lib/libuuid.a \
     -DNODEJS_EXECUTABLE=/opt/node-v26.8.1-linux-x64-glibc-217/bin/node \
     -DNPM_EXECUTABLE=/opt/node-v26.8.1-linux-x64-glibc-217/bin/npm \
+    -DCMAKE_CXX_FLAGS="-isystem /opt/maxscale/include" \
+    -DCMAKE_C_FLAGS="-isystem /opt/maxscale/include" \
+    -DLIBSSH_LIBRARY=/opt/vcpkg/installed/x64-linux/lib/libssh.a \
+    -DLIBSSH_INCLUDE_DIR=/opt/vcpkg/installed/x64-linux/include \
     -DBUILD_NOSQL=OFF \
     -DBUILD_TESTS=OFF \
     -DFORCE_BUNDLE=ON \
