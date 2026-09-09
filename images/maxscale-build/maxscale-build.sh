@@ -90,6 +90,12 @@ ln -sf /opt/vcpkg/installed/x64-linux/lib/libpcre2-8.a pcre2/build/libpcre2-8.a
 mkdir -p /workspace/MaxScale/_build
 cd /workspace/MaxScale/_build
 
+# 创建ninja需要的目录
+mkdir -p pcre2/build
+# 软链接 vcpkg 的pcre2静态库
+ln -sf /opt/vcpkg/installed/x64-linux/lib/libpcre2-8.a pcre2/build/libpcre2-8.a
+
+
 # 供 CMake/ld 查找 vcpkg 拷贝到 /opt 的头文件与库
 export CMAKE_PREFIX_PATH="$DEPS_DST${CMAKE_PREFIX_PATH:+:$CMAKE_PREFIX_PATH}"
 export CMAKE_LIBRARY_PATH="$DEPS_DST/lib:$DEPS_DST/lib64${CMAKE_LIBRARY_PATH:+:$CMAKE_LIBRARY_PATH}"
