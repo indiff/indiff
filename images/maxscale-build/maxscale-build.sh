@@ -95,9 +95,12 @@ export PKG_CONFIG_PATH="/usr/lib64/pkgconfig:/usr/share/pkgconfig:$DEPS_DST/lib/
 export LIBRARY_PATH="/opt/gcc-indiff/lib64:$DEPS_DST/lib:$DEPS_DST/lib64${LIBRARY_PATH:+:$LIBRARY_PATH}"
 export LD_LIBRARY_PATH="/opt/gcc-indiff/lib64:$DEPS_DST/lib:$DEPS_DST/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
 
+yum install -y tcl
+TCLSH_SHELL=$(which tclsh)
 cmake .. -G Ninja \
     -DCMAKE_INSTALL_PREFIX=/opt/maxscale \
     -DCMAKE_BUILD_TYPE="Release" \
+    -DTCL_TCLSH="$TCLSH_SHELL" \
     -DCMAKE_TOOLCHAIN_FILE="/opt/vcpkg/scripts/buildsystems/vcpkg.cmake" \
     -DVCPKG_TARGET_TRIPLET="x64-linux" \
     -DVCPKG_INSTALLED_DIR=/opt/vcpkg/installed \
