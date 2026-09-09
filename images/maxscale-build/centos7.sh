@@ -310,8 +310,19 @@ make -j$(nproc)
 make install
 cd ..
 
+cd /opt/
+mkdir -p /opt/maxscale
+git clone https://github.com/facebook/jemalloc.git --depth 1
+cd jemalloc
+sed -i 's/std::__throw_bad_alloc()/throw std::bad_alloc()/g' src/jemalloc_cpp.cpp
+sh autogen.sh
+env CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ ./configure --prefix=/opt/maxscale
+make -j$(nproc)
+make install
+cd ..
 
 
+cd /opt/vcpkg
 CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ $VCPKG_ROOT/vcpkg install \
             openssl \
             libedit \
@@ -321,6 +332,7 @@ CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ $VCPKG_ROOT/vcpkg install
 # libfido2 readline-unix 
 # unixODBC
 # pcre
+# symengine[tcmalloc]
 CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ $VCPKG_ROOT/vcpkg install \
             openssl \
             curl[core,http2,http3,ssl,openssl,zstd] \
@@ -337,7 +349,6 @@ CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ $VCPKG_ROOT/vcpkg install
             libmicrohttpd \
             avro-c \
             libssh \
-            symengine[tcmalloc] \
             boost-system boost-filesystem boost-program-options \
             --triplet $TRIPLET --clean-after-build \
             || cat /workspace/vcpkg/installed/vcpkg/issue_body.md
