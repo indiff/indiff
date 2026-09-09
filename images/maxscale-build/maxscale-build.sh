@@ -97,6 +97,11 @@ export LD_LIBRARY_PATH="/opt/gcc-indiff/lib64:$DEPS_DST/lib:$DEPS_DST/lib64${LD_
 
 yum install -y tcl
 TCLSH_SHELL=$(which tclsh)
+
+#     -DBUILD_SHARED_LIBS=OFF \
+#     -DFORCE_BUNDLE=OFF \
+#     -DBUNDLE=OFF \
+
 cmake .. -G Ninja \
     -DCMAKE_INSTALL_PREFIX=/opt/maxscale \
     -DCMAKE_BUILD_TYPE="Release" \
@@ -104,9 +109,6 @@ cmake .. -G Ninja \
     -DCMAKE_TOOLCHAIN_FILE="/opt/vcpkg/scripts/buildsystems/vcpkg.cmake" \
     -DVCPKG_TARGET_TRIPLET="x64-linux" \
     -DVCPKG_INSTALLED_DIR=/opt/vcpkg/installed \
-    -DBUILD_SHARED_LIBS=OFF \
-    -DFORCE_BUNDLE=OFF \
-    -DBUNDLE=OFF \
     -DCMAKE_C_COMPILER=/opt/gcc-indiff/bin/gcc \
     -DCMAKE_CXX_COMPILER=/opt/gcc-indiff/bin/g++ \
     -DCMAKE_LIBRARY_PATH=/opt/gcc-indiff/lib64 \
