@@ -123,7 +123,7 @@ TCLSH_SHELL=$(which tclsh)
 
 cmake .. -G "Unix Makefiles" \
     -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
-    -DCMAKE_INSTALL_PREFIX=/opt/maxscale \
+    -DCMAKE_INSTALL_PREFIX="$DEPS_DST" \
     -DCMAKE_BUILD_TYPE="Release" \
     -DTCL_TCLSH="$TCLSH_SHELL" \
     -DCMAKE_TOOLCHAIN_FILE="/opt/vcpkg/scripts/buildsystems/vcpkg.cmake" \
@@ -146,8 +146,8 @@ cmake .. -G "Unix Makefiles" \
     -DLIBUUID_LIBRARIES=/opt/vcpkg/installed/x64-linux/lib/libuuid.a \
     -DNODEJS_EXECUTABLE=/opt/node-v26.8.1-linux-x64-glibc-217/bin/node \
     -DNPM_EXECUTABLE=/opt/node-v26.8.1-linux-x64-glibc-217/bin/npm \
-    -DCMAKE_CXX_FLAGS="-isystem /opt/maxscale/include" \
-    -DCMAKE_C_FLAGS="-isystem /opt/maxscale/include" \
+    -DCMAKE_CXX_FLAGS="-isystem /opt/maxscale/include -isystem /opt/vcpkg/installed/x64-linux/include" \
+    -DCMAKE_C_FLAGS="-isystem /opt/maxscale/include -isystem /opt/vcpkg/installed/x64-linux/include" \
     -DLIBSSH_LIBRARY=/opt/vcpkg/installed/x64-linux/lib/libssh.a \
     -DLIBSSH_INCLUDE_DIR=/opt/vcpkg/installed/x64-linux/include \
     -DBUILD_NOSQL=OFF \
