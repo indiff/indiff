@@ -122,7 +122,7 @@ TCLSH_SHELL=$(which tclsh)
 #     -DBUNDLE=OFF \
 
 # fix1 cmake patch
-sed -i 's|BUILD_COMMAND make "CFLAGS=-fPIC -std=c11"|BUILD_COMMAND make "CFLAGS=-fPIC ${CMAKE_C_FLAGS}"|' /workspace/MaxScale/cmake/BuildLibKMIP.cmake
+sed -i 's|BUILD_COMMAND make "CFLAGS=-fPIC -std=c11"|BUILD_COMMAND make "CFLAGS=-fPIC -std=c11 ${CMAKE_C_FLAGS}"|' /workspace/MaxScale/cmake/BuildLibKMIP.cmake
 
 cmake .. -G "Unix Makefiles" \
     -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
