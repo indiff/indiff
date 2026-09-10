@@ -76,17 +76,6 @@ export ACLOCAL_PATH=/usr/share/aclocal:${ACLOCAL_PATH:-}
 
 export CMAKE_POLICY_VERSION_MINIMUM=3.5
 export NODE_OPTIONS=--openssl-legacy-provider
-if [ ! -d cyrus-sasl/.git ]; then
-  git clone --filter=blob:none --depth 1 https://github.com/cyrusimap/cyrus-sasl.git
-fi
-cd cyrus-sasl
-if [ ! -f "$DEPS_DST/lib/libsasl2.a" ] && [ ! -f "$DEPS_DST/lib/libsasl2.so" ]; then
-  autoreconf -fi
-  ./configure --with-openssl="$DEPS_DST" --prefix="$DEPS_DST"
-  make -j$(nproc)
-  make install
-fi
-cd ..
 
 
 # build  MaxScale
