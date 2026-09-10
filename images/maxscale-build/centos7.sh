@@ -349,7 +349,7 @@ CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ $VCPKG_ROOT/vcpkg install
             libmicrohttpd \
             avro-c \
             libssh \
-            boost-system boost-filesystem boost-program-options \
+            boost-system boost-filesystem boost-program-options boost-spirit boost-fusion boost-mpl \
             --triplet $TRIPLET --clean-after-build \
             || cat /workspace/vcpkg/installed/vcpkg/issue_body.md
 
