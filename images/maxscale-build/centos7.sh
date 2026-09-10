@@ -324,6 +324,7 @@ cd ..
 
 cd /opt/vcpkg
 CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ $VCPKG_ROOT/vcpkg install \
+            libaio \
             pcre \
             --triplet $TRIPLET --clean-after-build \
             || cat /workspace/vcpkg/installed/vcpkg/issue_body.md
@@ -337,7 +338,6 @@ CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ $VCPKG_ROOT/vcpkg install
             openssl \
             curl[core,http2,http3,ssl,openssl,zstd] \
             libgnutls[nls,openssl] \
-            libaio \
             sqlite3 \
             krb5 \
             zstd \
