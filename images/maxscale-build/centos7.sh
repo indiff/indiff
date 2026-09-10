@@ -141,7 +141,7 @@ yum install -y \
     libtool \
     curl \
     file \
-    zip
+    zip tcl
 yum install -y systemd-devel libgudev1
 yum clean all
 
@@ -322,6 +322,8 @@ make install
 cd ..
 
 
+
+
 cd /opt/vcpkg
 CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ $VCPKG_ROOT/vcpkg install \
             libaio \
@@ -348,6 +350,26 @@ CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ $VCPKG_ROOT/vcpkg install
             boost-system boost-filesystem boost-program-options boost-spirit boost-fusion boost-mpl \
             --triplet x64-linux-dynamic --clean-after-build \
             || cat /workspace/vcpkg/installed/vcpkg/issue_body.md
+
+
+cd /opt
+if [ ! -d cyrus-sasl/.git ]; then
+  git clone --filter=blob:none --depth 1 https://github.com/cyrusimap/cyrus-sasl.git
+fi
+cd cyrus-sasl
+CC=/opt/gcc-indiff/bin/gcc \
+   CXX=/opt/gcc-indiff/bin/g++ \
+   CPPFLAGS="-I/opt/vcpkg/installed/x64-linux-dynamic/include" \
+   LDFLAGS="-L/opt/vcpkg/installed/x64-linux-dynamic/lib" \
+   autoreconf -fi
+   ./configure \
+     --with-openssl="/opt/vcpkg/installed/x64-linux-dynamic" \
+     --prefix="/opt/vcpkg/installed/x64-linux-dynamic" \
+     --with-krb5="/opt/vcpkg/installed/x64-linux-dynamic"
+   make -j$(nproc)
+   make install
+cd ..
+
 
 #下载
 wget https://unofficial-builds.nodejs.org/download/release/v26.8.1/node-v26.8.1-linux-x64-glibc-217.tar.xz
