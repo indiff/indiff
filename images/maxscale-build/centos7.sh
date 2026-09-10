@@ -324,33 +324,29 @@ cd ..
 
 cd /opt/vcpkg
 CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ $VCPKG_ROOT/vcpkg install \
-            openssl \
-            libedit \
-            --triplet x64-linux-dynamic --clean-after-build \
+            pcre \
+            --triplet $TRIPLET --clean-after-build \
             || cat /workspace/vcpkg/installed/vcpkg/issue_body.md
 
 # libfido2 readline-unix 
 # unixODBC
 # pcre
 # symengine[tcmalloc]
+# jansson hiredis librdkafka libmicrohttpd pcre2
 CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ $VCPKG_ROOT/vcpkg install \
             openssl \
             curl[core,http2,http3,ssl,openssl,zstd] \
             libgnutls[nls,openssl] \
             libaio \
-            pcre2 \
             sqlite3 \
             krb5 \
             zstd \
+            libedit \
             libuuid \
-            jansson \
-            hiredis \
-            librdkafka \
-            libmicrohttpd \
             avro-c \
             libssh \
             boost-system boost-filesystem boost-program-options boost-spirit boost-fusion boost-mpl \
-            --triplet $TRIPLET --clean-after-build \
+            --triplet x64-linux-dynamic --clean-after-build \
             || cat /workspace/vcpkg/installed/vcpkg/issue_body.md
 
 #下载
