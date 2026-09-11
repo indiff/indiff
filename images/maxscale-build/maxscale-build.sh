@@ -73,6 +73,16 @@ export CPPFLAGS="-I$DEPS_DST/include"
 export LDFLAGS="-L/opt/gcc-indiff/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH} -fuse-ld=mold"
 export ACLOCAL_PATH=/usr/share/aclocal:${ACLOCAL_PATH:-}
 
+git clone --filter=blob:none --depth 1 https://github.com/cyrusimap/cyrus-sasl.git
+cd cyrus-sasl
+autoreconf -fi
+./configure --with-openssl="$DEPS_DST" --prefix="$DEPS_DST"
+make -j$(nproc)
+make install
+cd ..
+unset CPPFLAGS
+unset LDFLAGS
+
 
 export CMAKE_POLICY_VERSION_MINIMUM=3.5
 export NODE_OPTIONS=--openssl-legacy-provider

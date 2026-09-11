@@ -347,7 +347,6 @@ CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ $VCPKG_ROOT/vcpkg install
             libuuid \
             avro-c \
             libssh \
-            cyrus-sasl \
             boost-system boost-filesystem boost-program-options boost-spirit boost-fusion boost-mpl \
             --triplet x64-linux-dynamic --clean-after-build \
             || cat /workspace/vcpkg/installed/vcpkg/issue_body.md
