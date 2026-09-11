@@ -52,6 +52,23 @@ if [ -f /lib64/libjemalloc.so.1 ]; then
     chmod 644 "$DEPS_DST/lib64"/libjemalloc.so* 2>/dev/null || true
 fi
 
+# MaxScale links against the system unixODBC library (libodbc.so.2), but a plain
+# CentOS 7 runtime host does not have unixODBC installed by default, which makes
+# the packaged "maxscale" binary fail with "libodbc.so.2: cannot open shared
+# object file". Bundle unixODBC's runtime libraries (and its libltdl.so.7
+# dependency) from the build host so the package is self-contained and runs on
+# a stock CentOS 7 system without extra package installs.
+mkdir -p "$DEPS_DST/lib64"
+for glob in 'libodbc.so*' 'libodbcinst.so*' 'libltdl.so.7*'; do
+    for dir in /lib64 /usr/lib64; do
+        # shellcheck disable=SC2231
+        for f in $dir/$glob; do
+            [ -e "$f" ] || continue
+            cp -a "$f" "$DEPS_DST/lib64/" || true
+        done
+    done
+done
+
 for d in lib lib64; do
     [[ -d "$DEPS_DST/$d/pkgconfig" ]] || mkdir -p "$DEPS_DST/$d/pkgconfig"
     rsync -a "$DEPS_SRC/$d/pkgconfig/" "$DEPS_DST/$d/pkgconfig/" 2>/dev/null || true
