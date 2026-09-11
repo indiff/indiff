@@ -326,8 +326,8 @@ cd ..
 
 cd /opt/vcpkg
 CC=/opt/gcc-indiff/bin/gcc CXX=/opt/gcc-indiff/bin/g++ $VCPKG_ROOT/vcpkg install \
+            openssl \
             libaio \
-            pcre \
             --triplet $TRIPLET --clean-after-build \
             || cat /workspace/vcpkg/installed/vcpkg/issue_body.md
 
@@ -359,12 +359,12 @@ fi
 cd cyrus-sasl
 CC=/opt/gcc-indiff/bin/gcc \
    CXX=/opt/gcc-indiff/bin/g++ \
-   CPPFLAGS="-I/opt/vcpkg/installed/x64-linux-dynamic/include" \
-   LDFLAGS="-L/opt/vcpkg/installed/x64-linux-dynamic/lib" \
+   CPPFLAGS="-I/opt/vcpkg/installed/x64-linux/include" \
+   LDFLAGS="-L/opt/vcpkg/installed/x64-linux/lib" \
    autoreconf -fi
    ./configure \
-     --with-openssl="/opt/vcpkg/installed/x64-linux-dynamic" \
-     --prefix="/opt/vcpkg/installed/x64-linux-dynamic" \
+     --with-openssl="/opt/vcpkg/installed/x64-linux" \
+     --prefix="/opt/maxscale" \
      --with-krb5="/opt/vcpkg/installed/x64-linux-dynamic"
    make -j$(nproc)
    make install
