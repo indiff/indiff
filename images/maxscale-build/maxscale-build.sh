@@ -158,6 +158,7 @@ cmake .. -G "Unix Makefiles" \
     -DBUILD_NOSQL=OFF \
     -DBUILD_TESTS=OFF \
     -DFORCE_BUNDLE=ON \
+    -DHIREDIS_USE_SSL=OFF \
     -DWITH_SYSTEM_NODEJS=ON
 
 
