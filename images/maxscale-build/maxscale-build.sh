@@ -122,8 +122,8 @@ TCLSH_SHELL=$(which tclsh)
 # fix1 cmake patch
 sed -i 's|BUILD_COMMAND make "CFLAGS=-fPIC -std=c11"|BUILD_COMMAND make "CFLAGS=-fPIC -std=c11 ${CMAKE_C_FLAGS}"|' /workspace/MaxScale/cmake/BuildLibKMIP.cmake
 
-ls -la /opt/maxscale/lib/lib{k5crypto,krb5support,com_err}.a
-
+# ls -la /opt/maxscale/lib/lib{k5crypto,krb5support,com_err}.a
+#     -DGSSAPI_LIBS="/opt/maxscale/lib/libgssapi_krb5.a;/opt/maxscale/lib/libkrb5.a;/opt/maxscale/lib/libk5crypto.a;/opt/maxscale/lib/libkrb5support.a;/opt/maxscale/lib/libcom_err.a;resolv;dl;pthread" \
 cmake .. -G "Unix Makefiles" \
     -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
     -DCMAKE_INSTALL_PREFIX="$DEPS_DST" \
@@ -155,7 +155,6 @@ cmake .. -G "Unix Makefiles" \
     -DCMAKE_C_FLAGS="-isystem /opt/maxscale/include -isystem /opt/vcpkg/installed/x64-linux-dynamic/include" \
     -DLIBSSH_LIBRARY=/opt/vcpkg/installed/x64-linux-dynamic/lib/libssh.so \
     -DLIBSSH_INCLUDE_DIR=/opt/vcpkg/installed/x64-linux-dynamic/include \
-    -DGSSAPI_LIBS="/opt/maxscale/lib/libgssapi_krb5.a;/opt/maxscale/lib/libkrb5.a;/opt/maxscale/lib/libk5crypto.a;/opt/maxscale/lib/libkrb5support.a;/opt/maxscale/lib/libcom_err.a;resolv;dl;pthread" \
     -DBUILD_NOSQL=OFF \
     -DBUILD_TESTS=OFF \
     -DFORCE_BUNDLE=ON \
