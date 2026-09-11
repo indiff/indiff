@@ -75,7 +75,9 @@ export CPPFLAGS="-I$DEPS_DST/include"
 export LDFLAGS="-L/opt/gcc-indiff/lib64 -L$DEPS_DST/lib -L$DEPS_DST/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH} -fuse-ld=mold"
 export ACLOCAL_PATH=/usr/share/aclocal:${ACLOCAL_PATH:-}
 
-git clone --filter=blob:none --depth 1 https://github.com/cyrusimap/cyrus-sasl.git
+if [ ! -d cyrus-sasl/.git ]; then
+  git clone --filter=blob:none --depth 1 https://github.com/cyrusimap/cyrus-sasl.git
+fi
 cd cyrus-sasl
 autoreconf -fi
 ./configure --with-openssl="$DEPS_DST" --prefix="$DEPS_DST"
@@ -92,18 +94,9 @@ export NODE_OPTIONS=--openssl-legacy-provider
 
 # build  MaxScale
 cd /workspace/MaxScale/
-mkdir -p pcre2/build
-ln -sf /opt/vcpkg/installed/x64-linux/lib/libpcre2-8.a pcre2/build/libpcre2-8.a
-
 
 mkdir -p /workspace/MaxScale/_build
 cd /workspace/MaxScale/_build
-
-# 创建ninja需要的目录
-mkdir -p pcre2/build
-# 软链接 vcpkg 的pcre2静态库
-ln -sf /opt/vcpkg/installed/x64-linux/lib/libpcre2-8.a pcre2/build/libpcre2-8.a
-
 
 # 供 CMake/ld 查找 vcpkg 拷贝到 /opt 的头文件与库
 export CMAKE_PREFIX_PATH="$DEPS_DST${CMAKE_PREFIX_PATH:+:$CMAKE_PREFIX_PATH}"
@@ -123,6 +116,25 @@ TCLSH_SHELL=$(which tclsh)
 
 # fix1 cmake patch
 sed -i 's|BUILD_COMMAND make "CFLAGS=-fPIC -std=c11"|BUILD_COMMAND make "CFLAGS=-fPIC -std=c11 ${CMAKE_C_FLAGS}"|' /workspace/MaxScale/cmake/BuildLibKMIP.cmake
+
+# fix2: launchpad.net/ftp.gnu.org are unreachable in this build environment, so the
+# libmicrohttpd source hash is repointed to the equivalent 0.9.75 tarball mirrored on
+# deb.debian.org (LIBMICROHTTPD_URLS is overridden below via -D on the cmake command line)
+sed -i 's|URL_HASH SHA256=9e7023a151120060d2806a6ea4c13ca9933ece4eacfc5c9464d20edddb76b0a0|URL_HASH SHA256=796e7e217a4802679fcac667a4e98501c53185dcf50ca0583870e84192620131|' /workspace/MaxScale/cmake/BuildMicroHttpd.cmake
+
+# fix3: hiredis's "make USE_SSL=1" doesn't know where the bundled openssl headers/libs
+# live, so openssl/ssl.h can't be found. Point it at $DEPS_DST explicitly.
+sed -i "s|BUILD_COMMAND make USE_SSL=1|BUILD_COMMAND make USE_SSL=1 CFLAGS=-I$DEPS_DST/include LDFLAGS=-L$DEPS_DST/lib|" /workspace/MaxScale/cmake/BuildHiredis.cmake
+
+# fix4: the vendored pcre2's CMakeLists.txt requires CMake >= 3.5 in a way that is
+# rejected outright by modern CMake unless CMAKE_POLICY_VERSION_MINIMUM is forwarded
+# to its nested ExternalProject configure step as well.
+sed -i 's|-DPCRE2_SUPPORT_JIT=Y|-DPCRE2_SUPPORT_JIT=Y -DCMAKE_POLICY_VERSION_MINIMUM=3.5|' /workspace/MaxScale/cmake/BuildPCRE2.cmake
+
+# fix5: maxctrl's committed package-lock.json is missing the optional "fsevents"
+# (macOS-only) entry, which makes the strict "npm ci" in newer npm releases fail
+# with EUSAGE. "npm install" performs the same install without that strict check.
+sed -i 's|COMMAND npm ci$|COMMAND npm install --no-audit --no-fund|' /workspace/MaxScale/maxctrl/CMakeLists.txt
 
 # ls -la /opt/maxscale/lib/lib{k5crypto,krb5support,com_err}.a
 #     -DGSSAPI_LIBS="/opt/maxscale/lib/libgssapi_krb5.a;/opt/maxscale/lib/libkrb5.a;/opt/maxscale/lib/libk5crypto.a;/opt/maxscale/lib/libkrb5support.a;/opt/maxscale/lib/libcom_err.a;resolv;dl;pthread" \
@@ -158,6 +170,7 @@ cmake .. -G "Unix Makefiles" \
     -DLIBSSH_LIBRARY=/opt/vcpkg/installed/x64-linux-dynamic/lib/libssh.so \
     -DLIBSSH_INCLUDE_DIR=/opt/vcpkg/installed/x64-linux-dynamic/include \
     -DLIBMEMCACHED_URL=https://deb.debian.org/debian/pool/main/libm/libmemcached/libmemcached_1.0.18.orig.tar.gz \
+    -DLIBMICROHTTPD_URLS=https://deb.debian.org/debian/pool/main/libm/libmicrohttpd/libmicrohttpd_0.9.75.orig.tar.xz \
     -DBUILD_NOSQL=OFF \
     -DBUILD_TESTS=OFF \
     -DFORCE_BUNDLE=ON \
