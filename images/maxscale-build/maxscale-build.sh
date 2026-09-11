@@ -2,6 +2,8 @@
 # author: indiff
 set -xe
 
+export VCPKG_ROOT="${VCPKG_ROOT:-/opt/vcpkg}"
+
 find /opt/vcpkg/installed -name "*.so*"
 find /opt/vcpkg/installed -name "*.a*"
 
@@ -155,6 +157,7 @@ cmake .. -G "Unix Makefiles" \
     -DCMAKE_C_FLAGS="-isystem /opt/maxscale/include -isystem /opt/vcpkg/installed/x64-linux-dynamic/include" \
     -DLIBSSH_LIBRARY=/opt/vcpkg/installed/x64-linux-dynamic/lib/libssh.so \
     -DLIBSSH_INCLUDE_DIR=/opt/vcpkg/installed/x64-linux-dynamic/include \
+    -DLIBMEMCACHED_URL=https://deb.debian.org/debian/pool/main/libm/libmemcached/libmemcached_1.0.18.orig.tar.gz \
     -DBUILD_NOSQL=OFF \
     -DBUILD_TESTS=OFF \
     -DFORCE_BUNDLE=ON \
